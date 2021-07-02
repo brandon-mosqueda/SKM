@@ -19,9 +19,13 @@ is_sparse_kernel <- function(kernel) {
   return(tolower(kernel) %in% tolower(SPARSE_KERNELS))
 }
 
+is_conventional_kernel <- function(kernel) {
+  return(tolower(kernel) %in% tolower(CONVENTIONAL_KERNELS))
+}
+
 # Conventional kernels --------------------------------------------------
-linear_kernel <- function(x) {
-  return(tcrossprod(x) / ncol(x))
+linear_kernel <- function(x, divisor = 1) {
+  return(tcrossprod(x) / divisor)
 }
 
 radial_kernel <- function(x1, x2 = x1, gamma = 1) {
@@ -34,12 +38,12 @@ radial_kernel <- function(x1, x2 = x1, gamma = 1) {
   ))
 }
 
-polynomial_kernel <- function(x1, x2 = x1, gamma = 1, b = 0, p = 3) {
-  return((gamma * (as.matrix(x1) %*% t(x2)) + b)^p)
+polynomial_kernel <- function(x1, x2 = x1, gamma = 1, coef0 = 0, degree = 3) {
+  return((gamma * (as.matrix(x1) %*% t(x2)) + coef0)^degree)
 }
 
-sigmoid_kernel <- function(x1, x2 = x1, gamma = 1, b = 0) {
-  return(tanh(gamma * (as.matrix(x1) %*% t(x2)) + b))
+sigmoid_kernel <- function(x1, x2 = x1, gamma = 1, coef0 = 0) {
+  return(tanh(gamma * (as.matrix(x1) %*% t(x2)) + coef0))
 }
 
 exponential_kernel <- function(x1, x2 = x1, gamma = 1) {
@@ -102,36 +106,87 @@ arc_cosine_layers <- function(AK1, dAK1, nl) {
   return(AKl)
 }
 
-# Sparse kernels --------------------------------------------------
+# Wrapper kernels functions --------------------------------------------------
+conventional_kernel <- function(x,
+                                kernel = "linear",
+                                arc_cosine_deep = 1,
+                                gamma = 1,
+                                coef0 = 0,
+                                degree = 3) {
+  kernel <- tolower(kernel)
+
+  if (kernel == "linear") {
+    x <- linear_kernel(x)
+  } else if (kernel == "polynomial") {
+    x <- polynomial_kernel(
+      x1 = x,
+      x2 = x,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+  } else if (kernel == "sigmoid") {
+    x <- sigmoid_kernel(x1 = x, x2 = x, gamma = gamma, coef0 = coef0)
+  } else if (kernel == "gaussian") {
+    x <- radial_kernel(x1 = x, x2 = x, gamma = gamma)
+  } else if (kernel == "exponential") {
+    x <- exponential_kernel(x1 = x, x2 = x, gamma = gamma)
+  } else if (kernel == "arc_cosine") {
+    x <- arc_cosine_kernel(x1 = x, x2 = x)
+
+    if (arc_cosine_deep > 1) {
+      x <- arc_cosine_layers(AK1 = x, dAK1 = diag(x), nl = arc_cosine_deep)
+    }
+  } else {
+    stop(kernel, " is not a valid kernel")
+  }
+
+  return(x)
+}
+
 sparse_kernel <- function(x,
-                          sample_proportion = 1,
+                          rows_proportion = 1,
                           kernel = "linear",
-                          kernel_deep = 1) {
-  name <- tolower(kernel)
-  name <- gsub("sparse_", "", name)
-  p <- ncol(x)
-  pos_m <- sample(1:nrow(x), nrow(x) * rows_proportion)
+                          arc_cosine_deep = 1,
+                          gamma = 1 / ncol(x),
+                          coef0 = 0,
+                          degree = 3) {
+  kernel <- tolower(kernel)
+  kernel <- gsub("sparse_", "", kernel)
+  final_rows <- sample(1:nrow(x), nrow(x) * rows_proportion)
 
   # Step 1 compute K_m
-  x_m <- x[pos_m, ]
+  x_m <- x[final_rows, ]
 
-  if (name == "linear") {
-    K_m <- x_m %*% t(x_m) / p
-    K_n_m <- x %*% t(x_m) / p
-  } else if (name == "polynomial") {
-    K_m <- polynomial_kernel(x1 = x_m, x2 = x_m, gamma = 1 / p)
-    K_n_m <- polynomial_kernel(x1 = x, x2 = x_m, gamma = 1 / p)
-  } else if (name == "sigmoid") {
-    K_m <- sigmoid_kernel(x1 = x_m, x2 = x_m, gamma = 1 / p)
-    K_n_m <- sigmoid_kernel(x1 = x, x2 = x_m, gamma = 1 / p)
-  } else if (name == "gaussian") {
-    K_m <- radial_kernel(x1 = x_m, x2 = x_m, gamma = 1 / p)
-    K_n_m <- radial_kernel(x1 = x, x2 = x_m, gamma = 1 / p)
-  } else if (name == "exponential") {
-    K_m <- exponential_kernel(x1 = x_m, x2 = x_m, gamma = 1 / p)
-    K_n_m <- exponential_kernel(x1 = x, x2 = x_m, gamma = 1 / p)
-  } else if (is_arc_cosine_kernel(name)) {
-    if (name == "arc_cosine_1") {
+  if (kernel == "linear") {
+    K_m <- x_m %*% t(x_m) / gamma
+    K_n_m <- x %*% t(x_m) / gamma
+  } else if (kernel == "polynomial") {
+    K_m <- polynomial_kernel(
+      x1 = x_m,
+      x2 = x_m,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+    K_n_m <- polynomial_kernel(
+      x1 = x,
+      x2 = x_m,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+  } else if (kernel == "sigmoid") {
+    K_m <- sigmoid_kernel(x1 = x_m, x2 = x_m, gamma = gamma, coef0 = coef0)
+    K_n_m <- sigmoid_kernel(x1 = x, x2 = x_m, gamma = gamma, coef0 = coef0)
+  } else if (kernel == "gaussian") {
+    K_m <- radial_kernel(x1 = x_m, x2 = x_m, gamma = gamma)
+    K_n_m <- radial_kernel(x1 = x, x2 = x_m, gamma = gamma)
+  } else if (kernel == "exponential") {
+    K_m <- exponential_kernel(x1 = x_m, x2 = x_m, gamma = gamma)
+    K_n_m <- exponential_kernel(x1 = x, x2 = x_m, gamma = gamma)
+  } else if (kernel == "arc_cosine") {
+    if (arc_cosine_deep == 1) {
       K_m <- arc_cosine_kernel(x1 = x_m, x2 = x_m)
       K_n_m <- arc_cosine_kernel(x1 = x, x2 = x_m)
     } else {
@@ -141,9 +196,11 @@ sparse_kernel <- function(x,
       K_n_m <- arc_cosine_layers(
         AK1 = K_nm1,
         dAK1 = diag(K_all),
-        nl = kernel_deep
+        nl = arc_cosine_deep
       )
     }
+  } else {
+    stop(kernel, " is not a valid kernel")
   }
 
   EVD_K_m <- eigen(K_m)
@@ -152,11 +209,46 @@ sparse_kernel <- function(x,
   S[EVD_K_m$values < 0] <- 0
   S_0.5_Inv <- sqrt(1 / S)
   S_mat_Inv <- diag(S_0.5_Inv)
+
   P <- K_n_m %*% U %*% S_mat_Inv
   rownames(P) <- rownames(x)
-  colnames(P) <- colnames(x)[pos_m]
+  colnames(P) <- colnames(x)[final_rows]
 
   P <- remove_no_variance_cols(P)
 
   return(P)
+}
+
+apply_kernel <- function(x,
+                         kernel,
+                         rows_proportion = 0.8,
+                         arc_cosine_deep = 1,
+                         gamma = 1 / ncol(x),
+                         coef0 = 0,
+                         degree = 3) {
+  kernel <- tolower(kernel)
+
+  if (is_sparse_kernel(kernel)) {
+    x <- sparse_kernel(
+      x,
+      rows_proportion = rows_proportion,
+      kernel = kernel,
+      arc_cosine_deep = arc_cosine_deep,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+  } else if (is_conventional_kernel(kernel)) {
+    x <- conventional_kernel(
+      x,
+      arc_cosine_deep = arc_cosine_deep,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+  } else {
+    stop(kernel, " is not a valid kernel")
+  }
+
+  return(x)
 }

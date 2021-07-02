@@ -30,5 +30,5 @@ Collate:
     'model_helpers.R'
     'model_trainer.R'
     'skm_results.R'
-    'svm.R'
     'validator.R'
+    'svm.R'
