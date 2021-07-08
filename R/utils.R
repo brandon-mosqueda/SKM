@@ -197,7 +197,9 @@ stail <- function(x, n = 5) {
 }
 
 get_length <- function(x) {
-  return(if (dim(x) != NULL) nrow(x) else length(x))
+  x_length <- if (is.null(dim(x))) length(x) else nrow(x)
+
+  return(x_length)
 }
 
 #' Hide code output

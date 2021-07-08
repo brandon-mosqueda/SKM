@@ -1,17 +1,24 @@
 #' @importFrom R6 R6Class
 
 #' @include utils.R
+#' @include model_helpers.R
 
 Model <- R6Class(
   classname = "Model",
   public = list(
     # Properties --------------------------------------------------
 
+    fitted_model = NULL,
     name = NULL,
+    is_multivariate = NULL,
+    responses = list(),
+
     x = NULL,
     y = NULL,
-    responses = list(),
-    sparse_kernel = NULL,
+    kernel = NULL,
+    degree = NULL,
+    gamma = NULL,
+    coef0 = NULL,
     rows_proportion = NULL,
     arc_cosine_deep = NULL,
     validate_params = NULL,
@@ -23,7 +30,10 @@ Model <- R6Class(
                           y,
                           name,
                           is_multivariate,
-                          sparse_kernel,
+                          kernel,
+                          degree,
+                          gamma,
+                          coef0,
                           rows_proportion,
                           arc_cosine_deep,
                           silently) {
@@ -31,7 +41,10 @@ Model <- R6Class(
       self$y <- y
       self$name <- name
       self$is_multivariate <- is_multivariate
-      self$sparse_kernel <- sparse_kernel
+      self$kernel <- kernel
+      self$degree <- degree
+      self$gamma <- gamma
+      self$coef0 <- coef0
       self$rows_proportion <- rows_proportion
       self$arc_cosine_deep <- arc_cosine_deep
       self$silently <- silently
@@ -44,30 +57,39 @@ Model <- R6Class(
       private$prepare_y()
       private$prepare_others()
 
-      private$train()
+      if (self$silently) {
+        hush(private$train(), all = TRUE)
+      } else {
+        private$train()
+      }
     }
   ),
   private = list(
-    # Properties --------------------------------------------------
-
-    fitted_model = NULL,
-
     # Methods --------------------------------------------------
 
-    prepare_x = function(intercept = 0) {
-      x <- to_matrix(x, intercept = intercept)
-      # remove_no_variance_cols()
-      remove_nas()
+    prepare_x = function() {
+      self$x <- prepare_x(
+        x = self$x,
+        kernel = self$kernel,
+        rows_proportion = self$rows_proportion,
+        arc_cosine_deep = self$arc_cosine_deep,
+        degree = self$degree,
+        gamma = self$gamma,
+        coef0 = self$coef0
+      )
     },
-
     prepare_y = function() {
-      if (is_multivariate) {
-        prepare_univariate_y()
+      if (self$is_multivariate) {
+        private$prepare_multivariate_y()
       } else {
-        prepare_multivariate_y()
+        private$prepare_univariate_y()
       }
     },
+
+    prepare_univariate_y = prepare_univariate_y,
+    prepare_multivariate_y = prepare_multivariate_y,
     prepare_others = invisible,
-    train = not_implemented_function
+    train = not_implemented_function,
+    predict = not_implemented_function
   )
 )

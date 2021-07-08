@@ -39,3 +39,28 @@ prepare_multivariate_y <- function() {
     )
   }
 }
+
+prepare_x <- function(x,
+                      kernel,
+                      rows_proportion,
+                      arc_cosine_deep,
+                      degree,
+                      gamma,
+                      coef0) {
+  x <- to_matrix(x)
+  x <- remove_no_variance_cols(x)
+
+  if (!is.null(kernel)) {
+    x <- apply_kernel(
+      x = x,
+      kernel = kernel,
+      rows_proportion = rows_proportion,
+      arc_cosine_deep = arc_cosine_deep,
+      gamma = gamma,
+      coef0 = coef0,
+      degree = degree
+    )
+  }
+
+  return(x)
+}

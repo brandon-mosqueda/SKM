@@ -61,21 +61,45 @@ assert_subset_string <- function(x,
     stop(sprintf("Argument '%s' is missing", label))
   }
   res <- checkSubsetString(x, choices, empty.ok, ignore.case)
-  makeAssertation(x, res, info, label)
+  makeAssertion(x, res, info, label)
 }
 
 # Helpers --------------------------------------------------
+
+validate_base_params <- function(x,
+                                 y,
+                                 accept_multivariate,
+                                 kernel,
+                                 arc_cosine_deep,
+                                 rows_proportion,
+                                 degree,
+                                 gamma,
+                                 coef0,
+                                 silently) {
+  validate_xy(x, y, accept_multivariate = accept_multivariate)
+
+  assert_sparse_kernel(
+    kernel = kernel,
+    arc_cosine_deep = arc_cosine_deep,
+    rows_proportion = rows_proportion,
+    degree = degree,
+    gamma = gamma,
+    coef0 = coef0
+  )
+
+  assert_logical(silently, any.missing = FALSE, len = 1)
+}
 
 validate_xy <- function(x, y, accept_multivariate) {
   if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
     stop("x must be data.frame, a matrix or a vector")
   }
 
-  if (!is.vector(y) && !is.matrix(y) && !is.data.frame(y)) {
+  if (!is.vector(y) && !is.factor(y) && !is.matrix(y) && !is.data.frame(y)) {
     stop("y must be a data.frame, a matrix or a vector")
   }
 
-  if (accept_multivariate && !is.data.frame(y) && !is.matrix(y)) {
+  if (accept_multivariate && (!is.data.frame(y) && !is.matrix(y))) {
     stop("y must be a data.frame or a matrix in multivariate models")
   }
 
@@ -84,7 +108,12 @@ validate_xy <- function(x, y, accept_multivariate) {
   }
 }
 
-assert_sparse_kernel <- function(kernel, arc_cosine_deep, rows_proportion) {
+assert_sparse_kernel <- function(kernel,
+                                 arc_cosine_deep,
+                                 rows_proportion,
+                                 degree,
+                                 gamma,
+                                 coef0) {
   if (!is.null(kernel)) {
     assert_string(kernel)
     assert_subset_string(
@@ -99,6 +128,10 @@ assert_sparse_kernel <- function(kernel, arc_cosine_deep, rows_proportion) {
     }
 
     assert_number(rows_proportion, lower = 0.001, upper = 1)
+
+    assert_number(degree, finite = TRUE)
+    assert_number(gamma, finite = TRUE)
+    assert_number(coef0, finite = TRUE)
   }
 }
 
@@ -117,33 +150,47 @@ assert_svm_kernel <- function(kernel) {
 
 validate_sk_svm <- function(x,
                             y,
-                            sparse_kernel,
-                            rows_proportion,
-                            arc_cosine_deep,
-                            scale,
                             kernel,
                             degree,
                             gamma,
                             coef0,
+                            rows_proportion,
+                            arc_cosine_deep,
+                            scale,
+                            svm_kernel,
+                            svm_degree,
+                            svm_gamma,
+                            svm_coef0,
                             cost,
                             class_weights,
-                            cachesize,
+                            cache_size,
                             tolerance,
                             epsilon,
                             shrinking,
                             cross,
                             probability,
                             fitted,
-                            na_action) {
-  validate_xy(x, y, accept_multivariate = FALSE)
-  assert_sparse_kernel(sparse_kernel, arc_cosine_deep, rows_proportion)
+                            na_action,
+                            silently) {
+  validate_base_params(
+    x = x,
+    y = y,
+    accept_multivariate = FALSE,
+    kernel = kernel,
+    arc_cosine_deep = arc_cosine_deep,
+    rows_proportion = rows_proportion,
+    degree = degree,
+    gamma = gamma,
+    coef0 = coef0,
+    silently = silently
+  )
 
   assert_logical(scale, any.missing = FALSE)
 
-  assert_svm_kernel(kernel)
-  assert_number(degree, finite = TRUE)
-  assert_number(gamma, finite = TRUE)
-  assert_number(coef0, finite = TRUE)
+  assert_svm_kernel(svm_kernel)
+  assert_number(svm_degree, finite = TRUE)
+  assert_number(svm_gamma, finite = TRUE)
+  assert_number(svm_coef0, finite = TRUE)
   assert_number(cost, finite = TRUE)
 
   assert_numeric(
@@ -155,8 +202,5 @@ validate_sk_svm <- function(x,
   assert_number(cache_size, finite = TRUE)
   assert_number(tolerance, finite = TRUE)
   assert_logical(shrinking, len = 1, any.missing = FALSE)
-  assert_number(cross, finite = TRUE, lower = 0)
-  assert_logical(probability, len = 1, any.missing = FALSE)
   assert_logical(fitted, len = 1, any.missing = FALSE)
-  assert_function(na_action, nargs = 1)
 }
