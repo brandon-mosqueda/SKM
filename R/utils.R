@@ -6,18 +6,16 @@ lm_intercept <- function(x, y) {
   if (all(is.na(x)) || all(is.na(y))) {
     return(NaN)
   }
-  Data <- data.frame(x = x, y = y)
 
-  return(lm(y ~ x, data = Data)$coefficients[1])
+  return(lm(y ~ x, data = data.frame(x = x, y = y))$coefficients[1])
 }
 
 lm_slope <- function(x, y) {
   if (all(is.na(x)) || all(is.na(y))) {
     return(NaN)
   }
-  Data <- data.frame(x = x, y = y)
 
-  return(lm(y ~ x, data = Data)$coefficients[2])
+  return(lm(y ~ x, data = data.frame(x = x, y = y))$coefficients[2])
 }
 
 to_matrix <- function(x, with_intercept = FALSE) {
@@ -63,11 +61,11 @@ get_same_from_set <- function(string, set_strings) {
   return(ifelse(is.na(new_string), string, new_string))
 }
 
-remove_no_variance_cols <- function(Data) {
-  cols_variances <- apply(Data, 2, var)
+remove_no_variance_cols <- function(x) {
+  cols_variances <- apply(x, 2, var)
   no_zero_variances_cols <- which(cols_variances > 0)
 
-  return(Data[, no_zero_variances_cols])
+  return(x[, no_zero_variances_cols])
 }
 
 #' @title Cholesky
@@ -111,18 +109,18 @@ cholesky_no_definite <- function(G, tolerance = 1e-10) {
 #'              Cholesky factorization of a non-real symmetric
 #'              positive-definite square matrix
 #'
-#' @param Data (\code{matrix}) The data
+#' @param x (\code{matrix}) The x
 #'
 #' @return The cholesky matrix.
 #'
 #' @export
-cholesky <- function(Data) {
-  data_names <- colnames(Data)
+cholesky <- function(x) {
+  data_names <- colnames(x)
 
   tryCatch({
-    result <- t(chol(Data))
+    result <- t(chol(x))
   }, error = function(error_condition) {
-      result <<- cholesky_no_definite(Data)
+      result <<- cholesky_no_definite(x)
   })
 
   rownames(result) <- data_names
@@ -133,8 +131,8 @@ cholesky <- function(Data) {
 
 # Get the value that appears more times. If there are more than 1
 # value that appears more times (multimodal), return the lowest value.
-mode <- function(data) {
-  return(names(sort(summary(as.factor(data)), decreasing = TRUE)[1]))
+mode <- function(x) {
+  return(names(sort(summary(as.factor(x)), decreasing = TRUE)[1]))
 }
 
 # Sysmtem --------------------------------------------------
@@ -187,15 +185,15 @@ close_all_devices <- function() {
   invisible(sapply(dev.list(), dev.off))
 }
 
-shead <- function(Data, n = 5) {
-  return(Data[1:min(n, nrow(Data)), 1:min(n, ncol(Data))])
+shead <- function(x, n = 5) {
+  return(x[1:min(n, nrow(x)), 1:min(n, ncol(x))])
 }
 
-stail <- function(Data, n = 5) {
-  n_rows <- nrow(Data)
-  n_cols <- ncol(Data)
+stail <- function(x, n = 5) {
+  n_rows <- nrow(x)
+  n_cols <- ncol(x)
 
-  return(Data[max(1, n_rows - n):n_rows, max(1, n_cols - n):n_cols])
+  return(x[max(1, n_rows - n):n_rows, max(1, n_cols - n):n_cols])
 }
 
 get_length <- function(x) {

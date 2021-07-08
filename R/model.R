@@ -10,6 +10,7 @@ Model <- R6Class(
     name = NULL,
     x = NULL,
     y = NULL,
+    responses = list(),
     sparse_kernel = NULL,
     rows_proportion = NULL,
     arc_cosine_deep = NULL,
@@ -55,9 +56,17 @@ Model <- R6Class(
 
     prepare_x = function(intercept = 0) {
       x <- to_matrix(x, intercept = intercept)
+      # remove_no_variance_cols()
+      remove_nas()
     },
 
-    prepare_y = not_implemented_function,
+    prepare_y = function() {
+      if (is_multivariate) {
+        prepare_univariate_y()
+      } else {
+        prepare_multivariate_y()
+      }
+    },
     prepare_others = invisible,
     train = not_implemented_function
   )

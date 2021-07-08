@@ -75,7 +75,7 @@ validate_xy <- function(x, y, accept_multivariate) {
     stop("y must be a data.frame, a matrix or a vector")
   }
 
-  if (accept_multivariate && (!is.data.frame(y) && !is.matrix(y))) {
+  if (accept_multivariate && !is.data.frame(y) && !is.matrix(y)) {
     stop("y must be a data.frame or a matrix in multivariate models")
   }
 
