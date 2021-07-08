@@ -171,6 +171,10 @@ rmdir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+not_implemented_function <- function() {
+  stop("Not implemented function")
+}
+
 lunique <- function(x) {
   return(length(unique(x)))
 }

@@ -32,3 +32,4 @@ Collate:
     'skm_results.R'
     'validator.R'
     'svm.R'
+    'univariate_model.R'
