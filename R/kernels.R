@@ -2,6 +2,7 @@
 #' @include globals.R
 
 # Helpers --------------------------------------------------
+
 l2norm <- function(x) sqrt(sum(x^2))
 
 diagAK_f <- function(dAK1) {
@@ -24,6 +25,7 @@ is_conventional_kernel <- function(kernel) {
 }
 
 # Conventional kernels --------------------------------------------------
+
 linear_kernel <- function(x, divisor = 1) {
   return(tcrossprod(x) / divisor)
 }
@@ -107,6 +109,7 @@ arc_cosine_layers <- function(AK1, dAK1, nl) {
 }
 
 # Wrapper kernels functions --------------------------------------------------
+
 conventional_kernel <- function(x,
                                 kernel = "linear",
                                 arc_cosine_deep = 1,

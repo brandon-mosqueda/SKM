@@ -1,103 +1,73 @@
-get_length <- function(x) {
-  return(if (dim(x) != NULL) nrow(x) else length(x))
-}
+#' @include globals.R
 
-is_windows_os <- function() {
-  return(.Platform$OS.type == "windows")
-}
+# Computations --------------------------------------------------
 
-is_unix_os <- function() {
-  return(.Platform$OS.type == "unix")
-}
-
-#' Hide code output
-#'
-#' @param code (\code{function}) The code to be evaluated
-#' @param all (\code{logical}) If \code{TRUE}, suppress also warnings and the
-#'        result of the code. \code{FALSE} by default.
-#'
-#' @return If \emph{all} is \code{FALSE}, return whatever the evaluated code
-#'         returns, nothing otherwise.
-hush <- function(code, all=FALSE) {
-  file <- ifelse(is_unix_os(), "/dev/null", "NUL")
-
-  if (all) {
-    capture.output(suppressWarnings(suppressMessages(temp <- code)),
-                   file=file,
-                   append=TRUE)
-  } else {
-    capture.output(suppressMessages(temp <- code),
-                   file=file,
-                   append=TRUE)
+lm_intercept <- function(x, y) {
+  if (all(is.na(x)) || all(is.na(y))) {
+    return(NaN)
   }
+  Data <- data.frame(x = x, y = y)
 
-  if (all) {
-    return(invisible(temp))
-  } else {
-    return(temp)
+  return(lm(y ~ x, data = Data)$coefficients[1])
+}
+
+lm_slope <- function(x, y) {
+  if (all(is.na(x)) || all(is.na(y))) {
+    return(NaN)
   }
+  Data <- data.frame(x = x, y = y)
+
+  return(lm(y ~ x, data = Data)$coefficients[2])
 }
 
-#' Create a directory if does not exist, always recursively
-mkdir <- function(directory) {
-  if (!dir.exists(directory)){
-    dir.create(directory, recursive=TRUE)
-  }
-}
-
-rmdir <- function(directory) {
-  unlink(directory, recursive = TRUE)
-}
-
-is_square <- function(Matrix) {
-  return(nrow(Matrix) == ncol(Matrix))
-}
-
-is_empty <- function(x) {
-  return(length(x) == 0)
-}
-
-is_empty_dir <- function(directory) {
-  if (!dir.exists(directory)) {
-    return(FALSE)
-  }
-
-  return(
-    is_empty(list.files(directory, recursive = TRUE)) &&
-      length(list.dirs(directory, recursive = TRUE)) <= 1
-  )
-}
-
-#' @title nonull
-#' @description Get the first value that is not NULL.
-nonull <- function(...) {
-  params <- list(...)
-
-  for (param in params) {
-    if (!is.null(param)) {
-      return(param)
+to_matrix <- function(x, with_intercept = FALSE) {
+  if (is.vector(x)) {
+    if (is.character(x)) {
+      x <- factor(x)
+    } else {
+      x <- t(t(x))
     }
   }
 
-  return(NULL)
-}
-
-get_rand_state <- function() {
-  # Using `get0()` here to have `NULL` output in case object doesn't
-  # exist. Also using `inherits = FALSE` to get value exactly from
-  # global environment and not from one of its parent.
-  get0(".Random.seed", envir=.GlobalEnv, inherits=FALSE)
-}
-
-set_rand_state <- function(state) {
-  # Assigning `NULL` state might lead to unwanted consequences
-  if (!is.null(state)) {
-    assign(".Random.seed", state, envir=.GlobalEnv, inherits=FALSE)
+  if (is.factor(x)) {
+    x <- as.data.frame(x)
   }
+
+  if (is.matrix(x)) {
+    if (is.null(colnames(x))) {
+      colnames(x) <- paste0("x", 1:ncol(x))
+    }
+
+    if (with_intercept) {
+      x <- cbind(1, x)
+      colnames(x)[1] <- "Intercept"
+    }
+  } else if (is.data.frame(x)) {
+    x <- model.matrix( ~ ., x)
+
+    if (!with_intercept) {
+      x <- x[, -1]
+    }
+  }
+
+  return(invisible(x))
 }
 
-get_tabs <- function(num=1) {
-  return(paste0(rep("\t", num), collapse=""))
+get_same_from_set <- function(string, set_strings) {
+  if (identical(string, character(0)) || !is.character(string)) {
+    return(string)
+  }
+
+  new_string <- set_strings[which(tolower(string) == tolower(set_strings))[1]]
+
+  return(ifelse(is.na(new_string), string, new_string))
+}
+
+remove_no_variance_cols <- function(Data) {
+  cols_variances <- apply(Data, 2, var)
+  no_zero_variances_cols <- which(cols_variances > 0)
+
+  return(Data[, no_zero_variances_cols])
 }
 
 #' @title Cholesky
@@ -151,7 +121,7 @@ cholesky <- function(Data) {
 
   tryCatch({
     result <- t(chol(Data))
-  }, error=function(error_condition) {
+  }, error = function(error_condition) {
       result <<- cholesky_no_definite(Data)
   })
 
@@ -161,9 +131,150 @@ cholesky <- function(Data) {
   return(result)
 }
 
+# Get the value that appears more times. If there are more than 1
+# value that appears more times (multimodal), return the lowest value.
+mode <- function(data) {
+  return(names(sort(summary(as.factor(data)), decreasing = TRUE)[1]))
+}
+
+# Sysmtem --------------------------------------------------
+
+is_windows_os <- function() {
+  return(.Platform$OS.type == "windows")
+}
+
+is_unix_os <- function() {
+  return(.Platform$OS.type == "unix")
+}
+
+is_empty_dir <- function(directory) {
+  if (!dir.exists(directory)) {
+    return(FALSE)
+  }
+
+  return(
+    is_empty(list.files(directory, recursive = TRUE)) &&
+    length(list.dirs(directory, recursive = TRUE)) <= 1
+  )
+}
+
+#' Create a directory if does not exist, always recursively
+mkdir <- function(directory) {
+  if (!dir.exists(directory)) {
+    dir.create(directory, recursive = TRUE)
+  }
+}
+
+rmdir <- function(directory) {
+  unlink(directory, recursive = TRUE)
+}
+
+# Utilities --------------------------------------------------
+
+lunique <- function(x) {
+  return(length(unique(x)))
+}
+
+has_dims <- function(x, dim_num = 2) {
+  return(length(dim(x)) == dim_num)
+}
+
+close_all_devices <- function() {
+  invisible(sapply(dev.list(), dev.off))
+}
+
+shead <- function(Data, n = 5) {
+  return(Data[1:min(n, nrow(Data)), 1:min(n, ncol(Data))])
+}
+
+stail <- function(Data, n = 5) {
+  n_rows <- nrow(Data)
+  n_cols <- ncol(Data)
+
+  return(Data[max(1, n_rows - n):n_rows, max(1, n_cols - n):n_cols])
+}
+
+get_length <- function(x) {
+  return(if (dim(x) != NULL) nrow(x) else length(x))
+}
+
+#' Hide code output
+#'
+#' @param code (\code{function}) The code to be evaluated
+#' @param all (\code{logical}) If \code{TRUE}, suppress also warnings and the
+#'        result of the code. \code{FALSE} by default.
+#'
+#' @return If \emph{all} is \code{FALSE}, return whatever the evaluated code
+#'         returns, nothing otherwise.
+hush <- function(code, all = FALSE) {
+  file <- ifelse(is_unix_os(), "/dev/null", "NUL")
+
+  if (all) {
+    capture.output(
+      suppressWarnings(suppressMessages(temp <- code)),
+      file = file,
+      append = TRUE
+    )
+  } else {
+    capture.output(
+      suppressMessages(temp <- code),
+      file = file,
+      append = TRUE
+    )
+  }
+
+  if (all) {
+    return(invisible(temp))
+  } else {
+    return(temp)
+  }
+}
+
+is_square <- function(Matrix) {
+  return(nrow(Matrix) == ncol(Matrix))
+}
+
+is_empty <- function(x) {
+  return(length(x) == 0)
+}
+
+#' @title nonull
+#' @description Get the first value that is not NULL.
+nonull <- function(...) {
+  params <- list(...)
+
+  for (param in params) {
+    if (!is.null(param)) {
+      return(param)
+    }
+  }
+
+  return(NULL)
+}
+
+# Text manipulation --------------------------------------------------
+
+char_at <- function(string, index = 1) {
+  return(substr(string, index, index))
+}
+
+str_join <- function(string1, string2) {
+  joined_strings <- paste0(string1, string2)
+
+  nas_strings <- which(is.na(string1) | is.na(string2))
+
+  joined_strings[nas_strings] <- NA
+
+  return(joined_strings)
+}
+
+get_tabs <- function(num = 1) {
+  return(paste0(rep("\t", num), collapse = ""))
+}
+
 # Given a formula, get the name of the response varibles
-get_response <- function(formula, data=NULL) {
-  tt <- terms(formula, data=data)
+get_response <- function(formula, data = NULL) {
+  tt <- terms(formula, data = data)
   ## [1] is the list call
   vars <- as.character(attr(tt, "variables"))[-1]
   # index of response var
@@ -173,17 +284,13 @@ get_response <- function(formula, data=NULL) {
   return(trimws(strsplit(response, "\\+")[[1]]))
 }
 
-not_implemented_function <- function() {
-  stop("Not yet simplemented")
-}
-
 replace_str <- function(original, str_to_replace, regex) {
   return(gsub(regex, str_to_replace, original))
 }
 
 regex_match <- function(text, regex) {
   # Accepts looking behind and forward
-  match <- regmatches(text, regexec(regex, text, perl=TRUE))
+  match <- regmatches(text, regexec(regex, text, perl = TRUE))
   match <- sapply(match, function(x) ifelse(identical(x, character(0)), NA, x))
 
   return(match)
@@ -194,14 +301,14 @@ regex_contains <- function(regex, text) {
 }
 
 has_str <- function(base_str, substring) {
-  return(grepl(substring, base_str, fixed=TRUE))
+  return(grepl(substring, base_str, fixed = TRUE))
 }
 
-# Get the value that appears more times. If there are more than 1
-# value that appears more times (multimodal), return the lowest value.
-mode <- function(data) {
-  return(names(sort(summary(as.factor(data)), decreasing=TRUE)[1]))
+set_collapse <- function(values) {
+  return(paste0(shQuote(values), collapse = ", "))
 }
+
+# Type checks --------------------------------------------------
 
 is_number <- function(value) {
   if (is.factor(value)) {
@@ -226,22 +333,24 @@ is_discrete <- function(number) {
 }
 
 get_response_type <- function(y) {
+  if (is.character(y) || is.logical(y)) {
+    y <- factor(y)
+  }
+
   if (is.factor(y)) {
     type <- RESPONSE_TYPES$CATEGORICAL
 
     if (length(levels(y)) == 2) {
       type <- RESPONSE_TYPES$BINARY
     }
-  } else {
-    if (all(is_number(y)) || anyNA(y)) {
-      type <- RESPONSE_TYPES$CONTINUOUS
+  } else if (is.vector(y) && is.numeric(y)) {
+    type <- RESPONSE_TYPES$CONTINUOUS
 
-      if (all(is_discrete(y))) {
-        type <- RESPONSE_TYPES$DISCRETE
-      }
-    } else {
-      stop("Invalid response varible's type. If the response variable is categorical, send it as factor")
+    if (all(is_discrete(y))) {
+      type <- RESPONSE_TYPES$DISCRETE
     }
+  } else {
+    stop("Invalid response variable, y must be a factor or a vector")
   }
 
   return(type)
@@ -273,124 +382,18 @@ is_class_response <- function(response_type) {
          is_categorical_response(response_type))
 }
 
-remove_no_variance_cols <- function(Data) {
-  cols_variances <- apply(Data, 2, var)
-  no_zero_variances_cols <- which(cols_variances > 0)
+# Randomness --------------------------------------------------
 
-  return(Data[, no_zero_variances_cols])
+get_rand_state <- function() {
+  # Using `get0()` here to have `NULL` output in case object doesn't
+  # exist. Also using `inherits = FALSE` to get value exactly from
+  # global environment and not from one of its parent.
+  get0(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
 }
 
-get_same_from_set <- function(string, set_strings) {
-  if (identical(string, character(0)) || !is.character(string)) {
-    return(string)
+set_rand_state <- function(state) {
+  # Assigning `NULL` state might lead to unwanted consequences
+  if (!is.null(state)) {
+    assign(".Random.seed", state, envir = .GlobalEnv, inherits = FALSE)
   }
-
-  new_string <- set_strings[which(tolower(string) == tolower(set_strings))[1]]
-
-  return(ifelse(is.na(new_string), string, new_string))
-}
-
-set_collapse <- function(values) {
-  return(paste0(shQuote(values), collapse=", "))
-}
-
-has_year_in_env <- function(env) {
-  return(regex_contains("[0-9]{4}_.+", as.character(env)))
-}
-
-split_env_year <- function(envs) {
-  splitted_envs <- strsplit(as.character(envs), "_")
-
-  return(list(years=as.factor(sapply(splitted_envs, function(x) x[1])),
-              envs=as.factor(sapply(splitted_envs, function(x) x[2]))))
-}
-
-is_time_serie_like_cv_type <- function(cv_class) {
-  return(cv_class %in% c("CV0Custom", "CV0OrderedCV", "CV0OrderedCustomCV"))
-}
-
-needs_prepare_predictor_in_fold <- function(cv_class) {
-  return(is_time_serie_like_cv_type(cv_class) ||
-         cv_class == "CustomCV")
-}
-
-close_all_devices <- function() {
-  invisible(sapply(dev.list(), dev.off))
-}
-
-shead <- function(Data, n = 5) {
-  return(Data[1:min(n, nrow(Data)), 1:min(n, ncol(Data))])
-}
-
-stail <- function(Data, n = 5) {
-  n_rows <- nrow(Data)
-  n_cols <- ncol(Data)
-  return(Data[max(1, n_rows - n):n_rows, max(1, n_cols - n):n_cols])
-}
-
-lm_intercept <- function(x, y) {
-  if (all(is.na(x)) || all(is.na(y))) {
-    return(NaN)
-  }
-  Data <- data.frame(x = x, y = y)
-
-  return(lm(y ~ x, data = Data)$coefficients[1])
-}
-
-lm_slope <- function(x, y) {
-  if (all(is.na(x)) || all(is.na(y))) {
-    return(NaN)
-  }
-  Data <- data.frame(x = x, y = y)
-
-  return(lm(y ~ x, data = Data)$coefficients[2])
-}
-
-char_at <- function(string, index = 1) {
-  return(substr(string, index, index))
-}
-
-str_join <- function(string1, string2) {
-  joined_strings <- paste0(string1, string2)
-
-  nas_strings <- which(is.na(string1) | is.na(string2))
-
-  joined_strings[nas_strings] <- NA
-
-  return(joined_strings)
-}
-
-has_dims <- function(x, dim_num = 2) length(dim(x)) == dim_num
-
-to_matrix <- function(x, with_intercept = FALSE) {
-  if (is.vector(x)) {
-    if (is.character(x)) {
-      x <- factor(x)
-    } else {
-      x <- t(t(x))
-    }
-  }
-
-  if (is.factor(x)) {
-    x <- as.data.frame(x)
-  }
-
-  if (is.matrix(x)) {
-    if (is.null(colnames(x))) {
-      colnames(x) <- paste0("x", 1:ncol(x))
-    }
-
-    if (with_intercept) {
-      x <- cbind(1, x)
-      colnames(x)[1] <- "Intercept"
-    }
-  } else if (is.data.frame(x)) {
-    x <- model.matrix( ~ ., x)
-
-    if (!with_intercept) {
-      x <- x[, -1]
-    }
-  }
-
-  return(invisible(x))
 }
