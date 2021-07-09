@@ -24,6 +24,10 @@ is_conventional_kernel <- function(kernel) {
   return(tolower(kernel) %in% tolower(CONVENTIONAL_KERNELS))
 }
 
+is_arc_cosine_kernel <- function(kernel) {
+  return(tolower(kernel) %in% tolower(ARC_COSINE_KERNELS))
+}
+
 # Conventional kernels --------------------------------------------------
 
 linear_kernel <- function(x, divisor = 1) {

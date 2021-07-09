@@ -16,6 +16,8 @@ SPARSE_KERNELS <- c(
   "Sparse_Arc_cosine"
 )
 
+ARC_COSINE_KERNELS <- c("Arc_cosine", "Sparse_Arc_cosine")
+
 SVM_KERNELS <- c("linear", "polynomial", "radial", "sigmoid")
 
 RESPONSE_TYPES <- list(
