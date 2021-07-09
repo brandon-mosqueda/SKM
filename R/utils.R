@@ -1,3 +1,5 @@
+#' @import dplyr
+
 #' @include globals.R
 
 # Computations --------------------------------------------------
@@ -48,21 +50,15 @@ to_matrix <- function(x, with_intercept = FALSE) {
     }
   }
 
-  return(invisible(x))
-}
-
-get_same_from_set <- function(string, set_strings) {
-  if (identical(string, character(0)) || !is.character(string)) {
-    return(string)
-  }
-
-  new_string <- set_strings[which(tolower(string) == tolower(set_strings))[1]]
-
-  return(ifelse(is.na(new_string), string, new_string))
+  return(x)
 }
 
 remove_no_variance_cols <- function(x) {
-  cols_variances <- apply(x, 2, var)
+  if (is.data.frame(x)) {
+    x <- select_if(x, is.numeric)
+  }
+
+  cols_variances <- apply(x, 2, function(x) var(x, na.rm = TRUE))
   no_zero_variances_cols <- which(cols_variances > 0)
 
   return(x[, no_zero_variances_cols])
@@ -131,8 +127,18 @@ cholesky <- function(x) {
 
 # Get the value that appears more times. If there are more than 1
 # value that appears more times (multimodal), return the lowest value.
-mode <- function(x) {
-  return(names(sort(summary(as.factor(x)), decreasing = TRUE)[1]))
+mode <- function(x, na.rm = TRUE) {
+  use_na <- if (na.rm) "no" else "always"
+  ocurrences <- sort(table(x, useNA = use_na), decreasing = TRUE)
+  mode <- names(ocurrences)[1]
+
+  if (is.numeric(x)) {
+    mode <- as.numeric(mode)
+  } else if (is.logical(x)) {
+    mode <- as.logical(mode)
+  }
+
+  return(mode)
 }
 
 # Sysmtem --------------------------------------------------
@@ -145,17 +151,6 @@ is_unix_os <- function() {
   return(.Platform$OS.type == "unix")
 }
 
-is_empty_dir <- function(directory) {
-  if (!dir.exists(directory)) {
-    return(FALSE)
-  }
-
-  return(
-    is_empty(list.files(directory, recursive = TRUE)) &&
-    length(list.dirs(directory, recursive = TRUE)) <= 1
-  )
-}
-
 #' Create a directory if does not exist, always recursively
 mkdir <- function(directory) {
   if (!dir.exists(directory)) {
@@ -165,6 +160,18 @@ mkdir <- function(directory) {
 
 rmdir <- function(directory) {
   unlink(directory, recursive = TRUE)
+}
+
+is_empty_dir <- function(directory) {
+  if (!dir.exists(directory)) {
+    warning("Directory does not exists")
+    return(TRUE)
+  }
+
+  return(
+    is_empty(list.files(directory, recursive = TRUE)) &&
+    length(list.dirs(directory, recursive = TRUE)) <= 1
+  )
 }
 
 # Utilities --------------------------------------------------
@@ -193,13 +200,11 @@ stail <- function(x, n = 5) {
   n_rows <- nrow(x)
   n_cols <- ncol(x)
 
-  return(x[max(1, n_rows - n):n_rows, max(1, n_cols - n):n_cols])
+  return(x[max(1, n_rows - n + 1):n_rows, max(1, n_cols - n + 1):n_cols])
 }
 
 get_length <- function(x) {
-  x_length <- if (is.null(dim(x))) length(x) else nrow(x)
-
-  return(x_length)
+  return(if (is.null(dim(x))) length(x) else nrow(x))
 }
 
 #' Hide code output
@@ -234,8 +239,13 @@ hush <- function(code, all = FALSE) {
   }
 }
 
-is_square <- function(Matrix) {
-  return(nrow(Matrix) == ncol(Matrix))
+is_square <- function(x) {
+  result <- nrow(x) == ncol(x)
+  if (identical(result, logical(0))) {
+    result <- FALSE
+  }
+
+  return(result)
 }
 
 is_empty <- function(x) {
@@ -259,6 +269,10 @@ nonull <- function(...) {
 # Text manipulation --------------------------------------------------
 
 char_at <- function(string, index = 1) {
+  if (index < 0) {
+    index <- nchar(string) + index + 1
+  }
+
   return(substr(string, index, index))
 }
 
