@@ -106,8 +106,3 @@ SVMModel <- R6Class(
     }
   )
 )
-
-#' @export
-predict.SVMModel <- function(model, x) {
-  return(model$predict(x))
-}

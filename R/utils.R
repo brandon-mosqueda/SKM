@@ -252,6 +252,12 @@ is_empty <- function(x) {
   return(length(x) == 0)
 }
 
+has <- function(...) {
+  x <- list(...)
+
+  return(!(anyNA(x) || any(sapply(x, is.null)) || anyNaN(x)))
+}
+
 #' @title nonull
 #' @description Get the first value that is not NULL.
 nonull <- function(...) {
@@ -302,23 +308,34 @@ get_response <- function(formula, data = NULL) {
   return(trimws(strsplit(response, "\\+")[[1]]))
 }
 
-replace_str <- function(original, str_to_replace, regex) {
+replace_by_regex <- function(original, str_to_replace, regex) {
   return(gsub(regex, str_to_replace, original))
 }
 
 regex_match <- function(text, regex) {
+  if (!has(text, regex)) {
+    return(as.character(NA))
+  }
+
   # Accepts looking behind and forward
   match <- regmatches(text, regexec(regex, text, perl = TRUE))
-  match <- sapply(match, function(x) ifelse(identical(x, character(0)), NA, x))
+  match <- sapply(
+    match,
+    function(x) ifelse(identical(x, character(0)), as.character(NA), x)
+  )
 
   return(match)
 }
 
-regex_contains <- function(regex, text) {
+regex_contains <- function(text, regex) {
   return(!is.na(regex_match(text, regex)))
 }
 
 has_str <- function(base_str, substring) {
+  if (!has(base_str, substring)) {
+    return(FALSE)
+  }
+
   return(grepl(substring, base_str, fixed = TRUE))
 }
 
@@ -328,18 +345,22 @@ set_collapse <- function(values) {
 
 # Type checks --------------------------------------------------
 
-is_number <- function(value) {
-  if (is.factor(value)) {
+is_number <- function(x) {
+  if (!is.vector(x) || !has(x)) {
     return(FALSE)
   }
 
-  suppressWarnings(value <- as.numeric(value))
+  suppressWarnings(x <- as.numeric(x))
 
-  return(!is.na(value))
+  return(!is.na(x))
 }
 
-is_int <- function(number) {
-  return(number %% 1 == 0)
+is_int <- function(x) {
+  if (!is.numeric(x)) {
+    return(rep(FALSE, length(x)))
+  }
+
+  return(is.finite(x) & (x %% 1 == 0))
 }
 
 is_discrete <- function(number) {
@@ -375,29 +396,54 @@ get_response_type <- function(y) {
 }
 
 is_continuous_response <- function(response_type) {
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
   return(response_type == RESPONSE_TYPES$CONTINUOUS)
 }
 
 is_discrete_response <- function(response_type) {
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
   return(response_type == RESPONSE_TYPES$DISCRETE)
 }
 
 is_numeric_response <- function(response_type) {
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
   return(is_continuous_response(response_type) ||
          is_discrete_response(response_type))
 }
 
 is_binary_response <- function(response_type) {
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
   return(response_type == RESPONSE_TYPES$BINARY)
 }
 
 is_categorical_response <- function(response_type) {
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
   return(response_type == RESPONSE_TYPES$CATEGORICAL)
 }
 
 is_class_response <- function(response_type) {
-  return(is_binary_response(response_type) ||
-         is_categorical_response(response_type))
+  if (!has(response_type)) {
+    return(FALSE)
+  }
+
+  return(
+    is_binary_response(response_type) || is_categorical_response(response_type)
+  )
 }
 
 # Randomness --------------------------------------------------

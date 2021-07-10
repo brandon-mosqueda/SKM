@@ -221,7 +221,7 @@ test_that("is_empty_dir", {
   temp_dir <- file.path(temp_dir, "child_dir")
   expect_identical(is_empty_dir(temp_dir), TRUE)
 
-  file.create(file.path(temp_dir, "hola.txt"))
+  file.create(file.path(temp_dir, "hello.txt"))
   expect_identical(is_empty_dir(temp_dir), FALSE)
 })
 
@@ -322,6 +322,23 @@ test_that("is_empty", {
   expect_identical(is_empty(data.frame()), TRUE)
 })
 
+test_that("has", {
+  expect_identical(has(NA), FALSE)
+  expect_identical(has(NA, NA), FALSE)
+  expect_identical(has(NA, NULL), FALSE)
+
+  expect_identical(has(NULL), FALSE)
+  expect_identical(has(NULL, NULL), FALSE)
+  expect_identical(has(NULL, NA), FALSE)
+  expect_identical(has(NA, NULL, iris), FALSE)
+
+  expect_identical(has(1), TRUE)
+  expect_identical(has(FALSE), TRUE)
+  expect_identical(has(0), TRUE)
+  expect_identical(has("A"), TRUE)
+  expect_identical(has(iris, mtcars, 2, FALSE), TRUE)
+})
+
 test_that("nonull", {
   expect_identical(nonull(NULL, 2, NULL), 2)
   expect_identical(nonull(NA, 2, NULL), as.logical(NA))
@@ -340,4 +357,236 @@ test_that("char_at", {
   expect_identical(char_at("abcdefg", -15), "")
   expect_identical(char_at(NA), as.character(NA))
   expect_identical(char_at(NULL), character(0))
+  expect_identical(char_at(334, 3), "4")
+  expect_identical(char_at(FALSE, 2), "A")
+})
+
+test_that("str_join", {
+  expect_identical(str_join("A", "B"), "AB")
+  expect_identical(str_join(c("A", "B"), c("C", "D")), c("AC", "BD"))
+  expect_identical(str_join(c("A", NA), c("C", "D")), c("AC", NA))
+  expect_identical(str_join(c("A", "B"), c("C", NA)), c("AC", NA))
+  expect_identical(str_join(c("A", NA), c("C", NA)), c("AC", NA))
+  expect_identical(str_join(NA, NA), as.character(NA))
+  expect_identical(str_join(NULL, NULL), character(0))
+  expect_identical(str_join("A", NULL), "A")
+  expect_identical(str_join(123, "AB"), "123AB")
+  expect_identical(str_join(123, NA), as.character(NA))
+})
+
+test_that("get_tabs", {
+  expect_identical(get_tabs(0), "")
+  expect_identical(get_tabs(1), "\t")
+  expect_identical(get_tabs(2), "\t\t")
+  expect_identical(get_tabs(3), "\t\t\t")
+  expect_identical(get_tabs(4), "\t\t\t\t")
+})
+
+test_that("get_response", {
+  expect_identical(get_response(y ~ x), "y")
+  expect_identical(get_response(Species ~ ., data = iris), "Species")
+})
+
+test_that("replace_by_regex", {
+  expect_identical(replace_by_regex("hello", "AZ", "el"), "hAZlo")
+  expect_identical(replace_by_regex(NA, "ha", "ha"), as.character(NA))
+  expect_identical(replace_by_regex("hello", NA, "h"), as.character(NA))
+  expect_identical(replace_by_regex("hello", "AZ", NA), as.character(NA))
+  expect_identical(replace_by_regex(NULL, "AZ", "h"), character(0))
+  expect_identical(
+    replace_by_regex("he5llo 56 wo5rld", "X", "[0-9]"),
+    "heXllo XX woXrld"
+  )
+})
+
+test_that("regex_match", {
+  expect_identical(regex_match("hello", "o"), "o")
+  expect_identical(regex_match("hello 56 wo65rld", "[0-9]{2}"), "56")
+  expect_identical(
+    regex_match("hello 56 wo65rld", "[0-9]{3}"),
+    as.character(NA)
+  )
+
+  expect_identical(
+    regex_match("Jackson@oznocdo.zm", ".+(?=@)"),
+    "Jackson"
+  )
+
+  expect_identical(
+    regex_match("Jackson@oznocdo.zm", "(?<=@).+"),
+    "oznocdo.zm"
+  )
+
+  expect_identical(regex_match(NULL, "."), as.character(NA))
+  expect_identical(regex_match(NA, "."), as.character(NA))
+  expect_identical(regex_match(659841, ".98."), "5984")
+})
+
+test_that("regex_contains", {
+  expect_identical(regex_contains("hello", "el"), TRUE)
+  expect_identical(regex_contains("hello", "a"), FALSE)
+  expect_identical(regex_contains("jackson@gmail.com", ".+@.+"), TRUE)
+  expect_identical(regex_contains(65487, "^65..."), TRUE)
+  expect_identical(regex_contains("nadaa", "^nada$"), FALSE)
+  expect_identical(regex_contains("nadaa", "^nadaa$"), TRUE)
+  expect_identical(regex_contains(NA, "^nadaa$"), FALSE)
+  expect_identical(regex_contains("nadaa", NA), FALSE)
+  expect_identical(regex_contains(NA, NA), FALSE)
+  expect_identical(regex_contains(NULL, "s"), FALSE)
+  expect_identical(regex_contains("NA", NULL), FALSE)
+})
+
+test_that("has_str", {
+  expect_identical(has_str("hola", "ol"), TRUE)
+  expect_identical(has_str("hola", ".l."), FALSE)
+  expect_identical(has_str(NA, "l"), FALSE)
+  expect_identical(has_str("hola", NA), FALSE)
+  expect_identical(has_str(NA, NA), FALSE)
+
+  expect_identical(has_str(NULL, "l"), FALSE)
+  expect_identical(has_str("hola", NULL), FALSE)
+  expect_identical(has_str(NULL, NULL), FALSE)
+})
+
+test_that("set_collapse", {
+  expect_identical(set_collapse("hola"), "'hola'")
+  expect_identical(set_collapse(FALSE), "'FALSE'")
+  expect_identical(set_collapse(23), "'23'")
+  expect_identical(set_collapse(NA), "'NA'")
+  expect_identical(set_collapse(NULL), "")
+
+  expect_identical(set_collapse(c("hello", "world")), "'hello', 'world'")
+  expect_identical(set_collapse(c("NA", "world")), "'NA', 'world'")
+})
+
+test_that("is_number", {
+  expect_identical(is_number(1), TRUE)
+  expect_identical(is_number(-3), TRUE)
+  expect_identical(is_number(Inf), TRUE)
+  expect_identical(is_number(1e-10), TRUE)
+  expect_identical(is_number(FALSE), TRUE)
+  expect_identical(is_number(TRUE), TRUE)
+  expect_identical(is_number("565.566"), TRUE)
+  expect_identical(all(is_number(c("565.566", "3"))), TRUE)
+
+  expect_identical(is_number("hello"), FALSE)
+  expect_identical(is_number("565.566.5"), FALSE)
+  expect_identical(is_number(iris), FALSE)
+  expect_identical(is_number(iris$Species), FALSE)
+  expect_identical(is_number(NA), FALSE)
+  expect_identical(is_number(NULL), FALSE)
+})
+
+test_that("is_int", {
+  expect_identical(is_int(56), TRUE)
+  expect_identical(all(is_int(c(56, 0))), TRUE)
+  expect_identical(is_int(56.0), TRUE)
+
+  expect_identical(is_int(c(56, 53.2)), c(TRUE, FALSE))
+
+  expect_identical(is_int("56.0"), FALSE)
+  expect_identical(is_int(c("56", "25")), c(FALSE, FALSE))
+  expect_identical(is_int(Inf), FALSE)
+  expect_identical(is_int(56.3), FALSE)
+})
+
+test_that("is_discrete", {
+  expect_identical(is_discrete(2), TRUE)
+  expect_identical(is_discrete(2.0), TRUE)
+  expect_identical(is_discrete(mtcars$cyl), TRUE)
+
+  expect_identical(is_discrete("2.6"), FALSE)
+  expect_identical(is_discrete(NA), FALSE)
+  expect_identical(is_discrete(FALSE), FALSE)
+  expect_identical(is_discrete(iris$Species), FALSE)
+  expect_identical(is_discrete(NULL), FALSE)
+})
+
+test_that("get_response_type", {
+  expect_identical(get_response_type(1), RESPONSE_TYPES$DISCRETE)
+  expect_identical(get_response_type(1.6), RESPONSE_TYPES$CONTINUOUS)
+  expect_identical(
+    get_response_type(c(1, 2, 3, 4.01)),
+    RESPONSE_TYPES$CONTINUOUS
+  )
+  expect_identical(
+    get_response_type(c(0, 1, 2, 3, 4)),
+    RESPONSE_TYPES$DISCRETE
+  )
+  expect_identical(
+    get_response_type(c(0, 1, 2, 3, 4, -1)),
+    RESPONSE_TYPES$CONTINUOUS
+  )
+  expect_identical(get_response_type(FALSE), RESPONSE_TYPES$CATEGORICAL)
+  expect_identical(get_response_type("F"), RESPONSE_TYPES$CATEGORICAL)
+  expect_identical(get_response_type(iris$Species), RESPONSE_TYPES$CATEGORICAL)
+
+  expect_identical(
+    get_response_type(c(FALSE, FALSE, TRUE)),
+    RESPONSE_TYPES$BINARY
+  )
+  expect_identical(
+    get_response_type(c("A", "B")),
+    RESPONSE_TYPES$BINARY
+  )
+
+  expect_identical(get_response_type(NA), RESPONSE_TYPES$CATEGORICAL)
+  expect_identical(get_response_type(as.numeric(NA)), RESPONSE_TYPES$CONTINUOUS)
+
+  expect_error(get_response_type(NULL))
+})
+
+test_that("is response type functions", {
+  expect_identical(
+    is_continuous_response(RESPONSE_TYPES$CONTINUOUS),
+    TRUE
+  )
+  expect_identical(
+    is_discrete_response(RESPONSE_TYPES$DISCRETE),
+    TRUE
+  )
+  expect_identical(
+    is_categorical_response(RESPONSE_TYPES$CATEGORICAL),
+    TRUE
+  )
+  expect_identical(
+    is_binary_response(RESPONSE_TYPES$BINARY),
+    TRUE
+  )
+
+  expect_identical(
+    is_numeric_response(RESPONSE_TYPES$DISCRETE),
+    TRUE
+  )
+  expect_identical(
+    is_numeric_response(RESPONSE_TYPES$CONTINUOUS),
+    TRUE
+  )
+
+  expect_identical(
+    is_class_response(RESPONSE_TYPES$BINARY),
+    TRUE
+  )
+  expect_identical(
+    is_class_response(RESPONSE_TYPES$CATEGORICAL),
+    TRUE
+  )
+
+  expect_identical(
+    is_class_response(RESPONSE_TYPES$CONTINUOUS),
+    FALSE
+  )
+  expect_identical(
+    is_class_response(RESPONSE_TYPES$DISCRETE),
+    FALSE
+  )
+
+  expect_identical(
+    is_numeric_response(RESPONSE_TYPES$BINARY),
+    FALSE
+  )
+  expect_identical(
+    is_numeric_response(RESPONSE_TYPES$CATEGORICAL),
+    FALSE
+  )
 })

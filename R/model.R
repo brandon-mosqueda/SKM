@@ -93,3 +93,8 @@ Model <- R6Class(
     predict = not_implemented_function
   )
 )
+
+#' @export
+predict.Model <- function(model, x) {
+  return(model$predict(x))
+}
