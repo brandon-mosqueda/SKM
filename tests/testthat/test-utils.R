@@ -347,6 +347,16 @@ test_that("nonull", {
   expect_identical(nonull(FALSE, 5, NULL, NA, NULL), FALSE)
 })
 
+test_that("echo", {
+  expect_output(echo("hello"), "hello")
+  expect_output(echo("hel%slo", "world"), "helworldlo")
+  expect_output(echo("hel%ilo", 5), "hel5lo")
+  expect_output(echo("hel%.2flo", pi), "3.14")
+  expect_output(echo(NA), "NA")
+  expect_output(echo(NULL), "NULL")
+  expect_output(echo(" fold %s/%s ", 5, 10), " fold 5/10 ")
+})
+
 test_that("char_at", {
   expect_identical(char_at("abcdefg"), "a")
   expect_identical(char_at("abcdefg", 2), "b")

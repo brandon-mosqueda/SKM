@@ -274,6 +274,16 @@ nonull <- function(...) {
 
 # Text manipulation --------------------------------------------------
 
+echo <- function(format, ..., end = "\n") {
+  if (is.null(format)) {
+    format <- "NULL"
+  } else if (is.na(format)) {
+    format <- "NA"
+  }
+
+  invisible(cat(sprintf(format, ...), end))
+}
+
 char_at <- function(string, index = 1) {
   if (index < 0) {
     index <- nchar(string) + index + 1
