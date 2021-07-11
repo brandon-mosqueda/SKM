@@ -22,7 +22,7 @@ Model <- R6Class(
     rows_proportion = NULL,
     arc_cosine_deep = NULL,
     validate_params = NULL,
-    silently = NULL,
+    verbose = NULL,
 
     # Constructor --------------------------------------------------
 
@@ -36,7 +36,7 @@ Model <- R6Class(
                           coef0,
                           rows_proportion,
                           arc_cosine_deep,
-                          silently) {
+                          verbose) {
       self$x <- x
       self$y <- y
       self$name <- name
@@ -47,7 +47,7 @@ Model <- R6Class(
       self$coef0 <- coef0
       self$rows_proportion <- rows_proportion
       self$arc_cosine_deep <- arc_cosine_deep
-      self$silently <- silently
+      self$verbose <- verbose
     },
 
     # Methods --------------------------------------------------
@@ -57,11 +57,9 @@ Model <- R6Class(
       private$prepare_y()
       private$prepare_others()
 
-      if (self$silently) {
-        hush(private$train(), all = TRUE)
-      } else {
-        private$train()
-      }
+      wrapper_function <- if (self$verbose) hush else invisible
+
+      wrapper_function(private$train())
     }
   ),
   private = list(

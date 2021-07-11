@@ -23,7 +23,7 @@ sk_svm <- function(x, y,
                    shrinking = TRUE,
                    fitted = TRUE,
                    validate_params = TRUE,
-                   silently = FALSE) {
+                   verbose = FALSE) {
   expect_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
@@ -48,7 +48,7 @@ sk_svm <- function(x, y,
       epsilon = epsilon,
       shrinking = shrinking,
       fitted = fitted,
-      silently = silently
+      verbose = verbose
     )
   }
 
@@ -73,7 +73,7 @@ sk_svm <- function(x, y,
     epsilon = epsilon,
     shrinking = shrinking,
     fitted = fitted,
-    silently = silently
+    verbose = verbose
   )
 
   model$fit()

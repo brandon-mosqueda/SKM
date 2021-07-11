@@ -75,7 +75,7 @@ validate_base_params <- function(x,
                                  degree,
                                  gamma,
                                  coef0,
-                                 silently) {
+                                 verbose) {
   validate_xy(x, y, accept_multivariate = accept_multivariate)
 
   assert_sparse_kernel(
@@ -87,7 +87,7 @@ validate_base_params <- function(x,
     coef0 = coef0
   )
 
-  assert_logical(silently, any.missing = FALSE, len = 1)
+  assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
 validate_xy <- function(x, y, accept_multivariate) {
@@ -171,7 +171,7 @@ validate_sk_svm <- function(x,
                             probability,
                             fitted,
                             na_action,
-                            silently) {
+                            verbose) {
   validate_base_params(
     x = x,
     y = y,
@@ -182,7 +182,7 @@ validate_sk_svm <- function(x,
     degree = degree,
     gamma = gamma,
     coef0 = coef0,
-    silently = silently
+    verbose = verbose
   )
 
   assert_logical(scale, any.missing = FALSE)
