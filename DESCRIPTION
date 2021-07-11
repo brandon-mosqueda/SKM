@@ -26,6 +26,7 @@ Collate:
     'globals.R'
     'utils.R'
     'kernels.R'
+    'metrics.R'
     'model_helpers.R'
     'model.R'
     'validator.R'
