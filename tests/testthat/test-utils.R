@@ -297,6 +297,16 @@ test_that("get_length", {
   expect_identical(get_length(NULL), 0L)
 })
 
+test_that("get_records", {
+  expect_identical(get_records(iris, 10:20), iris[10:20, ])
+  expect_identical(get_records(100:200, 1:10), 100:109)
+  expect_identical(get_records(NULL, 10), NULL)
+  expect_identical(get_records(NA, 10), NA)
+  expect_identical(get_records(c("A", "B", "C"), 2), "B")
+  expect_identical(get_records(mtcars, -1), mtcars[-1, ])
+  expect_identical(get_records(c(TRUE, FALSE, TRUE), -3), c(TRUE, FALSE))
+})
+
 test_that("is_square", {
   expect_identical(is_square(iris), FALSE)
   expect_identical(is_square(1:100), FALSE)

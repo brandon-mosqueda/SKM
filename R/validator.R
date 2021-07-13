@@ -66,6 +66,19 @@ assert_subset_string <- function(x,
 
 # Helpers --------------------------------------------------
 
+assert_valid_tune_cv <- function(tune_cv_type,
+                                 tune_folds_number,
+                                 tune_testing_proportion) {
+  tune_cv_type <- tolower(tune_cv_type)
+  assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE)
+  min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
+  assert_number(tune_folds_number, finite = TRUE, lower = min_folds_number)
+
+  if (tune_cv_type == "random") {
+    assert_number(tune_testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+  }
+}
+
 validate_base_params <- function(x,
                                  y,
                                  accept_multivariate,
@@ -75,6 +88,9 @@ validate_base_params <- function(x,
                                  degree,
                                  gamma,
                                  coef0,
+                                 tune_cv_type,
+                                 tune_folds_number,
+                                 tune_testing_proportion,
                                  verbose) {
   validate_xy(x, y, accept_multivariate = accept_multivariate)
 
@@ -85,6 +101,12 @@ validate_base_params <- function(x,
     degree = degree,
     gamma = gamma,
     coef0 = coef0
+  )
+
+  assert_valid_tune_cv(
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion
   )
 
   assert_logical(verbose, any.missing = FALSE, len = 1)
@@ -129,9 +151,9 @@ assert_sparse_kernel <- function(kernel,
 
     assert_number(rows_proportion, lower = 0.001, upper = 1)
 
-    assert_number(degree, finite = TRUE)
-    assert_number(gamma, finite = TRUE)
-    assert_number(coef0, finite = TRUE)
+    assert_numeric(degree, finite = TRUE, any.missing = FALSE)
+    assert_numeric(gamma, finite = TRUE, any.missing = FALSE)
+    assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
   }
 }
 
@@ -150,18 +172,25 @@ assert_svm_kernel <- function(kernel) {
 
 validate_sk_svm <- function(x,
                             y,
+
                             kernel,
                             degree,
                             gamma,
                             coef0,
                             rows_proportion,
                             arc_cosine_deep,
-                            scale,
+
                             svm_kernel,
                             svm_degree,
                             svm_gamma,
                             svm_coef0,
                             cost,
+
+                            tune_cv_type,
+                            tune_folds_number,
+                            tune_testing_proportion,
+
+                            scale,
                             class_weights,
                             cache_size,
                             tolerance,
@@ -182,16 +211,19 @@ validate_sk_svm <- function(x,
     degree = degree,
     gamma = gamma,
     coef0 = coef0,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
     verbose = verbose
   )
 
   assert_logical(scale, any.missing = FALSE)
 
   assert_svm_kernel(svm_kernel)
-  assert_number(svm_degree, finite = TRUE)
-  assert_number(svm_gamma, finite = TRUE)
-  assert_number(svm_coef0, finite = TRUE)
-  assert_number(cost, finite = TRUE)
+  assert_numeric(svm_degree, finite = TRUE, any.missing = FALSE)
+  assert_numeric(svm_gamma, finite = TRUE, any.missing = FALSE)
+  assert_numeric(svm_coef0, finite = TRUE, any.missing = FALSE)
+  assert_numeric(cost, finite = TRUE, any.missing = FALSE)
 
   assert_numeric(
     class_weights,

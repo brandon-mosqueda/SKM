@@ -184,8 +184,8 @@ lunique <- function(x) {
   return(length(unique(x)))
 }
 
-has_dims <- function(x, dim_num = 2) {
-  return(length(dim(x)) == dim_num)
+has_dims <- function(x) {
+  return(!is.null(dim(x)))
 }
 
 close_all_devices <- function() {
@@ -205,6 +205,14 @@ stail <- function(x, n = 5) {
 
 get_length <- function(x) {
   return(if (is.null(dim(x))) length(x) else nrow(x))
+}
+
+get_records <- function(x, indices) {
+  if (has_dims(x)) {
+    return(x[indices, , drop = FALSE])
+  } else {
+    return(x[indices])
+  }
 }
 
 #' Hide code output

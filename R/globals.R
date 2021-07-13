@@ -38,3 +38,7 @@ RESPONSE_TYPES <- list(
   BINARY = 3,
   CATEGORICAL = 4
 )
+
+CV_TYPES <- c("K_fold", "Random")
+
+TUNE_CV_TYPES <- c("K_fold", "Random")
