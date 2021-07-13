@@ -38,7 +38,14 @@ SVMModel <- R6Class(
                           shrinking,
                           fitted,
                           na_action) {
-      super$initialize(..., name = "SVM", is_multivariate = FALSE)
+      tunable_hyperparams <- c("svm_degree", "svm_gamma", "svm_coef0", "cost")
+
+      super$initialize(
+        ...,
+        name = "SVM",
+        is_multivariate = FALSE,
+        tunable_hyperparams = tunable_hyperparams
+      )
 
       self$scale <- scale
       self$svm_kernel <- svm_kernel
@@ -85,24 +92,26 @@ SVMModel <- R6Class(
   private = list(
     # Methods --------------------------------------------------
 
-    train = function() {
-      self$fitted_model <- svm(
-        x = self$x,
-        y = self$y,
-        scale = self$scale,
-        kernel = self$svm_kernel,
-        degree = self$svm_degree,
-        gamma = self$svm_gamma,
-        coef0 = self$svm_coef0,
-        cost = self$cost,
-        class_weights = self$class_weights,
-        cache_size = self$cache_size,
-        tolerance = self$tolerance,
-        epsilon = self$epsilon,
-        shrinking = self$shrinking,
+    train = function(params, hyperparams) {
+      model <- svm(
+        x = params$x,
+        y = params$y,
+        scale = params$scale,
+        kernel = params$svm_kernel,
+        degree = params$svm_degree,
+        gamma = params$svm_gamma,
+        coef0 = params$svm_coef0,
+        cost = params$cost,
+        class_weights = params$class_weights,
+        cache_size = params$cache_size,
+        tolerance = params$tolerance,
+        epsilon = params$epsilon,
+        shrinking = params$shrinking,
         probability = TRUE,
-        fitted = self$fitted
+        fitted = params$fitted
       )
+
+      return(model)
     }
   )
 )

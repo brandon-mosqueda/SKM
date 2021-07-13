@@ -18,6 +18,18 @@ SPARSE_KERNELS <- c(
 
 ARC_COSINE_KERNELS <- c("Arc_cosine", "Sparse_Arc_cosine")
 
+KERNELS_WITH_DEGREE <- c("Polynomial", "Sparse_Polynomial")
+KERNELS_WITH_GAMMA <- c(
+  "Polynomial", "Sparse_Polynomial",
+  "Sigmoid", "Sparse_Sigmoid",
+  "Gaussian", "Sparse_Gaussian",
+  "Exponential", "Sparse_Exponential"
+)
+KERNELS_WITH_COEF0 <- c(
+  "Polynomial", "Sparse_Polynomial",
+  "Sigmoid", "Sparse_Sigmoid"
+)
+
 SVM_KERNELS <- c("linear", "polynomial", "radial", "sigmoid")
 
 RESPONSE_TYPES <- list(

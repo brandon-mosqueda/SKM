@@ -64,3 +64,60 @@ prepare_x <- function(x,
 
   return(x)
 }
+
+prepare_degree <- function(kernel, degree) {
+  kernel <- tolower(kernel)
+
+  if (!(kernel %in% tolower(KERNELS_WITH_DEGREE))) {
+    return(NULL)
+  }
+
+  return(degree)
+}
+
+prepare_gamma <- function(kernel, gamma) {
+  kernel <- tolower(kernel)
+
+  if (!(kernel %in% tolower(KERNELS_WITH_GAMMA))) {
+    return(NULL)
+  }
+
+  return(gamma)
+}
+
+prepare_coef0 <- function(kernel, coef0) {
+  kernel <- tolower(kernel)
+
+  if (!(kernel %in% tolower(KERNELS_WITH_COEF0))) {
+    return(NULL)
+  }
+
+  return(coef0)
+}
+
+get_cross_validator <- function(type,
+                                records_number,
+                                folds_number,
+                                testing_proportion) {
+  type <- tolower(type)
+
+  validator <- NULL
+  if (type == "k_fold") {
+    validator <- KFoldCV
+  } else if (type == "random") {
+    validator <- RandomCV
+  } else {
+    stop(echo(
+      "{%s} is not a valid type of cross validation",
+      set_collapse(type)
+    ))
+  }
+
+  instance <- validator$new(
+    folds_number = folds_number,
+    records_number = records_number,
+    testing_proportion = testing_proportion
+  )
+
+  return(instance)
+}
