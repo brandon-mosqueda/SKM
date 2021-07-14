@@ -29,16 +29,25 @@ SVMModel <- R6Class(
         is_multivariate = FALSE
       )
 
-      self$hyperparams$svm_degree <- svm_degree
-      self$hyperparams$svm_gamma <- svm_gamma
-      self$hyperparams$svm_coef0 <- svm_coef0
+      self$hyperparams$svm_degree <- nonull(
+        prepare_degree(svm_kernel, svm_degree),
+        svm_degree[1]
+      )
+      self$hyperparams$svm_gamma <- nonull(
+        prepare_gamma(svm_kernel, svm_gamma),
+        svm_gamma[1]
+      )
+      self$hyperparams$svm_coef0 <- nonull(
+        prepare_coef0(svm_kernel, svm_coef0),
+        svm_coef0[1]
+      )
       self$hyperparams$cost <- cost
 
       if (!is.null(self$other_params$kernel) &&
           !has_str(svm_kernel, "linear")) {
         warning(
           "svm_kernel changed to {'linear'} due to you are using {",
-          set_collapse(self$kernel),
+          set_collapse(self$other_params$kernel),
           "} kernel"
         )
         svm_kernel <- "linear"

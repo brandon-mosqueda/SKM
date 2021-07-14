@@ -66,9 +66,7 @@ prepare_x <- function(x,
 }
 
 prepare_degree <- function(kernel, degree) {
-  kernel <- tolower(kernel)
-
-  if (!(kernel %in% tolower(KERNELS_WITH_DEGREE))) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_DEGREE))) {
     return(NULL)
   }
 
@@ -76,9 +74,7 @@ prepare_degree <- function(kernel, degree) {
 }
 
 prepare_gamma <- function(kernel, gamma) {
-  kernel <- tolower(kernel)
-
-  if (!(kernel %in% tolower(KERNELS_WITH_GAMMA))) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_GAMMA))) {
     return(NULL)
   }
 
@@ -86,9 +82,7 @@ prepare_gamma <- function(kernel, gamma) {
 }
 
 prepare_coef0 <- function(kernel, coef0) {
-  kernel <- tolower(kernel)
-
-  if (!(kernel %in% tolower(KERNELS_WITH_COEF0))) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_COEF0))) {
     return(NULL)
   }
 

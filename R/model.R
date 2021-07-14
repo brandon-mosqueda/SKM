@@ -76,6 +76,7 @@ Model <- R6Class(
       wrapper_function(private$tune())
 
       wrapper_function({
+        echo("*** Fitting the model ***")
         self$fitted_model <- private$train(
           x = self$x,
           y = self$y,

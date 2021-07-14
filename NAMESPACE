@@ -3,6 +3,7 @@
 S3method(predict,Model)
 export(cholesky)
 export(classAgreement)
+export(confusion_matrix)
 import(checkmate)
 import(dplyr)
 importFrom(R6,R6Class)
