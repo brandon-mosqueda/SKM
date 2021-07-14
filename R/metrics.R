@@ -31,66 +31,142 @@ classAgreement <- function(tab, match.names = FALSE) {
   ))
 }
 
+#' @export
+confusion_matrix <- function(observed, predicted, all_levels = NULL) {
+  observed <- as.factor(observed)
+  predicted <- as.factor(predicted)
+
+  if (is.null(all_levels)) {
+    all_levels <- union(levels(observed), levels(predicted))
+  }
+
+  levels(observed) <- all_levels
+  levels(predicted) <- all_levels
+
+  return(table(observed, predicted))
+}
+
 #' @title Kappa coefficient
-kappa_coeff <- function(actual, predicted) {
-  return(classAgreement(table(actual, predicted))$kappa)
+kappa_coeff <- function(observed, predicted, all_levels = NULL) {
+  return(classAgreement(confusion_matrix(observed, predicted, all_levels))$kappa)
 }
 
 #' @title Proportion of correctly classified cases
-pccc <- function(actual, predicted, na.rm = TRUE) {
-  return(mean(actual == predicted, na.rm = na.rm))
+pccc <- function(observed, predicted, na.rm = TRUE) {
+  if (length(observed) != length(predicted)) {
+    stop("observed and predicted must have the same length")
+  }
+
+  return(mean(observed == predicted, na.rm = na.rm))
 }
 
 #' @title Brier score
-brier <- function(actual, probabilities) {
-  if (all(is.na(actual))) {
-    return(NA)
+brier_score <- function(observed, probabilities) {
+  if (length(observed) != nrow(probabilities)) {
+    stop("observed and probabilities must have the same number of records")
+  } else if (is.null(ncol(probabilities)) || ncol(probabilities) < 2) {
+    stop("probabilities must have at least two columns (classes)")
+  } else if (is.null(colnames(probabilities))) {
+    stop("probabilities must have the classes' names as columns names")
   }
-  actual <- factor(actual, levels = colnames(probabilities))
-  ActualDummy <- model.matrix(~ 0 + actual)
 
-  return(mean(rowSums((probabilities - ActualDummy)^2)))
+  if (all(is.na(observed))) {
+    return(NaN)
+  }
+  observed <- factor(observed, levels = colnames(probabilities))
+  observed_dummy <- model.matrix(~ 0 + observed)
+
+  return(mean(rowSums((probabilities - observed_dummy)^2)))
 }
 
 # For continuous data --------------------------------------------------
 
-#' @title Mean Square Error
-mse <- function(actual, predicted, na.rm = TRUE) {
-  return(mean((actual - predicted)^2, na.rm = na.rm))
+#' @title Mean Squared Error
+mse <- function(observed, predicted, na.rm = TRUE) {
+  if (length(observed) != length(predicted)) {
+    stop("observed and predicted must have the same length")
+  }
+
+  return(mean((as.numeric(observed) - as.numeric(predicted))^2, na.rm = na.rm))
 }
 
-#' @title Root Mean Square Error
-rmse <- function(actual, predicted, na.rm = TRUE) {
-  return(sqrt(mse(actual, predicted, na.rm = na.rm)))
+#' @title Root Mean Squared Error
+rmse <- function(observed, predicted, na.rm = TRUE) {
+  return(sqrt(mse(observed, predicted, na.rm = na.rm)))
+}
+
+#' @title Normalize Root Mean Squared Error
+nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
+  rmse_value <- rmse(observed, predicted)
+  if (is.nan(rmse_value) || is.na(rmse_value)) {
+    return(rmse_value)
+  }
+
+  type <- tolower(type)
+
+  divisor <- NULL
+
+  if (type == "sd") {
+    divisor <- sd(observed, na.rm = na.rm)
+  } else if (type == "mean") {
+    divisor <- mean(observed, na.rm = na.rm)
+  } else if (type == "maxmin" || type == "range") {
+    divisor <- diff(range(observed, na.rm = na.rm))
+  } else if (type == "iq") {
+    divisor <- diff(quantile(observed, c(0.25, 0.75), na.rm = na.rm))
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of normalization",
+      set_collapse(type)
+    ))
+  }
+
+  result <- rmse_value / divisor
+
+  if (is.infinite(result)) {
+    result <- NaN
+  }
+  result <- as.numeric(result)
+
+  return(result)
 }
 
 #' @title Mean Absolute Error
-mae <- function(actual, predicted, na.rm = TRUE) {
-  return(mean(abs(actual - predicted), na.rm = na.rm))
+mae <- function(observed, predicted, na.rm = TRUE) {
+  if (length(observed) != length(predicted)) {
+    stop("observed and predicted must have the same length")
+  }
+
+  return(mean(abs(observed - predicted), na.rm = na.rm))
 }
 
 #' @title Mean Arctangent Absolute Percentage Error
-maape <- function(actual, predicted, na.rm = TRUE) {
-  return(mean(atan(abs(actual - predicted) / abs(actual)), na.rm = na.rm))
-}
+maape <- function(observed, predicted, na.rm = TRUE) {
+  if (length(observed) != length(predicted)) {
+    stop("observed and predicted must have the same length")
+  } else if (is.null(observed) && is.null(predicted)) {
+    return(NaN)
+  }
 
-#' @title Normalized Root Mean Square Error
-nrmse <- function(actual, predicted, na.rm = TRUE) {
-  return(rmse(actual, predicted, na.rm) / mean(actual, na.rm = na.rm))
-}
-
-#' @title Range Normalized Root Mean Square Error
-rnrmse <- function(observed, predicted, na.rm = TRUE) {
-  return(
-    rmse(observed, predicted, na.rm) /
-    diff(range(observed, na.rm = na.rm))
-  )
+  return(mean(atan(abs(observed - predicted) / abs(observed)), na.rm = na.rm))
 }
 
 spearman <- function(x, y) {
+  if (length(x) != length(y)) {
+    stop("x and y must have the same length")
+  } else if (is.null(x) && is.null(y)) {
+    return(NaN)
+  }
+
   return(cor(x, y, method = "spearman", use = "na.or.complete"))
 }
 
 pearson <- function(x, y) {
+  if (length(x) != length(y)) {
+    stop("x and y must have the same length")
+  } else if (is.null(x) && is.null(y)) {
+    return(NaN)
+  }
+
   return(cor(x, y, method = "pearson", use = "na.or.complete"))
 }
