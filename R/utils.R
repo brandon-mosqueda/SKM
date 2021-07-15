@@ -20,6 +20,7 @@ lm_slope <- function(x, y) {
   return(lm(y ~ x, data = data.frame(x = x, y = y))$coefficients[2])
 }
 
+#' @export
 to_matrix <- function(x, with_intercept = FALSE) {
   if (is.vector(x)) {
     if (is.character(x)) {
@@ -53,6 +54,7 @@ to_matrix <- function(x, with_intercept = FALSE) {
   return(x)
 }
 
+#' @export
 remove_no_variance_cols <- function(x) {
   if (is.data.frame(x)) {
     x <- select_if(x, is.numeric)
@@ -125,8 +127,9 @@ cholesky <- function(x) {
   return(result)
 }
 
-# Get the value that appears more times. If there are more than 1
-# value that appears more times (multimodal), return the lowest value.
+#' Get the value that appears more times. If there are more than 1
+#' value that appears more times (multimodal), return the lowest value.
+#' @export
 mode <- function(x, na.rm = TRUE) {
   use_na <- if (na.rm) "no" else "always"
   ocurrences <- sort(table(x, useNA = use_na), decreasing = TRUE)
@@ -143,25 +146,30 @@ mode <- function(x, na.rm = TRUE) {
 
 # Sysmtem --------------------------------------------------
 
+#' @export
 is_windows_os <- function() {
   return(.Platform$OS.type == "windows")
 }
 
+#' @export
 is_unix_os <- function() {
   return(.Platform$OS.type == "unix")
 }
 
 #' Create a directory if does not exist, always recursively
+#' @export
 mkdir <- function(directory) {
   if (!dir.exists(directory)) {
     dir.create(directory, recursive = TRUE)
   }
 }
 
+#' @export
 rmdir <- function(directory) {
   unlink(directory, recursive = TRUE)
 }
 
+#' @export
 is_empty_dir <- function(directory) {
   if (!dir.exists(directory)) {
     warning("Directory does not exists")
@@ -180,10 +188,12 @@ not_implemented_function <- function() {
   stop("Not implemented function")
 }
 
+#' @export
 lunique <- function(x) {
   return(length(unique(x)))
 }
 
+#' @export
 has_dims <- function(x) {
   return(!is.null(dim(x)))
 }
@@ -192,10 +202,12 @@ close_all_devices <- function() {
   invisible(sapply(dev.list(), dev.off))
 }
 
+#' @export
 shead <- function(x, n = 5) {
   return(x[1:min(n, nrow(x)), 1:min(n, ncol(x))])
 }
 
+#' @export
 stail <- function(x, n = 5) {
   n_rows <- nrow(x)
   n_cols <- ncol(x)
@@ -203,10 +215,12 @@ stail <- function(x, n = 5) {
   return(x[max(1, n_rows - n + 1):n_rows, max(1, n_cols - n + 1):n_cols])
 }
 
+#' @export
 get_length <- function(x) {
   return(if (is.null(dim(x))) length(x) else nrow(x))
 }
 
+#' @export
 get_records <- function(x, indices) {
   if (has_dims(x)) {
     return(x[indices, , drop = FALSE])
@@ -223,6 +237,8 @@ get_records <- function(x, indices) {
 #'
 #' @return If \emph{all} is \code{FALSE}, return whatever the evaluated code
 #'         returns, nothing otherwise.
+#'
+#' @export
 hush <- function(code, all = FALSE) {
   file <- ifelse(is_unix_os(), "/dev/null", "NUL")
 
@@ -247,6 +263,11 @@ hush <- function(code, all = FALSE) {
   }
 }
 
+get_verbose_function <- function(verbose) {
+  return(if (verbose) invisible else hush)
+}
+
+#' @export
 is_square <- function(x) {
   result <- nrow(x) == ncol(x)
   if (identical(result, logical(0))) {
@@ -256,10 +277,12 @@ is_square <- function(x) {
   return(result)
 }
 
+#' @export
 is_empty <- function(x) {
   return(length(x) == 0)
 }
 
+#' @export
 has <- function(...) {
   x <- list(...)
 
@@ -268,6 +291,7 @@ has <- function(...) {
 
 #' @title nonull
 #' @description Get the first value that is not NULL.
+#' @export
 nonull <- function(...) {
   params <- list(...)
 
@@ -282,6 +306,7 @@ nonull <- function(...) {
 
 # Text manipulation --------------------------------------------------
 
+#' @export
 echo <- function(format, ..., end = "\n") {
   if (is.null(format)) {
     format <- "NULL"
@@ -292,6 +317,15 @@ echo <- function(format, ..., end = "\n") {
   invisible(cat(sprintf(format, ...), end))
 }
 
+print_model_time_execution <- function(execution_time) {
+  echo(
+    "*** Model evaluation completed in %s %s ***",
+    round(execution_time, 4),
+    attr(execution_time, "units")
+  )
+}
+
+#' @export
 char_at <- function(string, index = 1) {
   if (index < 0) {
     index <- nchar(string) + index + 1
@@ -300,6 +334,7 @@ char_at <- function(string, index = 1) {
   return(substr(string, index, index))
 }
 
+#' @export
 str_join <- function(string1, string2) {
   joined_strings <- paste0(string1, string2)
 
@@ -326,10 +361,12 @@ get_response <- function(formula, data = NULL) {
   return(trimws(strsplit(response, "\\+")[[1]]))
 }
 
+#' @export
 replace_by_regex <- function(original, str_to_replace, regex) {
   return(gsub(regex, str_to_replace, original))
 }
 
+#' @export
 regex_match <- function(text, regex) {
   if (!has(text, regex)) {
     return(as.character(NA))
@@ -345,10 +382,12 @@ regex_match <- function(text, regex) {
   return(match)
 }
 
+#' @export
 regex_contains <- function(text, regex) {
   return(!is.na(regex_match(text, regex)))
 }
 
+#' @export
 has_str <- function(base_str, substring) {
   if (!has(base_str, substring)) {
     return(FALSE)
@@ -357,12 +396,14 @@ has_str <- function(base_str, substring) {
   return(grepl(substring, base_str, fixed = TRUE))
 }
 
+#' @export
 set_collapse <- function(values) {
   return(paste0(shQuote(values), collapse = ", "))
 }
 
 # Type checks --------------------------------------------------
 
+#' @export
 is_number <- function(x) {
   if (!is.vector(x) || !has(x)) {
     return(FALSE)
@@ -373,6 +414,7 @@ is_number <- function(x) {
   return(!is.na(x))
 }
 
+#' @export
 is_int <- function(x) {
   if (!is.numeric(x)) {
     return(rep(FALSE, length(x)))
@@ -381,6 +423,7 @@ is_int <- function(x) {
   return(is.finite(x) & (x %% 1 == 0))
 }
 
+#' @export
 is_discrete <- function(number) {
   if (all(is.na(number)) || !all(is_int(number), na.rm = TRUE)) {
     return(FALSE)
@@ -466,6 +509,7 @@ is_class_response <- function(response_type) {
 
 # Randomness --------------------------------------------------
 
+#' @export
 get_rand_state <- function() {
   # Using `get0()` here to have `NULL` output in case object doesn't
   # exist. Also using `inherits = FALSE` to get value exactly from
@@ -473,6 +517,7 @@ get_rand_state <- function() {
   get0(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
 }
 
+#' @export
 set_rand_state <- function(state) {
   # Assigning `NULL` state might lead to unwanted consequences
   if (!is.null(state)) {

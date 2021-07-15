@@ -3,6 +3,7 @@
 #' @include model.R
 #' @include validator.R
 
+#' @export
 sk_svm <- function(x, y,
                    kernel = NULL,
                    degree = 3,
@@ -28,7 +29,9 @@ sk_svm <- function(x, y,
                    epsilon = 0.1,
                    shrinking = TRUE,
                    fitted = TRUE,
+
                    validate_params = TRUE,
+                   seed = NULL,
                    verbose = TRUE) {
   expect_logical(validate_params, len = 1, any.missing = FALSE)
 
@@ -61,9 +64,21 @@ sk_svm <- function(x, y,
       epsilon = epsilon,
       shrinking = shrinking,
       fitted = fitted,
+
+      seed = seed,
       verbose = verbose
     )
   }
+
+  old_random_state <- NULL
+  if (!is.null(seed)) {
+    old_random_state <- get_rand_state()
+
+    set.seed(seed)
+  }
+  on.exit(set_rand_state(old_random_state))
+
+  start_time <- Sys.time()
 
   model <- SVMModel$new(
     x = x,
@@ -92,11 +107,16 @@ sk_svm <- function(x, y,
     tolerance = tolerance,
     epsilon = epsilon,
     shrinking = shrinking,
-    fitted = fitted,
-    verbose = verbose
+    fitted = fitted
   )
 
-  model$fit()
+  wrapper_function <- get_verbose_function(verbose)
+  wrapper_function(model$fit())
+
+  end_time <- Sys.time()
+  model$execution_time <- difftime(end_time, start_time)
+
+  wrapper_function(print_model_time_execution(model$execution_time))
 
   return(model)
 }

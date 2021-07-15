@@ -34,6 +34,7 @@ Collate:
     'model.R'
     'random_cross_validator.R'
     'validator.R'
+    'sk_random_forest.R'
     'sk_svm.R'
     'svm_model.R'
     'tuner.R'

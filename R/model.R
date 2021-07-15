@@ -25,7 +25,7 @@ Model <- R6Class(
     x = NULL,
     y = NULL,
     validate_params = NULL,
-    verbose = NULL,
+    execution_time = NULL,
 
     # Constructor --------------------------------------------------
 
@@ -41,8 +41,7 @@ Model <- R6Class(
                           gamma,
                           coef0,
                           rows_proportion,
-                          arc_cosine_deep,
-                          verbose) {
+                          arc_cosine_deep) {
       self$x <- x
       self$y <- y
       self$name <- name
@@ -50,7 +49,6 @@ Model <- R6Class(
       self$tune_folds_number <- tune_folds_number
       self$tune_testing_proportion <- tune_testing_proportion
       self$is_multivariate <- is_multivariate
-      self$verbose <- verbose
 
       self$other_params <- list()
       self$other_params$kernel <- kernel
@@ -71,19 +69,15 @@ Model <- R6Class(
       private$prepare_y()
       private$prepare_others()
 
-      wrapper_function <- if (self$verbose) invisible else hush
+      private$tune()
 
-      wrapper_function(private$tune())
-
-      wrapper_function({
-        echo("*** Fitting the model ***")
-        self$fitted_model <- private$train(
-          x = self$x,
-          y = self$y,
-          hyperparams = self$best_hyperparams,
-          other_params = self$other_params
-        )
-      })
+      echo("*** Fitting the model ***")
+      self$fitted_model <- private$train(
+        x = self$x,
+        y = self$y,
+        hyperparams = self$best_hyperparams,
+        other_params = self$other_params
+      )
     },
     predict = not_implemented_function
 

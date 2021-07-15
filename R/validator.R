@@ -91,6 +91,7 @@ validate_base_params <- function(x,
                                  tune_cv_type,
                                  tune_folds_number,
                                  tune_testing_proportion,
+                                 seed,
                                  verbose) {
   validate_xy(x, y, accept_multivariate = accept_multivariate)
 
@@ -109,6 +110,7 @@ validate_base_params <- function(x,
     tune_testing_proportion = tune_testing_proportion
   )
 
+  assert_number(seed, null.ok = TRUE, na.ok = FALSE, finite = TRUE)
   assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
@@ -200,6 +202,8 @@ validate_sk_svm <- function(x,
                             probability,
                             fitted,
                             na_action,
+
+                            seed,
                             verbose) {
   validate_base_params(
     x = x,
@@ -214,6 +218,7 @@ validate_sk_svm <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    seed = seed,
     verbose = verbose
   )
 
