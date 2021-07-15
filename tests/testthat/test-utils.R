@@ -1,5 +1,7 @@
 set.seed(1)
 
+suppressWarnings(suppressMessages(library(dplyr)))
+
 test_that("to_matrix", {
   categories <- factor(sample(c("A", "B", "C"), 10, replace = TRUE))
 
@@ -82,6 +84,47 @@ test_that("to_matrix", {
     ncols = 7,
     any.missing = FALSE
   )
+})
+
+test_that("to_data_frame", {
+  set.seed(1)
+  categories <- sample(c("A", "B", "C"), 10, replace = TRUE)
+  binaries <- sample(c(TRUE, FALSE), 10, replace = TRUE)
+
+  expect_equal(to_data_frame(1), data.frame(V1 = 1))
+
+  expect_equal(to_data_frame(NA), data.frame(V1 = factor(NA)))
+
+  expect_equal(to_data_frame(1:10), data.frame(V1 = 1:10))
+  expect_equal(to_data_frame(binaries), data.frame(V1 = factor(binaries)))
+
+  expect_equal(to_data_frame(categories), data.frame(x = factor(categories)))
+  expect_equal(
+    to_data_frame(factor(categories)),
+    data.frame(x = factor(categories))
+  )
+
+  expect_equal(
+    to_data_frame(matrix(1:10, 2, 5)),
+    as.data.frame(matrix(1:10, 2, 5))
+  )
+
+  expect_equal(to_data_frame(iris), iris)
+
+  temp <- iris %>% mutate(Species = as.character(Species))
+  expect_equal(to_data_frame(temp), iris)
+
+  diverse_data <- data.frame(
+    a = rnorm(10),
+    b = rpois(10, 5),
+    c = categories,
+    d = factor(categories),
+    e = binaries
+  )
+  temp <- diverse_data
+  temp$c <- factor(temp$c)
+  temp$e <- factor(temp$e)
+  expect_equal(to_data_frame(diverse_data), temp)
 })
 
 test_that("remove_no_variance_cols", {

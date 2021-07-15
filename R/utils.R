@@ -55,6 +55,23 @@ to_matrix <- function(x, with_intercept = FALSE) {
 }
 
 #' @export
+to_data_frame <- function(x) {
+  if (is.vector(x)) {
+    if (is.character(x)) {
+      x <- factor(x)
+    } else {
+      x <- t(t(x))
+    }
+  }
+
+  x <- as.data.frame(x)
+
+  x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
+
+  return(x)
+}
+
+#' @export
 remove_no_variance_cols <- function(x) {
   if (is.data.frame(x)) {
     x <- select_if(x, is.numeric)

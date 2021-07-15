@@ -1,6 +1,6 @@
 Package: SKM
 Title: Sparse Kernels Methods
-Version: 0.0.0.9000
+Version: 1.0
 Authors@R: c(person(
               given = "Osval Antonio",
               family = "Montesinos López",
@@ -22,7 +22,13 @@ RoxygenNote: 7.1.1.9001
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-Collate: 
+Imports:
+    R6,
+    randomForestSRC,
+    e1071,
+    dplyr,
+    checkmate
+Collate:
     'globals.R'
     'utils.R'
     'cross_validator.R'
@@ -39,3 +45,5 @@ Collate:
     'sk_svm.R'
     'svm_model.R'
     'tuner.R'
+Author: Osval Antonio Montesinos López [aut],
+        Brandon Alejandro Mosqueda González [aut]
