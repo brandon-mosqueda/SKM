@@ -58,14 +58,41 @@ SVMModel <- R6Class(
       self$other_params$epsilon <- epsilon
       self$other_params$shrinking <- shrinking
       self$other_params$fitted <- fitted
+    }
+  ),
+  private = list(
+    # Methods --------------------------------------------------
+
+    train_univariate = function(x, y, hyperparams, other_params) {
+      model <- svm(
+        x = x,
+        y = y,
+
+        degree = hyperparams$svm_degree,
+        gamma = hyperparams$svm_gamma,
+        coef0 = hyperparams$svm_coef0,
+        cost = hyperparams$cost,
+
+        scale = other_params$scale,
+        kernel = other_params$svm_kernel,
+        class_weights = other_params$class_weights,
+        cache_size = other_params$cache_size,
+        tolerance = other_params$tolerance,
+        epsilon = other_params$epsilon,
+        shrinking = other_params$shrinking,
+        probability = TRUE,
+        fitted = other_params$fitted
+      )
+
+      return(model)
     },
-    predict = function(model,
-                       x,
-                       responses,
-                       is_multivariate,
-                       other_params,
-                       hyperparams,
-                       prepare_x = TRUE) {
+    predict_univariate = function(model,
+                                  x,
+                                  responses,
+                                  is_multivariate,
+                                  other_params,
+                                  hyperparams,
+                                  prepare_x = TRUE) {
       if (prepare_x) {
         x <- prepare_x(
           x = x,
@@ -94,31 +121,6 @@ SVMModel <- R6Class(
       }
 
       return(predicted)
-    }
-  ),
-  private = list(
-    # Methods --------------------------------------------------
-
-    train = function(x, y, hyperparams, other_params) {
-      model <- svm(
-        x = x,
-        y = y,
-        scale = other_params$scale,
-        kernel = other_params$svm_kernel,
-        degree = hyperparams$svm_degree,
-        gamma = hyperparams$svm_gamma,
-        coef0 = hyperparams$svm_coef0,
-        cost = hyperparams$cost,
-        class_weights = other_params$class_weights,
-        cache_size = other_params$cache_size,
-        tolerance = other_params$tolerance,
-        epsilon = other_params$epsilon,
-        shrinking = other_params$shrinking,
-        probability = TRUE,
-        fitted = other_params$fitted
-      )
-
-      return(model)
     }
   )
 )

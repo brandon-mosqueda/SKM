@@ -71,7 +71,7 @@ Model <- R6Class(
 
       private$tune()
 
-      echo("*** Fitting the model ***")
+      echo("*** Fitting %s model ***", self$name)
       self$fitted_model <- private$train(
         x = self$x,
         y = self$y,
@@ -79,7 +79,13 @@ Model <- R6Class(
         other_params = self$other_params
       )
     },
-    predict = not_implemented_function
+    predict = function(...) {
+      if (self$is_multivariate) {
+        private$predict_multivariate(...)
+      } else {
+        private$predict_univariate(...)
+      }
+    }
 
   ),
   private = list(
@@ -114,13 +120,20 @@ Model <- R6Class(
     },
     tune = function() {
       if (private$has_to_tune()) {
+        training_function <- private$train_univariate
+        predict_function <- private$predict_univariate
+        if (self$is_multivariate) {
+          training_function <- private$train_multivariate
+          predict_function <- private$predict_multitrain_multivariate
+        }
+
         tuner <- Tuner$new(
           x = self$x,
           y = self$y,
           responses = self$responses,
           is_multivariate = self$is_multivariate,
-          training_function = private$train,
-          predict_function = self$predict,
+          training_function = training_function,
+          predict_function = predict_function,
           hyperparams = self$hyperparams,
           other_params = self$other_params,
           cv_type = self$tune_cv_type,
@@ -136,11 +149,21 @@ Model <- R6Class(
         self$hyperparams_grid <- self$hyperparams
       }
     },
+    train = function(...) {
+      if (self$is_multivariate) {
+        private$train_multivariate(...)
+      } else {
+        private$train_univariate(...)
+      }
+    },
 
     prepare_univariate_y = prepare_univariate_y,
     prepare_multivariate_y = prepare_multivariate_y,
     prepare_others = invisible,
-    train = not_implemented_function
+    train_univariate = not_implemented_function,
+    train_multivariate = not_implemented_function,
+    predict_univariate = not_implemented_function,
+    predict_multivariate = not_implemented_function
   )
 )
 

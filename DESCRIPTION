@@ -33,6 +33,7 @@ Collate:
     'model_helpers.R'
     'model.R'
     'random_cross_validator.R'
+    'random_forest_model.R'
     'validator.R'
     'sk_random_forest.R'
     'sk_svm.R'
