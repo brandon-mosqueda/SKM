@@ -8,7 +8,7 @@ sk_random_forest <- function(x, y,
                              degree = 3,
                              gamma = 1 / ncol(x),
                              coef0 = 0,
-                             rows_proportion = 1,
+                             rows_proportion = 0.8,
                              arc_cosine_deep = 1,
 
                              trees_number = 500,

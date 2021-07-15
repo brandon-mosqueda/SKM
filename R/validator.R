@@ -348,7 +348,7 @@ validate_sk_random_forest <- function(x,
     lower = 0
   )
 
-  assert_number(
+  assert_numeric(
     records_weights,
     len = nrow(x),
     null.ok = TRUE,

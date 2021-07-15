@@ -146,7 +146,10 @@ Tuner <- R6Class(
           loss_values <- c(loss_values, loss)
         }
 
-        self$all_combinations$loss <- mean(loss_values, na.rm = TRUE)
+        self$all_combinations[combination_i, "loss"] <- mean(
+          loss_values,
+          na.rm = TRUE
+        )
       }
 
       self$all_combinations <- arrange(self$all_combinations, -loss)

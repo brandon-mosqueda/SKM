@@ -115,3 +115,15 @@ get_cross_validator <- function(type,
 
   return(instance)
 }
+
+proportion_to <- function(proportion, to, lower = 0, upper = 1) {
+  if (is.null(proportion)) {
+    return(NULL)
+  }
+
+  return(ifelse(
+    proportion >= lower & proportion <= upper,
+    ceiling(proportion * to),
+    proportion
+  ))
+}
