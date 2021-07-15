@@ -139,8 +139,7 @@ Tuner <- R6Class(
             responses = self$responses,
             is_multivariate = self$is_multivariate,
             hyperparams = combination,
-            other_params = self$other_params,
-            prepare_x = FALSE
+            other_params = self$other_params
           )
 
           loss <- self$loss_function(y_testing, predictions$predicted)

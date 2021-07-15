@@ -91,36 +91,23 @@ SVMModel <- R6Class(
                                   responses,
                                   is_multivariate,
                                   other_params,
-                                  hyperparams,
-                                  prepare_x = TRUE) {
-      if (prepare_x) {
-        x <- prepare_x(
-          x = x,
-          kernel = other_params$kernel,
-          rows_proportion = other_params$rows_proportion,
-          arc_cosine_deep = other_params$arc_cosine_deep,
-          degree = hyperparams$degree,
-          gamma = hyperparams$gamma,
-          coef0 = hyperparams$coef0
-        )
-      }
-
-      predicted <- predict(model, x, probability = TRUE)
+                                  hyperparams) {
+      predictions <- predict(model, x, probability = TRUE)
 
       if (is_class_response(responses[["y"]]$type)) {
-        probabilities <- attr(predicted, "probabilities")
-        attr(predicted, "probabilities") <- NULL
-        names(predicted) <- NULL
+        probabilities <- attr(predictions, "probabilities")
+        attr(predictions, "probabilities") <- NULL
+        names(predictions) <- NULL
 
-        predicted <- list(
-          predicted = predicted,
+        predictions <- list(
+          predicted = predictions,
           probabilities = probabilities
         )
       } else {
-        predicted <- list(predicted = predicted)
+        predictions <- list(predicted = predictions)
       }
 
-      return(predicted)
+      return(predictions)
     }
   )
 )

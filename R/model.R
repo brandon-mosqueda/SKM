@@ -79,28 +79,53 @@ Model <- R6Class(
         other_params = self$other_params
       )
     },
-    predict = function(...) {
+    predict = function(...,
+                       x,
+                       hyperparams,
+                       other_params) {
+      x <- private$get_x_for_model(
+        x = x,
+        hyperparams = hyperparams,
+        other_params = other_params
+      )
+
       if (self$is_multivariate) {
-        private$predict_multivariate(...)
+        private$predict_multivariate(
+          ...,
+          x = x,
+          hyperparams = hyperparams,
+          other_params = other_params
+        )
       } else {
-        private$predict_univariate(...)
+        private$predict_univariate(
+          ...,
+          x = x,
+          hyperparams = hyperparams,
+          other_params = other_params
+        )
       }
     }
-
   ),
   private = list(
     # Methods --------------------------------------------------
 
     prepare_x = function() {
-      self$x <- prepare_x(
+      self$x <- private$get_x_for_model(
         x = self$x,
-        kernel = self$other_params$kernel,
-        rows_proportion = self$other_params$rows_proportion,
-        arc_cosine_deep = self$other_params$arc_cosine_deep,
-        degree = self$hyperparams$degree,
-        gamma = self$hyperparams$gamma,
-        coef0 = self$hyperparams$coef0
+        hyperparams = self$hyperparams,
+        other_params = self$other_params
       )
+    },
+    get_x_for_model = function(x, hyperparams, other_params) {
+      return(prepare_x(
+        x = x,
+        kernel = other_params$kernel,
+        rows_proportion = other_params$rows_proportion,
+        arc_cosine_deep = other_params$arc_cosine_deep,
+        degree = hyperparams$degree,
+        gamma = hyperparams$gamma,
+        coef0 = hyperparams$coef0
+      ))
     },
     prepare_y = function() {
       if (self$is_multivariate) {
@@ -175,7 +200,6 @@ predict.Model <- function(model, x) {
     responses = model$responses,
     is_multivariate = model$is_multivariate,
     other_params = model$other_params,
-    hyperparams = model$best_hyperparams,
-    prepare_x = TRUE
+    hyperparams = model$best_hyperparams
   ))
 }
