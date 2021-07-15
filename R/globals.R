@@ -1,3 +1,5 @@
+# Kernels --------------------------------------------------
+
 CONVENTIONAL_KERNELS <- c(
   "Linear",
   "Polynomial",
@@ -30,7 +32,19 @@ KERNELS_WITH_COEF0 <- c(
   "Sigmoid", "Sparse_Sigmoid"
 )
 
+# For models --------------------------------------------------
+
 SVM_KERNELS <- c("linear", "polynomial", "radial", "sigmoid")
+
+RANDOM_FOREST_SPLIT_RULES <- c("mse", "gini", "auc", "entropy")
+
+# Cross validation --------------------------------------------------
+
+CV_TYPES <- c("K_fold", "Random")
+
+TUNE_CV_TYPES <- c("K_fold", "Random")
+
+# Others --------------------------------------------------
 
 RESPONSE_TYPES <- list(
   CONTINUOUS = 1,
@@ -38,7 +52,3 @@ RESPONSE_TYPES <- list(
   BINARY = 3,
   CATEGORICAL = 4
 )
-
-CV_TYPES <- c("K_fold", "Random")
-
-TUNE_CV_TYPES <- c("K_fold", "Random")

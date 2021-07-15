@@ -33,7 +33,7 @@ sk_svm <- function(x, y,
                    validate_params = TRUE,
                    seed = NULL,
                    verbose = TRUE) {
-  expect_logical(validate_params, len = 1, any.missing = FALSE)
+  assert_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
     validate_sk_svm(

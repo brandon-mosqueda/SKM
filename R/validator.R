@@ -81,7 +81,7 @@ assert_valid_tune_cv <- function(tune_cv_type,
 
 validate_base_params <- function(x,
                                  y,
-                                 accept_multivariate,
+                                 is_multivariate,
                                  kernel,
                                  arc_cosine_deep,
                                  rows_proportion,
@@ -93,7 +93,7 @@ validate_base_params <- function(x,
                                  tune_testing_proportion,
                                  seed,
                                  verbose) {
-  validate_xy(x, y, accept_multivariate = accept_multivariate)
+  validate_xy(x, y, is_multivariate = is_multivariate)
 
   assert_sparse_kernel(
     kernel = kernel,
@@ -114,7 +114,7 @@ validate_base_params <- function(x,
   assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
-validate_xy <- function(x, y, accept_multivariate) {
+validate_xy <- function(x, y, is_multivariate) {
   if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
     stop("x must be data.frame, a matrix or a vector")
   }
@@ -123,8 +123,19 @@ validate_xy <- function(x, y, accept_multivariate) {
     stop("y must be a data.frame, a matrix or a vector")
   }
 
-  if (accept_multivariate && (!is.data.frame(y) && !is.matrix(y))) {
-    stop("y must be a data.frame or a matrix in multivariate models")
+  if (is_multivariate) {
+    if (!is.data.frame(y) && !is.matrix(y)) {
+      stop("y must be a data.frame or a matrix in multivariate models")
+    } else if (ncol(y) < 2) {
+      stop("y must have at least two columns in multivariate models")
+    }
+  } else {
+    if (has_dims(y) && ncol(y) > 1) {
+      stop(
+        "In univariate models y can be a data.frame or a matrix but ",
+        "it must have only one column"
+      )
+    }
   }
 
   if (get_length(x) != get_length(y)) {
@@ -170,6 +181,15 @@ assert_svm_kernel <- function(kernel) {
   )
 }
 
+assert_forest_split_rule <- function(split_rule) {
+  assert_subset_string(
+    split_rule,
+    RANDOM_FOREST_SPLIT_RULES,
+    empty.ok = TRUE,
+    ignore.case = TRUE
+  )
+}
+
 # Single fit functions --------------------------------------------------
 
 validate_sk_svm <- function(x,
@@ -208,7 +228,7 @@ validate_sk_svm <- function(x,
   validate_base_params(
     x = x,
     y = y,
-    accept_multivariate = FALSE,
+    is_multivariate = FALSE,
     kernel = kernel,
     arc_cosine_deep = arc_cosine_deep,
     rows_proportion = rows_proportion,
@@ -240,4 +260,90 @@ validate_sk_svm <- function(x,
   assert_number(tolerance, finite = TRUE)
   assert_logical(shrinking, len = 1, any.missing = FALSE)
   assert_logical(fitted, len = 1, any.missing = FALSE)
+}
+
+validate_sk_random_forest <- function(x,
+                                      y,
+                                      is_multivariate,
+
+                                      kernel,
+                                      degree,
+                                      gamma,
+                                      coef0,
+                                      rows_proportion,
+                                      arc_cosine_deep,
+
+                                      trees_number,
+                                      node_size,
+                                      node_depth,
+                                      sampled_x_vars_number,
+
+                                      tune_cv_type,
+                                      tune_folds_number,
+                                      tune_testing_proportion,
+
+                                      split_rule,
+                                      splits_number,
+                                      importance,
+                                      block_size,
+                                      x_vars_weights,
+                                      records_weights,
+
+                                      seed,
+                                      verbose) {
+  validate_base_params(
+    x = x,
+    y = y,
+    is_multivariate = is_multivariate,
+    kernel = kernel,
+    arc_cosine_deep = arc_cosine_deep,
+    rows_proportion = rows_proportion,
+    degree = degree,
+    gamma = gamma,
+    coef0 = coef0,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
+    seed = seed,
+    verbose = verbose
+  )
+
+  assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
+  assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
+  assert_numeric(
+    node_depth,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE,
+    null.ok = TRUE
+  )
+  assert_numeric(
+    sampled_x_vars_number,
+    lower = 1e-3,
+    finite = TRUE,
+    any.missing = FALSE,
+    null.ok = TRUE
+  )
+
+  assert_forest_split_rule(split_rule)
+
+  assert_number(splits_number, lower = 0, finite = TRUE)
+
+  assert_logical(importance, len = 1, any.missing = FALSE)
+
+  assert_numeric(
+    x_vars_weights,
+    len = ncol(x),
+    null.ok = TRUE,
+    finite = TRUE,
+    lower = 0
+  )
+
+  assert_number(
+    records_weights,
+    len = nrow(x),
+    null.ok = TRUE,
+    finite = TRUE,
+    lower = 0
+  )
 }
