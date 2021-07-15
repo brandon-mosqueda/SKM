@@ -1,5 +1,3 @@
-#' @importFrom e1071 svm
-
 #' @include model.R
 #' @include validator.R
 

@@ -6,7 +6,7 @@
 
 # Checkmate extension --------------------------------------------------
 
-checkSubsetString <- function(x, choices, empty.ok, ignore.case) {
+checkSubsetString <- function(x, choices, empty.ok, ignore.case, len) {
   if (length(x) == 0L) {
     if (!empty.ok) {
       return(sprintf(
@@ -16,6 +16,12 @@ checkSubsetString <- function(x, choices, empty.ok, ignore.case) {
     }
 
     return(TRUE)
+  } else if (!is.null(len) && length(x) != len) {
+    return(sprintf(
+      "Must have lenght %s, but has length %s",
+      len,
+      length(x)
+    ))
   }
 
   if (length(choices) == 0L) {
@@ -55,12 +61,13 @@ assert_subset_string <- function(x,
                                  choices,
                                  ignore.case=FALSE,
                                  empty.ok=TRUE,
+                                 len=NULL,
                                  info=NULL,
                                  label=vname(x)) {
   if (missing(x)) {
     stop(sprintf("Argument '%s' is missing", label))
   }
-  res <- checkSubsetString(x, choices, empty.ok, ignore.case)
+  res <- checkSubsetString(x, choices, empty.ok, ignore.case, len)
   makeAssertion(x, res, info, label)
 }
 
@@ -70,7 +77,7 @@ assert_valid_tune_cv <- function(tune_cv_type,
                                  tune_folds_number,
                                  tune_testing_proportion) {
   tune_cv_type <- tolower(tune_cv_type)
-  assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE)
+  assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
   min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
   assert_number(tune_folds_number, finite = TRUE, lower = min_folds_number)
 
@@ -155,7 +162,8 @@ assert_sparse_kernel <- function(kernel,
       kernel,
       c(SPARSE_KERNELS, CONVENTIONAL_KERNELS),
       empty.ok = FALSE,
-      ignore.case = TRUE
+      ignore.case = TRUE,
+      len = 1
     )
 
     if (is_arc_cosine_kernel(kernel)) {
@@ -177,7 +185,8 @@ assert_svm_kernel <- function(kernel) {
     kernel,
     SVM_KERNELS,
     empty.ok = FALSE,
-    ignore.case = TRUE
+    ignore.case = TRUE,
+    len = 1
   )
 }
 
@@ -186,7 +195,8 @@ assert_forest_split_rule <- function(split_rule) {
     split_rule,
     RANDOM_FOREST_SPLIT_RULES,
     empty.ok = TRUE,
-    ignore.case = TRUE
+    ignore.case = TRUE,
+    len = 1
   )
 }
 
@@ -285,7 +295,6 @@ validate_sk_random_forest <- function(x,
                                       split_rule,
                                       splits_number,
                                       importance,
-                                      block_size,
                                       x_vars_weights,
                                       records_weights,
 

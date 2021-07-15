@@ -15,6 +15,7 @@ SVMModel <- R6Class(
                           svm_gamma,
                           svm_coef0,
                           cost,
+
                           scale,
                           class_weights,
                           cache_size,
@@ -23,11 +24,7 @@ SVMModel <- R6Class(
                           shrinking,
                           fitted,
                           na_action) {
-      super$initialize(
-        ...,
-        name = "SVM",
-        is_multivariate = FALSE
-      )
+      super$initialize(..., name = "SVM", is_multivariate = FALSE)
 
       self$hyperparams$svm_degree <- nonull(
         prepare_degree(svm_kernel, svm_degree),

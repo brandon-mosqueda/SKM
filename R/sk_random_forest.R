@@ -1,5 +1,3 @@
-#' @importFrom randomForestSRC rfsrc
-
 #' @include model.R
 #' @include validator.R
 
@@ -25,7 +23,6 @@ sk_random_forest <- function(x, y,
                              split_rule = NULL,
                              splits_number = 10,
                              importance = TRUE,
-                             block_size = NULL,
                              x_vars_weights = NULL,
                              records_weights = NULL,
 
@@ -59,7 +56,6 @@ sk_random_forest <- function(x, y,
       split_rule = split_rule,
       splits_number = splits_number,
       importance = importance,
-      block_size = block_size,
       x_vars_weights = x_vars_weights,
       records_weights = records_weights,
 
@@ -81,6 +77,7 @@ sk_random_forest <- function(x, y,
   model <- RandomForestModel$new(
     x = x,
     y = y,
+    is_multivariate = is_multivariate,
 
     kernel = kernel,
     degree = degree,
@@ -101,7 +98,6 @@ sk_random_forest <- function(x, y,
     split_rule = split_rule,
     splits_number = splits_number,
     importance = importance,
-    block_size = block_size,
     x_vars_weights = x_vars_weights,
     records_weights = records_weights
   )
