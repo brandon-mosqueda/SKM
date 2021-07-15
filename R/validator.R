@@ -89,27 +89,12 @@ assert_valid_tune_cv <- function(tune_cv_type,
 validate_base_params <- function(x,
                                  y,
                                  is_multivariate,
-                                 kernel,
-                                 arc_cosine_deep,
-                                 rows_proportion,
-                                 degree,
-                                 gamma,
-                                 coef0,
                                  tune_cv_type,
                                  tune_folds_number,
                                  tune_testing_proportion,
                                  seed,
                                  verbose) {
   validate_xy(x, y, is_multivariate = is_multivariate)
-
-  assert_sparse_kernel(
-    kernel = kernel,
-    arc_cosine_deep = arc_cosine_deep,
-    rows_proportion = rows_proportion,
-    degree = degree,
-    gamma = gamma,
-    coef0 = coef0
-  )
 
   assert_valid_tune_cv(
     tune_cv_type = tune_cv_type,
@@ -202,49 +187,36 @@ assert_forest_split_rule <- function(split_rule) {
 
 # Single fit functions --------------------------------------------------
 
-validate_sk_svm <- function(x,
-                            y,
+validate_svm <- function(x,
+                         y,
 
-                            kernel,
-                            degree,
-                            gamma,
-                            coef0,
-                            rows_proportion,
-                            arc_cosine_deep,
+                         kernel,
+                         degree,
+                         gamma,
+                         coef0,
+                         cost,
 
-                            svm_kernel,
-                            svm_degree,
-                            svm_gamma,
-                            svm_coef0,
-                            cost,
+                         tune_cv_type,
+                         tune_folds_number,
+                         tune_testing_proportion,
 
-                            tune_cv_type,
-                            tune_folds_number,
-                            tune_testing_proportion,
+                         scale,
+                         class_weights,
+                         cache_size,
+                         tolerance,
+                         epsilon,
+                         shrinking,
+                         cross,
+                         probability,
+                         fitted,
+                         na_action,
 
-                            scale,
-                            class_weights,
-                            cache_size,
-                            tolerance,
-                            epsilon,
-                            shrinking,
-                            cross,
-                            probability,
-                            fitted,
-                            na_action,
-
-                            seed,
-                            verbose) {
+                         seed,
+                         verbose) {
   validate_base_params(
     x = x,
     y = y,
     is_multivariate = FALSE,
-    kernel = kernel,
-    arc_cosine_deep = arc_cosine_deep,
-    rows_proportion = rows_proportion,
-    degree = degree,
-    gamma = gamma,
-    coef0 = coef0,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -254,10 +226,10 @@ validate_sk_svm <- function(x,
 
   assert_logical(scale, any.missing = FALSE)
 
-  assert_svm_kernel(svm_kernel)
-  assert_numeric(svm_degree, finite = TRUE, any.missing = FALSE)
-  assert_numeric(svm_gamma, finite = TRUE, any.missing = FALSE)
-  assert_numeric(svm_coef0, finite = TRUE, any.missing = FALSE)
+  assert_svm_kernel(kernel)
+  assert_numeric(degree, finite = TRUE, any.missing = FALSE)
+  assert_numeric(gamma, finite = TRUE, any.missing = FALSE)
+  assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
   assert_numeric(cost, finite = TRUE, any.missing = FALSE)
 
   assert_numeric(
@@ -272,44 +244,31 @@ validate_sk_svm <- function(x,
   assert_logical(fitted, len = 1, any.missing = FALSE)
 }
 
-validate_sk_random_forest <- function(x,
-                                      y,
-                                      is_multivariate,
+validate_random_forest <- function(x,
+                                   y,
+                                   is_multivariate,
 
-                                      kernel,
-                                      degree,
-                                      gamma,
-                                      coef0,
-                                      rows_proportion,
-                                      arc_cosine_deep,
+                                   trees_number,
+                                   node_size,
+                                   node_depth,
+                                   sampled_x_vars_number,
 
-                                      trees_number,
-                                      node_size,
-                                      node_depth,
-                                      sampled_x_vars_number,
+                                   tune_cv_type,
+                                   tune_folds_number,
+                                   tune_testing_proportion,
 
-                                      tune_cv_type,
-                                      tune_folds_number,
-                                      tune_testing_proportion,
+                                   split_rule,
+                                   splits_number,
+                                   importance,
+                                   x_vars_weights,
+                                   records_weights,
 
-                                      split_rule,
-                                      splits_number,
-                                      importance,
-                                      x_vars_weights,
-                                      records_weights,
-
-                                      seed,
-                                      verbose) {
+                                   seed,
+                                   verbose) {
   validate_base_params(
     x = x,
     y = y,
     is_multivariate = is_multivariate,
-    kernel = kernel,
-    arc_cosine_deep = arc_cosine_deep,
-    rows_proportion = rows_proportion,
-    degree = degree,
-    gamma = gamma,
-    coef0 = coef0,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,

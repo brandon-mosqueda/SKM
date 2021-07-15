@@ -73,14 +73,20 @@ to_data_frame <- function(x) {
 
 #' @export
 remove_no_variance_cols <- function(x) {
-  if (is.data.frame(x)) {
-    x <- select_if(x, is.numeric)
+  if (!has_dims(x)) {
+    stop("x must be a data.frame or a matrix")
   }
 
   cols_variances <- apply(x, 2, function(x) var(x, na.rm = TRUE))
-  no_zero_variances_cols <- which(cols_variances > 0)
+  zero_variances_cols <- which(is.na(cols_variances) | cols_variances == 0)
+  names(zero_variances_cols) <- NULL
 
-  return(x[, no_zero_variances_cols])
+  if (!is_empty(zero_variances_cols)) {
+    x <- x[, -zero_variances_cols]
+    attr(x, "removed_cols") <- zero_variances_cols
+  }
+
+  return(x)
 }
 
 #' @title Cholesky

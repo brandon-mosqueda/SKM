@@ -130,6 +130,8 @@ test_that("to_data_frame", {
 test_that("remove_no_variance_cols", {
   # Matrix --------------------------------------------------
 
+  set.seed(2)
+
   n_rows <- 10
   n_cols <- 10
   x <- matrix(rnorm(n_rows * n_cols), n_rows, n_cols)
@@ -152,11 +154,19 @@ test_that("remove_no_variance_cols", {
     nrows = n_rows,
     ncols = n_cols
   )
+  expect_equal(
+    attr(remove_no_variance_cols(temp), "removed_cols"),
+    c(1, ncol(x) + 2)
+  )
 
   temp <- cbind(3, 5, 0.5)
   expect_numeric(
     remove_no_variance_cols(temp),
     len = 0
+  )
+  expect_equal(
+    attr(remove_no_variance_cols(temp), "removed_cols"),
+    1:3
   )
 
   temp <- x
@@ -182,16 +192,21 @@ test_that("remove_no_variance_cols", {
   n_cols <- ncol(iris)
 
   expect_data_frame(
-    remove_no_variance_cols(iris),
+    suppressWarnings(remove_no_variance_cols(iris)),
     any.missing = FALSE,
     nrows = n_rows,
     ncols = n_cols - 1
   )
 
+  expect_equal(
+    suppressWarnings(attr(remove_no_variance_cols(iris), "removed_col")),
+    5
+  )
+
   temp <- iris
   temp$char <- factor("hello")
   expect_data_frame(
-    remove_no_variance_cols(temp),
+    suppressWarnings(remove_no_variance_cols(temp)),
     any.missing = FALSE,
     nrows = n_rows,
     ncols = n_cols - 1
@@ -200,7 +215,7 @@ test_that("remove_no_variance_cols", {
   temp <- iris
   temp[cbind(c(100, 58, 53, 2), c(1, 1, 3, 2))] <- NA
   expect_data_frame(
-    remove_no_variance_cols(temp),
+    suppressWarnings(remove_no_variance_cols(temp)),
     nrows = n_rows,
     ncols = n_cols - 1
   )

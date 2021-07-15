@@ -24,6 +24,7 @@ Model <- R6Class(
 
     x = NULL,
     y = NULL,
+    removed_x_cols = NULL,
     validate_params = NULL,
     execution_time = NULL,
 
@@ -35,13 +36,7 @@ Model <- R6Class(
                           tune_cv_type,
                           tune_folds_number,
                           tune_testing_proportion,
-                          is_multivariate,
-                          kernel,
-                          degree,
-                          gamma,
-                          coef0,
-                          rows_proportion,
-                          arc_cosine_deep) {
+                          is_multivariate) {
       self$x <- x
       self$y <- y
       self$name <- name
@@ -51,15 +46,7 @@ Model <- R6Class(
       self$is_multivariate <- is_multivariate
 
       self$other_params <- list()
-      self$other_params$kernel <- kernel
-      self$other_params$rows_proportion <- rows_proportion
-      self$other_params$arc_cosine_deep <- arc_cosine_deep
-
       self$hyperparams <- list()
-      # Set to NULL those parameters that there is no need to tune
-      self$hyperparams$degree <- prepare_degree(kernel, degree)
-      self$hyperparams$gamma <- prepare_gamma(kernel, gamma)
-      self$hyperparams$coef0 <- prepare_coef0(kernel, coef0)
     },
 
     # Methods --------------------------------------------------
@@ -83,11 +70,10 @@ Model <- R6Class(
                        x,
                        hyperparams,
                        other_params) {
-      x <- private$get_x_for_model(
-        x = x,
-        hyperparams = hyperparams,
-        other_params = other_params
-      )
+      x <- private$get_x_for_model(x, remove_cols = FALSE)
+      if (!is.null(self$removed_x_cols)) {
+        x <- x[, -self$removed_x_cols]
+      }
 
       if (self$is_multivariate) {
         private$predict_multivariate(
@@ -110,22 +96,17 @@ Model <- R6Class(
     # Methods --------------------------------------------------
 
     prepare_x = function() {
-      self$x <- private$get_x_for_model(
-        x = self$x,
-        hyperparams = self$hyperparams,
-        other_params = self$other_params
-      )
+      self$x <- private$get_x_for_model(self$x)
+      self$removed_x_cols <- attr(self$x, "removed_cols")
     },
-    get_x_for_model = function(x, hyperparams, other_params) {
-      return(prepare_x(
-        x = x,
-        kernel = other_params$kernel,
-        rows_proportion = other_params$rows_proportion,
-        arc_cosine_deep = other_params$arc_cosine_deep,
-        degree = hyperparams$degree,
-        gamma = hyperparams$gamma,
-        coef0 = hyperparams$coef0
-      ))
+    get_x_for_model = function(x, remove_cols = TRUE) {
+      x <- to_matrix(x)
+
+      if (remove_cols) {
+        x <- remove_no_variance_cols(x)
+      }
+
+      return(x)
     },
     prepare_y = function() {
       if (self$is_multivariate) {

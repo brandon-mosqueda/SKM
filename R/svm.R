@@ -2,39 +2,33 @@
 #' @include validator.R
 
 #' @export
-sk_svm <- function(x, y,
-                   kernel = NULL,
-                   degree = 3,
-                   gamma = 1 / ncol(x),
-                   coef0 = 0,
-                   rows_proportion = 0.8,
-                   arc_cosine_deep = 1,
+svm <- function(x, y,
 
-                   svm_kernel = "linear",
-                   svm_degree = 3,
-                   svm_gamma = if (is.vector(x)) 1 else 1 / ncol(x),
-                   svm_coef0 = 0,
-                   cost = 1,
+                kernel = "linear",
+                degree = 3,
+                gamma = if (is.vector(x)) 1 else 1 / ncol(x),
+                coef0 = 0,
+                cost = 1,
 
-                   tune_cv_type = "K_fold",
-                   tune_folds_number = 5,
-                   tune_testing_proportion = 0.2,
+                tune_cv_type = "K_fold",
+                tune_folds_number = 5,
+                tune_testing_proportion = 0.2,
 
-                   scale = TRUE,
-                   class_weights = NULL,
-                   cache_size = 40,
-                   tolerance = 0.001,
-                   epsilon = 0.1,
-                   shrinking = TRUE,
-                   fitted = TRUE,
+                scale = TRUE,
+                class_weights = NULL,
+                cache_size = 40,
+                tolerance = 0.001,
+                epsilon = 0.1,
+                shrinking = TRUE,
+                fitted = TRUE,
 
-                   validate_params = TRUE,
-                   seed = NULL,
-                   verbose = TRUE) {
+                validate_params = TRUE,
+                seed = NULL,
+                verbose = TRUE) {
   assert_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
-    validate_sk_svm(
+    validate_svm(
       x = x,
       y = y,
 
@@ -42,13 +36,6 @@ sk_svm <- function(x, y,
       degree = degree,
       gamma = gamma,
       coef0 = coef0,
-      rows_proportion = rows_proportion,
-      arc_cosine_deep = arc_cosine_deep,
-
-      svm_kernel = svm_kernel,
-      svm_degree = svm_degree,
-      svm_gamma = svm_gamma,
-      svm_coef0 = svm_coef0,
       cost = cost,
 
       tune_cv_type = tune_cv_type,
@@ -86,13 +73,6 @@ sk_svm <- function(x, y,
     degree = degree,
     gamma = gamma,
     coef0 = coef0,
-    rows_proportion = rows_proportion,
-    arc_cosine_deep = arc_cosine_deep,
-
-    svm_kernel = svm_kernel,
-    svm_degree = svm_degree,
-    svm_gamma = svm_gamma,
-    svm_coef0 = svm_coef0,
     cost = cost,
 
     tune_cv_type = tune_cv_type,

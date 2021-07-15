@@ -43,18 +43,8 @@ RandomForestModel <- R6Class(
         ncol(self$x)
       )
     },
-    get_x_for_model = function(x, hyperparams, other_params) {
-      if (is.null(other_params$kernel)) {
-        x <- to_data_frame(x)
-      } else {
-        x <- super$get_x_for_model(
-          x = x,
-          hyperparams = hyperparams,
-          other_params = other_params
-        )
-      }
-
-      return(x)
+    get_x_for_model = function(x, remove_cols = FALSE) {
+      return(to_data_frame(x))
     },
 
     train_univariate = function(x, y, hyperparams, other_params) {

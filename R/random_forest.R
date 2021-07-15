@@ -2,47 +2,34 @@
 #' @include validator.R
 
 #' @export
-sk_random_forest <- function(x, y,
-                             is_multivariate = has_dims(y),
-                             kernel = NULL,
-                             degree = 3,
-                             gamma = 1 / ncol(x),
-                             coef0 = 0,
-                             rows_proportion = 0.8,
-                             arc_cosine_deep = 1,
+random_forest <- function(x, y,
+                          is_multivariate = has_dims(y),
 
-                             trees_number = 500,
-                             node_size = 5,
-                             node_depth = NULL,
-                             sampled_x_vars_number = NULL,
+                          trees_number = 500,
+                          node_size = 5,
+                          node_depth = NULL,
+                          sampled_x_vars_number = NULL,
 
-                             tune_cv_type = "K_fold",
-                             tune_folds_number = 5,
-                             tune_testing_proportion = 0.2,
+                          tune_cv_type = "K_fold",
+                          tune_folds_number = 5,
+                          tune_testing_proportion = 0.2,
 
-                             split_rule = NULL,
-                             splits_number = 10,
-                             importance = TRUE,
-                             x_vars_weights = NULL,
-                             records_weights = NULL,
+                          split_rule = NULL,
+                          splits_number = 10,
+                          importance = TRUE,
+                          x_vars_weights = NULL,
+                          records_weights = NULL,
 
-                             validate_params = TRUE,
-                             seed = NULL,
-                             verbose = TRUE) {
+                          validate_params = TRUE,
+                          seed = NULL,
+                          verbose = TRUE) {
   assert_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
-    validate_sk_random_forest(
+    validate_random_forest(
       x = x,
       y = y,
       is_multivariate = is_multivariate,
-
-      kernel = kernel,
-      degree = degree,
-      gamma = gamma,
-      coef0 = coef0,
-      rows_proportion = rows_proportion,
-      arc_cosine_deep = arc_cosine_deep,
 
       trees_number = trees_number,
       node_size = node_size,
@@ -78,13 +65,6 @@ sk_random_forest <- function(x, y,
     x = x,
     y = y,
     is_multivariate = is_multivariate,
-
-    kernel = kernel,
-    degree = degree,
-    gamma = gamma,
-    coef0 = coef0,
-    rows_proportion = rows_proportion,
-    arc_cosine_deep = arc_cosine_deep,
 
     trees_number = trees_number,
     node_size = node_size,

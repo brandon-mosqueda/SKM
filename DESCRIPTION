@@ -39,10 +39,10 @@ Collate:
     'model_helpers.R'
     'model.R'
     'random_cross_validator.R'
-    'random_forest_model.R'
     'validator.R'
-    'sk_random_forest.R'
-    'sk_svm.R'
+    'random_forest.R'
+    'random_forest_model.R'
+    'svm.R'
     'svm_model.R'
     'tuner.R'
 Author: Osval Antonio Montesinos López [aut],
