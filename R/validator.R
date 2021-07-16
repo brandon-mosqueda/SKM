@@ -187,7 +187,7 @@ assert_forest_split_rule <- function(split_rule) {
 
 # Single fit functions --------------------------------------------------
 
-validate_svm <- function(x,
+validate_support_vector_machine <- function(x,
                          y,
 
                          kernel,

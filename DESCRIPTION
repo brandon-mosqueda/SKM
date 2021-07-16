@@ -42,8 +42,9 @@ Collate:
     'validator.R'
     'random_forest.R'
     'random_forest_model.R'
-    'svm.R'
-    'svm_model.R'
+    'regression.R'
+    'support_vector_machine.R'
+    'support_vector_machine_model.R'
     'tuner.R'
 Author: Osval Antonio Montesinos López [aut],
         Brandon Alejandro Mosqueda González [aut]

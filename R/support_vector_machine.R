@@ -2,33 +2,33 @@
 #' @include validator.R
 
 #' @export
-svm <- function(x, y,
+support_vector_machine <- function(x, y,
 
-                kernel = "linear",
-                degree = 3,
-                gamma = if (is.vector(x)) 1 else 1 / ncol(x),
-                coef0 = 0,
-                cost = 1,
+                                   kernel = "linear",
+                                   degree = 3,
+                                   gamma = if (is.vector(x)) 1 else 1 / ncol(x),
+                                   coef0 = 0,
+                                   cost = 1,
 
-                tune_cv_type = "K_fold",
-                tune_folds_number = 5,
-                tune_testing_proportion = 0.2,
+                                   tune_cv_type = "K_fold",
+                                   tune_folds_number = 5,
+                                   tune_testing_proportion = 0.2,
 
-                scale = TRUE,
-                class_weights = NULL,
-                cache_size = 40,
-                tolerance = 0.001,
-                epsilon = 0.1,
-                shrinking = TRUE,
-                fitted = TRUE,
+                                   scale = TRUE,
+                                   class_weights = NULL,
+                                   cache_size = 40,
+                                   tolerance = 0.001,
+                                   epsilon = 0.1,
+                                   shrinking = TRUE,
+                                   fitted = TRUE,
 
-                validate_params = TRUE,
-                seed = NULL,
-                verbose = TRUE) {
+                                   validate_params = TRUE,
+                                   seed = NULL,
+                                   verbose = TRUE) {
   assert_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
-    validate_svm(
+    validate_support_vector_machine(
       x = x,
       y = y,
 
@@ -65,7 +65,7 @@ svm <- function(x, y,
 
   start_time <- Sys.time()
 
-  model <- SVMModel$new(
+  model <- SupportVectorMachineModel$new(
     x = x,
     y = y,
 

@@ -3,8 +3,8 @@
 
 #' @include model.R
 
-SVMModel <- R6Class(
-  classname = "SVMModel",
+SupportVectorMachineModel <- R6Class(
+  classname = "SupportVectorMachineModel",
   inherit = Model,
   public = list(
     # Constructor --------------------------------------------------
@@ -24,7 +24,11 @@ SVMModel <- R6Class(
                           shrinking,
                           fitted,
                           na_action) {
-      super$initialize(..., name = "SVM", is_multivariate = FALSE)
+      super$initialize(
+        ...,
+        name = "Support Vector Machine",
+        is_multivariate = FALSE
+      )
 
       self$hyperparams$degree <- nonull(
         prepare_degree(kernel, degree),
@@ -54,7 +58,7 @@ SVMModel <- R6Class(
     # Methods --------------------------------------------------
 
     train_univariate = function(x, y, hyperparams, other_params) {
-      model <- e1071::svm(
+      model <- svm(
         x = x,
         y = y,
 
