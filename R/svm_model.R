@@ -79,7 +79,6 @@ SVMModel <- R6Class(
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  is_multivariate,
                                   other_params,
                                   hyperparams) {
       predictions <- predict(model, x, probability = TRUE)

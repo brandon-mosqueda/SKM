@@ -30,8 +30,8 @@ prepare_multivariate_y <- function() {
 
   for (col_name in colnames(self$y)) {
     self$responses[[col_name]] <- list(
-      type = get_response_type(select(self$y, col_name)),
-      levels = levels(select(self$y, col_name))
+      type = get_response_type(self$y[[col_name]]),
+      levels = levels(self$y[[col_name]])
     )
   }
 }

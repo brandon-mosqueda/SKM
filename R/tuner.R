@@ -4,16 +4,33 @@
 #' @include model_helpers.R
 #' @include metrics.R
 
+multivariate_loss <- function(observed, predicted, responses) {
+  all_metrics <- c()
+
+  for (response_name in names(responses)) {
+    response_type <- responses[[response_name]]$type
+
+    loss_function <- pccc
+    if (is_numeric_response(response_type)) {
+      loss_function <- maape
+    }
+    current_value <- loss_function(
+      observed[[response_name]],
+      predicted[[response_name]]$predicted
+    )
+    all_metrics <- c(all_metrics, current_value)
+  }
+
+  return(mean(all_metrics, na.rm = TRUE))
+}
+
 get_loss_function <- function(responses, is_multivariate) {
   if (is_multivariate) {
-    stop("Get loss function for multivariate models is not implemented")
+    return(multivariate_loss)
+  } else if (is_class_response(responses[[1]]$type)) {
+    return(pccc)
   } else {
-    response <- responses[[1]]
-    if (is_class_response(response$type)) {
-      return(pccc)
-    } else {
-      return(mse)
-    }
+    return(mse)
   }
 }
 
@@ -137,12 +154,22 @@ Tuner <- R6Class(
             model = model,
             x = x_testing,
             responses = self$responses,
-            is_multivariate = self$is_multivariate,
             hyperparams = combination,
             other_params = self$other_params
           )
 
-          loss <- self$loss_function(y_testing, predictions$predicted)
+          if (self$is_multivariate) {
+            loss <- self$loss_function(
+              observed = y_testing,
+              predicted = predictions,
+              responses = self$responses
+            )
+          } else {
+            loss <- self$loss_function(
+              observed = y_testing,
+              predicted = predictions$predicted
+            )
+          }
           loss_values <- c(loss_values, loss)
         }
 

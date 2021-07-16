@@ -130,7 +130,7 @@ Model <- R6Class(
         predict_function <- private$predict_univariate
         if (self$is_multivariate) {
           training_function <- private$train_multivariate
-          predict_function <- private$predict_multitrain_multivariate
+          predict_function <- private$predict_multivariate
         }
 
         tuner <- Tuner$new(
@@ -179,7 +179,6 @@ predict.Model <- function(model, x) {
     model = model$fitted_model,
     x = x,
     responses = model$responses,
-    is_multivariate = model$is_multivariate,
     other_params = model$other_params,
     hyperparams = model$best_hyperparams
   ))
