@@ -62,13 +62,12 @@ assert_subset_string <- function(x,
                                  ignore.case=FALSE,
                                  empty.ok=TRUE,
                                  len=NULL,
-                                 info=NULL,
                                  label=vname(x)) {
   if (missing(x)) {
     stop(sprintf("Argument '%s' is missing", label))
   }
   res <- checkSubsetString(x, choices, empty.ok, ignore.case, len)
-  makeAssertion(x, res, info, label)
+  makeAssertion(x, res, label, NULL)
 }
 
 # Helpers --------------------------------------------------
@@ -175,6 +174,18 @@ assert_svm_kernel <- function(kernel) {
   )
 }
 
+assert_random_forest_na_action <- function(na_action) {
+  assert_string(na_action)
+
+  assert_subset_string(
+    na_action,
+    RANDOM_FOREST_NA_ACTIONS,
+    empty.ok = FALSE,
+    ignore.case = TRUE,
+    len = 1
+  )
+}
+
 assert_forest_split_rule <- function(split_rule) {
   assert_subset_string(
     split_rule,
@@ -262,6 +273,7 @@ validate_random_forest <- function(x,
                                    importance,
                                    x_vars_weights,
                                    records_weights,
+                                   na_action,
 
                                    seed,
                                    verbose) {
@@ -312,6 +324,8 @@ validate_random_forest <- function(x,
     null.ok = TRUE,
     finite = TRUE
   )
+
+  assert_random_forest_na_action(na_action)
 }
 
 validate_generalized_linear_model <- function(x,

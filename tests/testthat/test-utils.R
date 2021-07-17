@@ -53,6 +53,22 @@ test_that("to_matrix", {
     any.missing = FALSE
   )
 
+  temp <- iris[1:5, ]
+  temp[1, 2] <- NA
+  temp[3, 2] <- NA
+  expect_matrix(
+    to_matrix(temp),
+    nrows = nrow(temp),
+    ncols = 6,
+    any.missing = TRUE
+  )
+  expect_matrix(
+    to_matrix(temp, TRUE),
+    nrows = nrow(temp),
+    ncols = 7,
+    any.missing = TRUE
+  )
+
   expect_matrix(
     to_matrix(iris),
     nrows = nrow(iris),
@@ -107,6 +123,15 @@ test_that("to_data_frame", {
   expect_equal(
     to_data_frame(matrix(1:10, 2, 5)),
     as.data.frame(matrix(1:10, 2, 5))
+  )
+
+  temp <- matrix(1:15, 5, 3)
+  colnames(temp) <- c("V1", "V2", "V3")
+  temp[1, 2] <- NA
+  temp[3, 2] <- NA
+  expect_equal(
+    to_data_frame(temp),
+    data.frame(temp)
   )
 
   expect_equal(to_data_frame(iris), iris)

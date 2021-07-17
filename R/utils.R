@@ -21,7 +21,11 @@ lm_slope <- function(x, y) {
 }
 
 #' @export
-to_matrix <- function(x, with_intercept = FALSE) {
+to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
+  if (na.rm) {
+    x <- na.omit(x)
+  }
+
   if (is.vector(x)) {
     if (is.character(x)) {
       x <- factor(x)
@@ -44,7 +48,12 @@ to_matrix <- function(x, with_intercept = FALSE) {
       colnames(x)[1] <- "Intercept"
     }
   } else if (is.data.frame(x)) {
+    current_na_state <- options()$na.action
+    if (!na.rm) {
+      options(na.action = "na.pass")
+    }
     x <- model.matrix( ~ ., x)
+    options(na.action = current_na_state)
 
     if (!with_intercept) {
       x <- x[, -1]
@@ -250,6 +259,24 @@ get_records <- function(x, indices) {
   } else {
     return(x[indices])
   }
+}
+
+which_is_na <- function(x) {
+  if (has_dims(x)) {
+    indices <- which(is.na(x), arr.ind = TRUE)
+    if (!is_empty(indices)) {
+      indices <- indices[, "row"]
+    } else {
+      indices <- NULL
+    }
+  } else {
+    indices <- which(is.na(x))
+    if (is_empty(indices)) {
+      indices <- NULL
+    }
+  }
+
+  return(indices)
 }
 
 #' Hide code output
