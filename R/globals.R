@@ -38,6 +38,8 @@ SVM_KERNELS <- c("linear", "polynomial", "radial", "sigmoid")
 
 RANDOM_FOREST_SPLIT_RULES <- c("mse", "gini", "auc", "entropy")
 
+RANDOM_FOREST_NA_ACTIONS <- c("omit", "impute")
+
 # Cross validation --------------------------------------------------
 
 CV_TYPES <- c("K_fold", "Random")

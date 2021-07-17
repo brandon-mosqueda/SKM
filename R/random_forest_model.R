@@ -25,7 +25,8 @@ RandomForestModel <- R6Class(
                           splits_number,
                           importance,
                           x_vars_weights,
-                          records_weights) {
+                          records_weights,
+                          na_action) {
       super$initialize(..., name = "Random Forest")
 
       self$hyperparams$trees_number <- trees_number
@@ -38,6 +39,7 @@ RandomForestModel <- R6Class(
       self$other_params$importance <- importance
       self$other_params$x_vars_weights <- x_vars_weights
       self$other_params$records_weights <- records_weights
+      self$other_params$na_action <- prepare_random_forest_na_action(na_action)
     }
   ),
   private = list(
@@ -65,6 +67,11 @@ RandomForestModel <- R6Class(
     get_x_for_model = function(x, remove_cols = FALSE) {
       return(to_data_frame(x))
     },
+    handle_nas = function() {
+      if (has_str(self$other_params$na_action, "omit")) {
+        super$handle_nas()
+      }
+    },
 
     tune = function() {
       # When tuning use importance FALSE for quicker evalution
@@ -80,6 +87,8 @@ RandomForestModel <- R6Class(
                                   responses,
                                   other_params,
                                   hyperparams) {
+      # Required to generates the same names as in training
+      x <- data.frame(x)
       predictions <- predict(model, newdata = x)
 
       if (is_class_response(responses$y$type)) {
@@ -100,6 +109,8 @@ RandomForestModel <- R6Class(
                                     responses,
                                     other_params,
                                     hyperparams) {
+      # Required to generates the same names as in training
+      x <- data.frame(x)
       all_predictions <- predict(model, newdata = x)
       predictions <- list()
 

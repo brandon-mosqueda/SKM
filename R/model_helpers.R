@@ -135,6 +135,20 @@ train_glm <- function(x, y, hyperparams, other_params) {
   return(model)
 }
 
+prepare_random_forest_na_action <- function(na_action) {
+  na_action <- tolower(na_action)
+
+  if (na_action == "omit") {
+    na_action <- "na.omit"
+  } else if (na_action == "impute") {
+    na_action <- "na.impute"
+  } else {
+    stop(na_action, "is not a valid random forest na action")
+  }
+
+  return(na_action)
+}
+
 get_random_forest_formula <- function(responses,
                                       is_multivariate,
                                       is_regression_model) {
@@ -167,7 +181,8 @@ train_random_forest <- function(x, y, hyperparams, other_params) {
     splitrule = other_params$split_rule,
     nsplit = other_params$splits_number,
     xvar.wt = other_params$x_vars_weights,
-    case.wt = other_params$records_weights
+    case.wt = other_params$records_weights,
+    na.action = other_params$na_action
   )
 
   return(model)

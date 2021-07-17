@@ -25,6 +25,7 @@ Model <- R6Class(
     x = NULL,
     y = NULL,
     removed_x_cols = NULL,
+    removed_rows = NULL,
     validate_params = NULL,
     execution_time = NULL,
 
@@ -54,6 +55,7 @@ Model <- R6Class(
     fit = function() {
       private$prepare_x()
       private$prepare_y()
+      private$handle_nas()
       private$prepare_others()
 
       private$tune()
@@ -98,6 +100,14 @@ Model <- R6Class(
     prepare_x = function() {
       self$x <- private$get_x_for_model(self$x)
       self$removed_x_cols <- attr(self$x, "removed_cols")
+
+      if (!is.null(self$removed_x_cols)) {
+        warning(
+          length(self$removed_x_cols),
+          " columns were removed from x because they has no variance ",
+          "See model$removed_x_cols to see what columns were removed."
+        )
+      }
     },
     get_x_for_model = function(x, remove_cols = TRUE) {
       x <- to_matrix(x)
@@ -113,6 +123,23 @@ Model <- R6Class(
         private$prepare_multivariate_y()
       } else {
         private$prepare_univariate_y()
+      }
+    },
+    handle_nas = function() {
+      nas_x_rows <- which_is_na(self$x)
+      nas_y_rows <- which_is_na(self$y)
+
+      if (!is.null(nas_x_rows) || !is.null(nas_y_rows)) {
+        self$removed_rows <-  union(nas_x_rows, nas_y_rows)
+
+        self$x <- get_records(self$x, -self$removed_rows)
+        self$y <- get_records(self$y, -self$removed_rows)
+
+        warning(
+          length(self$removed_rows),
+          " rows were removed because it has NA values in x and/or y. ",
+          "See model$removed_rows to see what rows were removed."
+        )
       }
     },
     has_to_tune = function() {

@@ -59,18 +59,18 @@ Tuner <- R6Class(
       self$is_multivariate <- is_multivariate
       self$loss_function <- nonull(
         loss_function,
-        get_loss_function(responses, is_multivariate)
+        get_loss_function(self$responses, self$is_multivariate)
       )
       self$tabs_number <- tabs_number
       self$other_params <- other_params
 
       self$cross_validator <- get_cross_validator(
-        type = cv_type,
-        records_number = nrow(x),
-        folds_number = folds_number,
-        testing_proportion = testing_proportion
+        type = self$cv_type,
+        records_number = nrow(self$x),
+        folds_number = self$folds_number,
+        testing_proportion = self$testing_proportion
       )
-      self$all_combinations <- expand.grid(hyperparams)
+      self$all_combinations <- expand.grid(self$hyperparams)
       self$combinations_number <- nrow(self$all_combinations)
     },
 

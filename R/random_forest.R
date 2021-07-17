@@ -20,6 +20,7 @@ random_forest <- function(x, y,
                           importance = TRUE,
                           x_vars_weights = NULL,
                           records_weights = NULL,
+                          na_action = "omit",
 
                           validate_params = TRUE,
                           seed = NULL,
@@ -46,6 +47,7 @@ random_forest <- function(x, y,
       importance = importance,
       x_vars_weights = x_vars_weights,
       records_weights = records_weights,
+      na_action = na_action,
 
       seed = seed,
       verbose = verbose
@@ -80,7 +82,8 @@ random_forest <- function(x, y,
     splits_number = splits_number,
     importance = importance,
     x_vars_weights = x_vars_weights,
-    records_weights = records_weights
+    records_weights = records_weights,
+    na_action = na_action
   )
 
   wrapper_function <- get_verbose_function(verbose)
