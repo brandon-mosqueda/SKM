@@ -1,27 +1,9 @@
 #' @importFrom R6 R6Class
 #' @importFrom glmnet glmnet
 
+#' @include utils.R
 #' @include model.R
-
-train_glm <- function(x, y, hyperparams, other_params) {
-  model <- glmnet(
-    x = x,
-    y = y,
-
-    family = other_params$response_family,
-
-    alpha = hyperparams$alpha,
-    lambda = hyperparams$lambda,
-
-    nlambda = other_params$lambdas_number,
-    lambda.min.ratio = other_params$lambda_min_ratio,
-    weights = other_params$records_weights,
-    standardize = other_params$standardize,
-    intercept = other_params$fit_intercept
-  )
-
-  return(model)
-}
+#' @include model_helpers.R
 
 GeneralizedLinearModel <- R6Class(
   classname = "GeneralizedLinearModel",

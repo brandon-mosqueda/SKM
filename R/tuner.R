@@ -4,36 +4,6 @@
 #' @include model_helpers.R
 #' @include metrics.R
 
-multivariate_loss <- function(observed, predicted, responses) {
-  all_metrics <- c()
-
-  for (response_name in names(responses)) {
-    response_type <- responses[[response_name]]$type
-
-    loss_function <- pcic
-    if (is_numeric_response(response_type)) {
-      loss_function <- maape
-    }
-    current_value <- loss_function(
-      observed[ , response_name],
-      predicted[[response_name]]$predicted
-    )
-    all_metrics <- c(all_metrics, current_value)
-  }
-
-  return(mean(all_metrics, na.rm = TRUE))
-}
-
-get_loss_function <- function(responses, is_multivariate) {
-  if (is_multivariate) {
-    return(multivariate_loss)
-  } else if (is_class_response(responses[[1]]$type)) {
-    return(pcic)
-  } else {
-    return(mse)
-  }
-}
-
 Tuner <- R6Class(
   classname = "Tuner",
   public = list(

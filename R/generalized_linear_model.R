@@ -1,5 +1,6 @@
-#' @include model.R
+#' @include utils.R
 #' @include validator.R
+#' @include generalized_linear_model_model.R
 
 #' @export
 generalized_linear_model <- function(x, y,

@@ -1,5 +1,6 @@
-#' @include model.R
+#' @include utils.R
 #' @include validator.R
+#' @include support_vector_machine_model.R
 
 #' @export
 support_vector_machine <- function(x, y,

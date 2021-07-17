@@ -1,5 +1,6 @@
-#' @include model.R
+#' @include utils.R
 #' @include validator.R
+#' @include random_forest_model.R
 
 #' @export
 random_forest <- function(x, y,

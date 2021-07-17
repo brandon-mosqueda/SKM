@@ -188,3 +188,40 @@ pearson <- function(x, y) {
 
   return(cor(x, y, method = "pearson", use = "na.or.complete"))
 }
+
+# Helpers --------------------------------------------------
+
+multivariate_loss <- function(observed, predicted, responses) {
+  all_metrics <- c()
+
+  for (response_name in names(responses)) {
+    response_type <- responses[[response_name]]$type
+
+    loss_function <- pcic
+    if (is_numeric_response(response_type)) {
+      loss_function <- maape
+    }
+    current_value <- loss_function(
+      observed[, response_name],
+      predicted[[response_name]]$predicted
+    )
+    all_metrics <- c(all_metrics, current_value)
+  }
+
+  return(mean(all_metrics, na.rm = TRUE))
+}
+
+get_loss_function <- function(responses, is_multivariate) {
+  if (is_multivariate) {
+    return(multivariate_loss)
+  } else if (is_class_response(responses[[1]]$type)) {
+    return(pcic)
+  } else if (is_numeric_response(responses[[1]]$type)) {
+    return(mse)
+  } else {
+    stop(sprintf(
+      "{%s} is not recognized as a type of response variable",
+      set_collapse(responses[[1]]$type)
+    ))
+  }
+}

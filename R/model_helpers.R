@@ -114,3 +114,61 @@ get_glmnet_family <- function(response_type, is_multivariate) {
 
   return(family)
 }
+
+train_glm <- function(x, y, hyperparams, other_params) {
+  model <- glmnet(
+    x = x,
+    y = y,
+
+    family = other_params$response_family,
+
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
+
+    nlambda = other_params$lambdas_number,
+    lambda.min.ratio = other_params$lambda_min_ratio,
+    weights = other_params$records_weights,
+    standardize = other_params$standardize,
+    intercept = other_params$fit_intercept
+  )
+
+  return(model)
+}
+
+get_random_forest_formula <- function(responses,
+                                      is_multivariate,
+                                      is_regression_model) {
+  if (is_multivariate) {
+    responses_comma <- paste0(names(responses), collapse = ", ")
+
+    model_formula <- sprintf("Multivar(%s) ~ .", responses_comma)
+    if (is_regression_model) {
+      model_formula <- sprintf("cbind(%s) ~ .", responses_comma)
+    }
+  } else {
+    model_formula <- "y ~ ."
+  }
+
+  return(formula(model_formula))
+}
+
+train_random_forest <- function(x, y, hyperparams, other_params) {
+  data <- data.frame(y, x)
+
+  model <- rfsrc(
+    other_params$model_formula,
+    data = data,
+    ntree = hyperparams$trees_number,
+    mtry = hyperparams$sampled_x_vars_number,
+    nodesize = hyperparams$node_size,
+    nodedepth = hyperparams$node_depth,
+
+    importance = other_params$importance,
+    splitrule = other_params$split_rule,
+    nsplit = other_params$splits_number,
+    xvar.wt = other_params$x_vars_weights,
+    case.wt = other_params$records_weights
+  )
+
+  return(model)
+}

@@ -1,7 +1,9 @@
 #' @importFrom R6 R6Class
 #' @importFrom randomForestSRC rfsrc
 
+#' @include utils.R
 #' @include model.R
+#' @include model_helpers.R
 
 RandomForestModel <- R6Class(
   classname = "RandomForestModel",
@@ -53,6 +55,12 @@ RandomForestModel <- R6Class(
           function(x) is_numeric_response(x$type)
         ))
       }
+
+      self$other_params$model_formula <- get_random_forest_formula(
+        self$responses,
+        self$is_multivariate,
+        self$is_regression_model
+      )
     },
     get_x_for_model = function(x, remove_cols = FALSE) {
       return(to_data_frame(x))
@@ -66,26 +74,7 @@ RandomForestModel <- R6Class(
       self$other_params$importance <- true_importance
     },
 
-    train_univariate = function(x, y, hyperparams, other_params) {
-      data <- data.frame(y = y, x)
-
-      model <- rfsrc(
-        y ~ .,
-        data = data,
-        ntree = hyperparams$trees_number,
-        mtry = hyperparams$sampled_x_vars_number,
-        nodesize = hyperparams$node_size,
-        nodedepth = hyperparams$node_depth,
-
-        importance = other_params$importance,
-        splitrule = other_params$split_rule,
-        nsplit = other_params$splits_number,
-        xvar.wt = other_params$x_vars_weights,
-        case.wt = other_params$records_weights
-      )
-
-      return(model)
-    },
+    train_univariate = train_random_forest,
     predict_univariate = function(model,
                                   x,
                                   responses,
@@ -106,33 +95,7 @@ RandomForestModel <- R6Class(
       return(predictions)
     },
 
-    train_multivariate = function(x, y, hyperparams, other_params) {
-      data <- data.frame(y, x)
-      responses_comma <- paste0(colnames(y), collapse = ", ")
-
-      model_formula <- sprintf("Multivar(%s) ~ .", responses_comma)
-      if (self$is_regression_model) {
-        model_formula <- sprintf("cbind(%s) ~ .", responses_comma)
-      }
-      model_formula <- formula(model_formula)
-
-      model <- rfsrc(
-        model_formula,
-        data = data,
-        ntree = hyperparams$trees_number,
-        mtry = hyperparams$sampled_x_vars_number,
-        nodesize = hyperparams$node_size,
-        nodedepth = hyperparams$node_depth,
-
-        importance = other_params$importance,
-        splitrule = other_params$split_rule,
-        nsplit = other_params$splits_number,
-        xvar.wt = other_params$x_vars_weights,
-        case.wt = other_params$records_weights
-      )
-
-      return(model)
-    },
+    train_multivariate = train_random_forest,
     predict_multivariate = function(model,
                                     x,
                                     responses,

@@ -1,7 +1,9 @@
 #' @importFrom R6 R6Class
 #' @importFrom e1071 svm
 
+#' @include utils.R
 #' @include model.R
+#' @include model_helpers.R
 
 SupportVectorMachineModel <- R6Class(
   classname = "SupportVectorMachineModel",
