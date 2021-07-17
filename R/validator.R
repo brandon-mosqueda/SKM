@@ -303,15 +303,55 @@ validate_random_forest <- function(x,
     x_vars_weights,
     len = ncol(x),
     null.ok = TRUE,
-    finite = TRUE,
-    lower = 0
+    finite = TRUE
   )
 
   assert_numeric(
     records_weights,
     len = nrow(x),
     null.ok = TRUE,
-    finite = TRUE,
-    lower = 0
+    finite = TRUE
   )
+}
+
+validate_generalized_linear_model <- function(x,
+                                              y,
+                                              is_multivariate,
+
+                                              alpha,
+                                              lambda,
+
+                                              tune_cv_type,
+                                              tune_folds_number,
+                                              tune_testing_proportion,
+
+                                              lambdas_number,
+                                              lambda_min_ratio,
+                                              records_weights,
+                                              standardize,
+                                              fit_intercept,
+
+                                              seed,
+                                              verbose) {
+  validate_base_params(
+    x = x,
+    y = y,
+    is_multivariate = is_multivariate,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
+    seed = seed,
+    verbose = verbose
+  )
+
+  assert_numeric(alpha, lower = 0, upper = 1, any.missing = FALSE)
+
+  assert_numeric(lambda, finite = TRUE, any.missing = FALSE, null.ok = TRUE)
+  assert_number(lambdas_number, finite = TRUE, lower = 1)
+  assert_number(lambda_min_ratio, finite = TRUE, lower = 0)
+
+  assert_numeric(records_weights, len = nrow(x), null.ok = TRUE, finite = TRUE)
+
+  assert_logical(standardize, any.missing = FALSE, len = 1)
+  assert_logical(fit_intercept, any.missing = FALSE, len = 1)
 }

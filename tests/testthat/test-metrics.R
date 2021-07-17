@@ -116,6 +116,37 @@ test_that("pccc", {
   expect_identical(pccc(NULL, NULL), NaN)
 })
 
+test_that("pcic", {
+  expect_identical(pcic("a", "a"), 0)
+  expect_identical(pcic(1, 1), 0)
+  expect_identical(pcic(1, 2), 1)
+  expect_identical(pcic("a", "b"), 1)
+  expect_identical(pcic(c("a", "b"), c("b", "b")), 0.5)
+  expect_identical(pcic(c("a", NA, "b", "c"), c("b", "b", "b", NA)), 0.5)
+
+  expect_identical(pcic(rep("a", 20), rep("a", 20)), 0)
+  expect_identical(pcic(rep("a", 20), rep("b", 20)), 1)
+
+  expect_identical(
+    pcic(categorical_vars$observed, categorical_vars$predicted),
+    2 / 7
+  )
+
+  expect_error(
+    pcic("a", c("a", "b")),
+    "observed and predicted must have the same length"
+  )
+  expect_error(
+    pcic("a", NULL),
+    "observed and predicted must have the same length"
+  )
+
+  expect_identical(pcic(NA, "a"), NaN)
+  expect_identical(pcic("a", NA), NaN)
+  expect_identical(pcic(NA, NA), NaN)
+  expect_identical(pcic(NULL, NULL), NaN)
+})
+
 test_that("brier_score", {
   probs <- matrix(1)
   colnames(probs) <- c("a")

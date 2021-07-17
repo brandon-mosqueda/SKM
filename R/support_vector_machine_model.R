@@ -87,7 +87,7 @@ SupportVectorMachineModel <- R6Class(
                                   hyperparams) {
       predictions <- predict(model, x, probability = TRUE)
 
-      if (is_class_response(responses[["y"]]$type)) {
+      if (is_class_response(responses$y$type)) {
         probabilities <- attr(predictions, "probabilities")
         attr(predictions, "probabilities") <- NULL
         names(predictions) <- NULL

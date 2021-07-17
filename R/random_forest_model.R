@@ -94,7 +94,7 @@ RandomForestModel <- R6Class(
       x <- data.frame(x)
       predictions <- predict(model, newdata = x)
 
-      if (is_class_response(responses[["y"]]$type)) {
+      if (is_class_response(responses$y$type)) {
         predictions <- list(
           predicted = predictions$class,
           probabilities = as.data.frame(predictions$predicted)

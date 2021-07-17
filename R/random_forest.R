@@ -3,7 +3,7 @@
 
 #' @export
 random_forest <- function(x, y,
-                          is_multivariate = has_dims(y),
+                          is_multivariate = length(dim(y)) > 1,
 
                           trees_number = 500,
                           node_size = 5,

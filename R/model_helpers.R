@@ -13,7 +13,7 @@ prepare_univariate_y <- function() {
     self$y <- factor(self$y)
   }
 
-  self$responses[["y"]] <- list(
+  self$responses$y <- list(
     type = get_response_type(self$y),
     levels = levels(self$y)
   )
@@ -97,4 +97,20 @@ proportion_to <- function(proportion, to, lower = 0, upper = 1) {
     ceiling(proportion * to),
     proportion
   ))
+}
+
+get_glmnet_family <- function(response_type, is_multivariate) {
+  if (is_multivariate) {
+    family <- "mgaussian"
+  } else if (is_continuous_response(response_type)) {
+    family <- "gaussian"
+  } else if (is_discrete_response(response_type)) {
+    family <- "poisson"
+  } else if (is_categorical_response(response_type)) {
+    family <- "multinomial"
+  } else if (is_binary_response(response_type)) {
+    family <- "binomial"
+  }
+
+  return(family)
 }

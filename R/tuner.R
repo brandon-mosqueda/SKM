@@ -10,12 +10,12 @@ multivariate_loss <- function(observed, predicted, responses) {
   for (response_name in names(responses)) {
     response_type <- responses[[response_name]]$type
 
-    loss_function <- pccc
+    loss_function <- pcic
     if (is_numeric_response(response_type)) {
       loss_function <- maape
     }
     current_value <- loss_function(
-      observed[[response_name]],
+      observed[ , response_name],
       predicted[[response_name]]$predicted
     )
     all_metrics <- c(all_metrics, current_value)
@@ -28,7 +28,7 @@ get_loss_function <- function(responses, is_multivariate) {
   if (is_multivariate) {
     return(multivariate_loss)
   } else if (is_class_response(responses[[1]]$type)) {
-    return(pccc)
+    return(pcic)
   } else {
     return(mse)
   }
@@ -179,7 +179,7 @@ Tuner <- R6Class(
         )
       }
 
-      self$all_combinations <- arrange(self$all_combinations, -loss)
+      self$all_combinations <- arrange(self$all_combinations, loss)
       self$best_combination <- as.list(self$all_combinations[1, ])
     }
   )

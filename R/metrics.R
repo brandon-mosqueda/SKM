@@ -47,11 +47,13 @@ confusion_matrix <- function(observed, predicted, all_levels = NULL) {
 }
 
 #' @title Kappa coefficient
+#' @export
 kappa_coeff <- function(observed, predicted, all_levels = NULL) {
   return(classAgreement(confusion_matrix(observed, predicted, all_levels))$kappa)
 }
 
 #' @title Proportion of correctly classified cases
+#' @export
 pccc <- function(observed, predicted, na.rm = TRUE) {
   if (length(observed) != length(predicted)) {
     stop("observed and predicted must have the same length")
@@ -60,7 +62,18 @@ pccc <- function(observed, predicted, na.rm = TRUE) {
   return(mean(observed == predicted, na.rm = na.rm))
 }
 
+#' @title Proportion of cases incorrectly classified
+#' @export
+pcic <- function(observed, predicted, na.rm = TRUE) {
+  if (length(observed) != length(predicted)) {
+    stop("observed and predicted must have the same length")
+  }
+
+  return(mean(observed != predicted, na.rm = na.rm))
+}
+
 #' @title Brier score
+#' @export
 brier_score <- function(observed, probabilities) {
   if (length(observed) != nrow(probabilities)) {
     stop("observed and probabilities must have the same number of records")
@@ -82,6 +95,7 @@ brier_score <- function(observed, probabilities) {
 # For continuous data --------------------------------------------------
 
 #' @title Mean Squared Error
+#' @export
 mse <- function(observed, predicted, na.rm = TRUE) {
   if (length(observed) != length(predicted)) {
     stop("observed and predicted must have the same length")
@@ -91,11 +105,13 @@ mse <- function(observed, predicted, na.rm = TRUE) {
 }
 
 #' @title Root Mean Squared Error
+#' @export
 rmse <- function(observed, predicted, na.rm = TRUE) {
   return(sqrt(mse(observed, predicted, na.rm = na.rm)))
 }
 
 #' @title Normalize Root Mean Squared Error
+#' @export
 nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
   rmse_value <- rmse(observed, predicted)
   if (is.nan(rmse_value) || is.na(rmse_value)) {
@@ -132,6 +148,7 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
 }
 
 #' @title Mean Absolute Error
+#' @export
 mae <- function(observed, predicted, na.rm = TRUE) {
   if (length(observed) != length(predicted)) {
     stop("observed and predicted must have the same length")
@@ -141,6 +158,7 @@ mae <- function(observed, predicted, na.rm = TRUE) {
 }
 
 #' @title Mean Arctangent Absolute Percentage Error
+#' @export
 maape <- function(observed, predicted, na.rm = TRUE) {
   if (length(observed) != length(predicted)) {
     stop("observed and predicted must have the same length")
