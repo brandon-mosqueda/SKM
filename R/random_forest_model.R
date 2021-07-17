@@ -80,7 +80,6 @@ RandomForestModel <- R6Class(
                                   responses,
                                   other_params,
                                   hyperparams) {
-      x <- data.frame(x)
       predictions <- predict(model, newdata = x)
 
       if (is_class_response(responses$y$type)) {
@@ -101,7 +100,6 @@ RandomForestModel <- R6Class(
                                     responses,
                                     other_params,
                                     hyperparams) {
-      x <- data.frame(x)
       all_predictions <- predict(model, newdata = x)
       predictions <- list()
 

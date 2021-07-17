@@ -76,8 +76,9 @@ SupportVectorMachineModel <- R6Class(
         tolerance = other_params$tolerance,
         epsilon = other_params$epsilon,
         shrinking = other_params$shrinking,
-        probability = TRUE,
-        fitted = other_params$fitted
+        fitted = other_params$fitted,
+
+        probability = TRUE
       )
 
       return(model)

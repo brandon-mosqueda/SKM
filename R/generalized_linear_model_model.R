@@ -96,16 +96,18 @@ GeneralizedLinearModel <- R6Class(
         predictions <- predict(model, x, type = "class")
         probabilities <- predict(model, x, type = "response")
 
-        if (!is_binary_response(responses$y$type)) {
-          probabilities <- probabilities[, , 1]
-        } else {
+        if (is_binary_response(responses$y$type)) {
           # This only returns the probabilities of the first level
           probabilities <- cbind(1 - probabilities, probabilities)
           colnames(probabilities) <- responses$y$levels
+        } else {
+          probabilities <- probabilities[, , 1]
         }
 
+        predictions <- factor(c(predictions), levels = responses$y$levels)
+
         return(list(
-          predicted = c(predictions),
+          predicted = predictions,
           probabilities = probabilities
         ))
       } else {

@@ -72,7 +72,7 @@ get_cross_validator <- function(type,
   } else if (type == "random") {
     validator <- RandomCV
   } else {
-    stop(echo(
+    stop(sprintf(
       "{%s} is not a valid type of cross validation",
       set_collapse(type)
     ))
@@ -156,7 +156,7 @@ train_random_forest <- function(x, y, hyperparams, other_params) {
   data <- data.frame(y, x)
 
   model <- rfsrc(
-    other_params$model_formula,
+    formula = other_params$model_formula,
     data = data,
     ntree = hyperparams$trees_number,
     mtry = hyperparams$sampled_x_vars_number,
@@ -171,4 +171,38 @@ train_random_forest <- function(x, y, hyperparams, other_params) {
   )
 
   return(model)
+}
+
+get_gbm_distribution <- function(response_type) {
+  if (is_continuous_response(response_type)) {
+    distribution <- "gaussian"
+  } else if (is_binary_response(response_type)) {
+    distribution <- "bernoulli"
+  } else if (is_categorical_response(response_type)) {
+    distribution <- "multinomial"
+  } else if (is_discrete_response(response_type)) {
+    distribution <- "poisson"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(distribution)
+}
+
+get_gbm_predict_type <- function(response_type) {
+  if (is_numeric_response(response_type)) {
+    type <- "link"
+  } else if (is_class_response(response_type)) {
+    type <- "response"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(type)
 }

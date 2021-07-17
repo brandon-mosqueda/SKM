@@ -28,7 +28,8 @@ Imports:
     checkmate,
     randomForestSRC,
     e1071,
-    glmnet
+    glmnet,
+    gbm
 Collate:
     'globals.R'
     'utils.R'
@@ -36,14 +37,16 @@ Collate:
     'custom_cross_validator.R'
     'model_helpers.R'
     'model.R'
-    'generalized_linear_model_model.R'
+    'random_forest_model.R'
     'kernels.R'
     'validator.R'
+    'generalized_boosted_machine.R'
+    'generalized_boosted_machine_model.R'
+    'generalized_linear_model_model.R'
     'generalized_linear_model.R'
     'k_fold_cross_validator.R'
     'metrics.R'
     'random_cross_validator.R'
-    'random_forest_model.R'
     'random_forest.R'
     'support_vector_machine_model.R'
     'support_vector_machine.R'

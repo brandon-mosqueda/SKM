@@ -188,31 +188,31 @@ assert_forest_split_rule <- function(split_rule) {
 # Single fit functions --------------------------------------------------
 
 validate_support_vector_machine <- function(x,
-                         y,
+                                            y,
 
-                         kernel,
-                         degree,
-                         gamma,
-                         coef0,
-                         cost,
+                                            kernel,
+                                            degree,
+                                            gamma,
+                                            coef0,
+                                            cost,
 
-                         tune_cv_type,
-                         tune_folds_number,
-                         tune_testing_proportion,
+                                            tune_cv_type,
+                                            tune_folds_number,
+                                            tune_testing_proportion,
 
-                         scale,
-                         class_weights,
-                         cache_size,
-                         tolerance,
-                         epsilon,
-                         shrinking,
-                         cross,
-                         probability,
-                         fitted,
-                         na_action,
+                                            scale,
+                                            class_weights,
+                                            cache_size,
+                                            tolerance,
+                                            epsilon,
+                                            shrinking,
+                                            cross,
+                                            probability,
+                                            fitted,
+                                            na_action,
 
-                         seed,
-                         verbose) {
+                                            seed,
+                                            verbose) {
   validate_base_params(
     x = x,
     y = y,
@@ -354,4 +354,71 @@ validate_generalized_linear_model <- function(x,
 
   assert_logical(standardize, any.missing = FALSE, len = 1)
   assert_logical(fit_intercept, any.missing = FALSE, len = 1)
+}
+
+validate_generalized_boosted_machine <- function(x,
+                                                 y,
+
+                                                 trees_number,
+                                                 max_depth,
+                                                 node_size,
+                                                 shrinkage,
+                                                 sampled_records_proportion,
+
+                                                 tune_cv_type,
+                                                 tune_folds_number,
+                                                 tune_testing_proportion,
+
+                                                 records_weights,
+                                                 predictors_relationship,
+                                                 cores_number,
+
+                                                 seed,
+                                                 verbose) {
+  validate_base_params(
+    x = x,
+    y = y,
+    is_multivariate = FALSE,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
+    seed = seed,
+    verbose = verbose
+  )
+
+  assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
+  assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
+  assert_numeric(
+    max_depth,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE,
+    null.ok = TRUE
+  )
+  assert_numeric(
+    sampled_records_proportion,
+    lower = 1e-3,
+    upper = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+  assert_numeric(shrinkage, finite = TRUE, any.missing = FALSE)
+
+  assert_numeric(
+    records_weights,
+    finite = TRUE,
+    any.missing = FALSE,
+    len = nrow(x),
+    null.ok = TRUE
+  )
+
+  assert_numeric(
+    predictors_relationship,
+    finite = TRUE,
+    any.missing = FALSE,
+    len = ncol(x),
+    null.ok = TRUE
+  )
+
+  assert_number(cores_number, lower = 1, finite = TRUE, null.ok = TRUE)
 }

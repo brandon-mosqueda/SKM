@@ -151,6 +151,7 @@ Tuner <- R6Class(
 
       self$all_combinations <- arrange(self$all_combinations, loss)
       self$best_combination <- as.list(self$all_combinations[1, ])
+      attr(self$best_combination, "out.attrs") <- NULL
     }
   )
 )
