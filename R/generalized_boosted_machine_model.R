@@ -49,9 +49,30 @@ GeneralizedBoostedMachineModel <- R6Class(
       self$other_params$distribution <- get_gbm_distribution(
         self$responses$y$type
       )
+
+      self$other_params$predictors_relationship <- remove_if_has_more(
+        self$other_params$predictors_relationship,
+        ncol(self$x),
+        self$removed_x_cols
+      )
+
+      self$other_params$records_weights <- remove_if_has_more(
+        self$other_params$records_weights,
+        nrow(self$x),
+        self$removed_rows
+      )
     },
     get_x_for_model = function(x, remove_cols = FALSE) {
       return(to_data_frame(x))
+    },
+
+    tune = function() {
+      true_other_params <- self$other_params
+      self$other_params$records_weights <- NULL
+
+      super$tune()
+
+      self$other_params <- true_other_params
     },
 
     train_univariate = function(x, y, hyperparams, other_params) {

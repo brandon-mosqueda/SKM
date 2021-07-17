@@ -58,6 +58,12 @@ GeneralizedLinearModel <- R6Class(
         }
       }
 
+      self$other_params$records_weights <- remove_if_has_more(
+        self$other_params$records_weights,
+        nrow(self$x),
+        self$removed_rows
+      )
+
       # Evaluate one model first to obtain the lambdas sequence and the perform
       # cross validation by our own
       if (is.null(self$hyperparams$lambda)) {

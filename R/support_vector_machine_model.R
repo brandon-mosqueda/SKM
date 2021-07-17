@@ -59,6 +59,14 @@ SupportVectorMachineModel <- R6Class(
   private = list(
     # Methods --------------------------------------------------
 
+    prepare_others = function() {
+      self$other_params$scale <- remove_if_has_more(
+        self$other_params$scale,
+        ncol(self$x),
+        self$removed_x_cols
+      )
+    },
+
     train_univariate = function(x, y, hyperparams, other_params) {
       model <- svm(
         x = x,

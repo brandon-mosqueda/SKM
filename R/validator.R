@@ -235,7 +235,7 @@ validate_support_vector_machine <- function(x,
     verbose = verbose
   )
 
-  assert_logical(scale, any.missing = FALSE)
+  assert_logical(scale, any.missing = FALSE, max.len = ncol(x))
 
   assert_svm_kernel(kernel)
   assert_numeric(degree, finite = TRUE, any.missing = FALSE)
@@ -428,7 +428,8 @@ validate_generalized_boosted_machine <- function(x,
 
   assert_numeric(
     predictors_relationship,
-    finite = TRUE,
+    lower = -1,
+    upper = 1,
     any.missing = FALSE,
     len = ncol(x),
     null.ok = TRUE

@@ -4,7 +4,6 @@
 
 #' @export
 generalized_linear_model <- function(x, y,
-                                     is_multivariate = length(dim(y)) > 1,
 
                                      alpha = 1,
 
@@ -27,6 +26,8 @@ generalized_linear_model <- function(x, y,
                                      seed = NULL,
                                      verbose = TRUE) {
   assert_logical(validate_params, len = 1, any.missing = FALSE)
+
+  is_multivariate <- length(dim(y)) > 1
 
   if (validate_params) {
     validate_generalized_linear_model(

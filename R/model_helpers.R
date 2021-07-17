@@ -221,3 +221,15 @@ get_gbm_predict_type <- function(response_type) {
 
   return(type)
 }
+
+remove_if_has_more <- function(x, compare_value, indices_to_remove) {
+  if (
+    !is.null(indices_to_remove) &&
+    !is_empty(x) &&
+    get_length(x) > compare_value
+  ) {
+    x <- get_records(x, -indices_to_remove)
+  }
+
+  return(x)
+}

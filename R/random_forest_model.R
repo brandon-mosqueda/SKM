@@ -63,6 +63,18 @@ RandomForestModel <- R6Class(
         self$is_multivariate,
         self$is_regression_model
       )
+
+      self$other_params$x_vars_weights <- remove_if_has_more(
+        self$other_params$x_vars_weights,
+        ncol(self$x),
+        self$removed_x_cols
+      )
+
+      self$other_params$records_weights <- remove_if_has_more(
+        self$other_params$records_weights,
+        nrow(self$x),
+        self$removed_rows
+      )
     },
     get_x_for_model = function(x, remove_cols = FALSE) {
       return(to_data_frame(x))
@@ -74,11 +86,14 @@ RandomForestModel <- R6Class(
     },
 
     tune = function() {
+      true_other_params <- self$other_params
       # When tuning use importance FALSE for quicker evalution
-      true_importance <- self$other_params$importance
       self$other_params$importance <- FALSE
+      self$other_params$records_weights <- NULL
+
       super$tune()
-      self$other_params$importance <- true_importance
+
+      self$other_params <- true_other_params
     },
 
     train_univariate = train_random_forest,
