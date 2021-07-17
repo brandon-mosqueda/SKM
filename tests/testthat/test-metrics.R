@@ -110,6 +110,12 @@ test_that("pccc", {
     "observed and predicted must have the same length"
   )
 
+  x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
+  y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
+  expect_identical(pccc(x, y), 1)
+  y[c(2, 4, 5)] <- "B"
+  expect_identical(pccc(x, y), 0.5)
+
   expect_identical(pccc(NA, "a"), NaN)
   expect_identical(pccc("a", NA), NaN)
   expect_identical(pccc(NA, NA), NaN)
@@ -141,6 +147,12 @@ test_that("pcic", {
     "observed and predicted must have the same length"
   )
 
+  x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
+  y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
+  expect_identical(pcic(x, y), 0)
+  y[c(2, 4, 5)] <- "B"
+  expect_identical(pcic(x, y), 0.5)
+
   expect_identical(pcic(NA, "a"), NaN)
   expect_identical(pcic("a", NA), NaN)
   expect_identical(pcic(NA, NA), NaN)
@@ -170,6 +182,24 @@ test_that("brier_score", {
   expect_error(
     brier_score("b", probs),
     "observed and probabilities must have the same number of records"
+  )
+  probs <- matrix(c(1, 0, 1, 0, 1, 0), 3, 2)
+  colnames(probs) <- c("a", "b")
+  expect_error(
+    brier_score(c("b", "c", "a"), probs),
+    paste0(
+      "Assertion on 'observed' failed: Must be a subset of ",
+      "\\{'a','b'\\}, but is \\{'b','c','a'\\}."
+    )
+  )
+  probs <- matrix(c(0, 1), 1, 2)
+  colnames(probs) <- c("a", "b")
+  expect_error(
+    brier_score(NA, probs),
+    paste0(
+      "Assertion on 'observed' failed: Must be a subset of ",
+      "\\{'a','b'\\}, not empty"
+    )
   )
 
   # Manual calculation
@@ -208,10 +238,6 @@ test_that("brier_score", {
   probs <- matrix(c(0, 1), 1, 2)
   colnames(probs) <- c("a", "b")
   expect_identical(brier_score("a", probs), 2)
-
-  probs <- matrix(c(0, 1), 1, 2)
-  colnames(probs) <- c("a", "b")
-  expect_identical(brier_score(NA, probs), NaN)
 })
 
 test_that("mse", {

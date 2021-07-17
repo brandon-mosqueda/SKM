@@ -1,3 +1,5 @@
+#' @import checkmate
+
 # For categorical data --------------------------------------------------
 
 #' @title Class agreement
@@ -49,7 +51,11 @@ confusion_matrix <- function(observed, predicted, all_levels = NULL) {
 #' @title Kappa coefficient
 #' @export
 kappa_coeff <- function(observed, predicted, all_levels = NULL) {
-  return(classAgreement(confusion_matrix(observed, predicted, all_levels))$kappa)
+  return(classAgreement(confusion_matrix(
+    observed,
+    predicted,
+    all_levels
+  ))$kappa)
 }
 
 #' @title Proportion of correctly classified cases
@@ -59,7 +65,7 @@ pccc <- function(observed, predicted, na.rm = TRUE) {
     stop("observed and predicted must have the same length")
   }
 
-  return(mean(observed == predicted, na.rm = na.rm))
+  return(mean(as.character(observed) == as.character(predicted), na.rm = na.rm))
 }
 
 #' @title Proportion of cases incorrectly classified
@@ -69,7 +75,7 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
     stop("observed and predicted must have the same length")
   }
 
-  return(mean(observed != predicted, na.rm = na.rm))
+  return(mean(as.character(observed) != as.character(predicted), na.rm = na.rm))
 }
 
 #' @title Brier score
@@ -83,10 +89,17 @@ brier_score <- function(observed, probabilities) {
     stop("probabilities must have the classes' names as columns names")
   }
 
+  assert_subset(
+    as.character(unique(na.omit(observed))),
+    colnames(probabilities),
+    empty.ok = FALSE,
+    .var.name = "observed"
+  )
+
+  observed <- factor(observed, levels = colnames(probabilities))
   if (all(is.na(observed))) {
     return(NaN)
   }
-  observed <- factor(observed, levels = colnames(probabilities))
   observed_dummy <- model.matrix(~ 0 + observed)
 
   return(mean(rowSums((probabilities - observed_dummy)^2)))
