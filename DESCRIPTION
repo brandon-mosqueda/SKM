@@ -29,17 +29,20 @@ Imports:
     randomForestSRC,
     e1071,
     glmnet,
-    gbm
+    gbm,
+    keras,
+    tensorflow
 Collate:
     'globals.R'
     'utils.R'
     'cross_validator.R'
     'custom_cross_validator.R'
+    'model_helpers.R'
+    'model.R'
+    'deep_learning_model.R'
     'kernels.R'
     'validator.R'
     'deep_learning.R'
-    'model_helpers.R'
-    'model.R'
     'random_forest_model.R'
     'generalized_boosted_machine.R'
     'generalized_boosted_machine_model.R'

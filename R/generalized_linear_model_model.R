@@ -35,33 +35,34 @@ GeneralizedLinearModel <- R6Class(
   private = list(
     # Methods --------------------------------------------------
 
-    prepare_others = function() {
-      self$other_params$response_family <- get_glmnet_family(
-        self$responses$y$type,
-        self$is_multivariate
-      )
+    prepare_multivariate_y = function() {
+      super$prepare_multivariate_y()
 
       # glm only accepts multivariate for numeric variables
-      if (self$is_multivariate) {
-        are_all_numeric <- all(sapply(
-          self$responses,
-          function(response) is_numeric_response(response$type)
-        ))
+      are_all_numeric <- all(sapply(
+        self$responses,
+        function(response) is_numeric_response(response$type)
+      ))
 
-        if (!are_all_numeric) {
-          warning(
-            "In generalized linear multivariate models it can only be used ",
-            "numeric responses variables, so some of the responses were ",
-            "converted to numeric"
-          )
-          self$y <- data.matrix(self$y)
-        }
+      if (!are_all_numeric) {
+        warning(
+          "In generalized linear multivariate models it can only be used ",
+          "numeric responses variables, so some of the responses were ",
+          "converted to numeric"
+        )
+        self$y <- data.matrix(self$y)
       }
+    },
+    prepare_others = function() {
+      self$other_params$response_family <- get_glmnet_family(
+        response_type = self$responses$y$type,
+        is_multivariate = self$is_multivariate
+      )
 
       self$other_params$records_weights <- remove_if_has_more(
-        self$other_params$records_weights,
-        nrow(self$x),
-        self$removed_rows
+        x = self$other_params$records_weights,
+        compare_value = nrow(self$x),
+        indices_to_remove = self$removed_rows
       )
 
       # Evaluate one model first to obtain the lambdas sequence and the perform

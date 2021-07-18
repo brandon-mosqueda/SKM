@@ -233,3 +233,120 @@ remove_if_has_more <- function(x, compare_value, indices_to_remove) {
 
   return(x)
 }
+
+# Deep learning --------------------------------------------------
+
+get_default_layer_params <- function(layer) {
+  layer$neurons_number <- nonull(layer$neurons_number, DEFAULT_LAYER_NEURONS)
+  layer$activation <- nonull(layer$activation, DEFAULT_LAYER_ACTIVATION)
+  layer$dropout <- nonull(layer$dropout, DEFAULT_LAYER_DROPOUT)
+  layer$ridge_penalty <- nonull(layer$ridge_penalty, DEFAULT_RIDGE_PENALTY)
+  layer$lasso_penalty <- nonull(layer$lasso_penalty, DEFAULT_LASSO_PENALTY)
+
+  return(layer)
+}
+
+get_last_layer_activation <- function(response_type) {
+  if (is_continuous_response(response_type)) {
+    activation <- "linear"
+  } else if(is_discrete_response(response_type)) {
+    activation <- "exponential"
+  } else if (is_binary_response(response_type)) {
+    activation <- "sigmoid"
+  } else if (is_categorical_response(response_type)) {
+    activation <- "softmax"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(activation)
+}
+
+get_last_layer_neurons_number <- function(response_type, levels) {
+  units <- 1
+
+  if (is_categorical_response(response_type)) {
+    units <- length(levels)
+  }
+
+  return(units)
+}
+
+get_loss <- function(response_type) {
+  if (is_continuous_response(response_type)) {
+    loss <- "mse"
+  } else if (is_discrete_response(response_type)) {
+    loss <- "poisson"
+  } else if (is_categorical_response(response_type)) {
+    loss <- "categorical_crossentropy"
+  } else if (is_binary_response(response_type)) {
+    loss <- "binary_crossentropy"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(loss)
+}
+
+get_metric <- function(response_type) {
+  if (is_numeric_response(response_type)) {
+    metric <- "mse"
+  } else if (is_class_response(response_type)) {
+    metric <- "accuracy"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(metric)
+}
+
+prepare_y_to_deep_learning <- function(y, response_type) {
+  if (is_categorical_response(response_type)) {
+    y <- to_categorical(as.numeric(y) - 1)
+  } else if (is_binary_response(response_type)) {
+    y <- as.numeric(y) - 1
+  }
+
+  return(y)
+}
+
+predict_class <- function(probabilities, response_type, levels) {
+  if (is_binary_response(response_type)) {
+    # With binary responses, probabilities is a vector that refers to level 2
+    predictions <- ifelse(probabilities > 0.5, 2, 1)
+    predictions <- levels[predictions]
+
+    probabilities <- cbind(1 - probabilities, probabilities)
+  } else if (is_categorical_response(response_type)) {
+    predictions <- apply(probabilities, 1, which.max)
+    predictions <- levels[predictions]
+  } else {
+    stop(sprintf(
+      "{%s} is not a class response type",
+      set_collapse(response_type)
+    ))
+  }
+
+  predictions <- factor(predictions, levels = levels)
+  colnames(probabilities) <- levels
+
+  return(list(
+    predicted = predictions,
+    probabilities = probabilities
+  ))
+}
+
+predict_numeric <- function(predictions) {
+  return(list(
+    predicted = as.numeric(predictions)
+  ))
+}

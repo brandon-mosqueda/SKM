@@ -196,6 +196,50 @@ assert_forest_split_rule <- function(split_rule) {
   )
 }
 
+assert_penalty <- function(penalty, null.ok = TRUE) {
+  assert_numeric(
+    penalty,
+    lower = 0,
+    upper = 1,
+    null.ok = null.ok,
+    any.missing = FALSE
+  )
+}
+
+assert_layers <- function(layers) {
+  assert_list(layers, min.len = 1)
+
+  for (layer in layers) {
+    assert_list(layer)
+
+    assert_numeric(
+      layer$neurons_number,
+      null.ok = TRUE,
+      any.missing = FALSE,
+      lower = 1e-10
+    )
+
+    assert_subset_string(
+      layer$activation,
+      VALID_ACTIVATION_FUNCTIONS,
+      empty.ok = TRUE,
+      ignore.case = TRUE
+    )
+
+    assert_penalty(layer$dropout)
+
+    assert_penalty(layer$ridge_penalty)
+    assert_penalty(layer$lasso_penalty)
+  }
+}
+
+assert_output_penalties <- function(output_penalties) {
+  assert_list(output_penalties, len = 2, any.missing = FALSE)
+
+  assert_penalty(output_penalties$ridge_penalty, null.ok = FALSE)
+  assert_penalty(output_penalties$lasso_penalty, null.ok = FALSE)
+}
+
 # Single fit functions --------------------------------------------------
 
 validate_support_vector_machine <- function(x,
@@ -436,4 +480,45 @@ validate_generalized_boosted_machine <- function(x,
   )
 
   assert_number(cores_number, lower = 1, finite = TRUE, null.ok = TRUE)
+}
+
+validate_deep_learning <- function(x,
+                                   y,
+                                   is_multivariate,
+
+                                   learning_rate,
+                                   epochs_number,
+                                   batch_size,
+                                   layers,
+                                   output_penalties,
+
+                                   tune_cv_type,
+                                   tune_folds_number,
+                                   tune_testing_proportion,
+
+                                   early_stop,
+                                   early_stop_patience,
+
+                                   seed,
+                                   verbose) {
+  validate_base_params(
+    x = x,
+    y = y,
+    is_multivariate = is_multivariate,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
+    seed = seed,
+    verbose = verbose
+  )
+
+  assert_numeric(learning_rate, finite = TRUE, any.missing = FALSE)
+  assert_numeric(epochs_number, lower = 1, finite = TRUE, any.missing = FALSE)
+  assert_numeric(batch_size, lower = 1, finite = TRUE, any.missing = FALSE)
+
+  assert_layers(layers)
+  assert_output_penalties(output_penalties)
+
+  assert_logical(early_stop, len = 1, any.missing = FALSE)
+  assert_int(early_stop_patience, lower = 1)
 }

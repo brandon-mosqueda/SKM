@@ -40,6 +40,29 @@ RANDOM_FOREST_SPLIT_RULES <- c("mse", "gini", "auc", "entropy")
 
 RANDOM_FOREST_NA_ACTIONS <- c("omit", "impute")
 
+VALID_ACTIVATION_FUNCTIONS <- c(
+  "linear",
+  "relu",
+  "elu",
+  "selu",
+  "hard_sigmoid",
+  "linear",
+  "sigmoid",
+  "softmax",
+  "softplus",
+  "softsign",
+  "tanh",
+  "exponential"
+)
+
+DEFAULT_LAYER_NEURONS <- 0.25
+DEFAULT_LAYER_ACTIVATION <- "relu"
+DEFAULT_LAYER_DROPOUT <- 0
+DEFAULT_RIDGE_PENALTY <- 0
+DEFAULT_LASSO_PENALTY <- 0
+
+NEURONS_PROPORTION_MAX_VALUE <- 10
+
 # Cross validation --------------------------------------------------
 
 CV_TYPES <- c("K_fold", "Random")
