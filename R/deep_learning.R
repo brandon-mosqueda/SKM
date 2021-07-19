@@ -28,6 +28,7 @@ deep_learning <- function(x, y,
                           tune_cv_type = "K_fold",
                           tune_folds_number = 5,
                           tune_testing_proportion = 0.2,
+                          tune_grid_proportion = 1,
 
                           early_stop = FALSE,
                           early_stop_patience = 50,
@@ -54,6 +55,7 @@ deep_learning <- function(x, y,
       tune_cv_type = tune_cv_type,
       tune_folds_number = tune_folds_number,
       tune_testing_proportion = tune_testing_proportion,
+      tune_grid_proportion = tune_grid_proportion,
 
       early_stop = early_stop,
       early_stop_patience = early_stop_patience,
@@ -93,6 +95,7 @@ deep_learning <- function(x, y,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
 
     early_stop = early_stop,
     early_stop_patience = early_stop_patience

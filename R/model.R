@@ -23,6 +23,7 @@ Model <- R6Class(
     tune_cv_type = NULL,
     tune_folds_number = NULL,
     tune_testing_proportion = NULL,
+    tune_grid_proportion = NULL,
 
     x = NULL,
     y = NULL,
@@ -39,6 +40,7 @@ Model <- R6Class(
                           tune_cv_type,
                           tune_folds_number,
                           tune_testing_proportion,
+                          tune_grid_proportion,
                           is_multivariate) {
       self$x <- x
       self$y <- y
@@ -46,6 +48,7 @@ Model <- R6Class(
       self$tune_cv_type <- tune_cv_type
       self$tune_folds_number <- tune_folds_number
       self$tune_testing_proportion <- tune_testing_proportion
+      self$tune_grid_proportion <- tune_grid_proportion
       self$is_multivariate <- is_multivariate
 
       self$other_params <- list()
@@ -175,7 +178,8 @@ Model <- R6Class(
           other_params = self$other_params,
           cv_type = self$tune_cv_type,
           folds_number = self$tune_folds_number,
-          testing_proportion = self$tune_testing_proportion
+          testing_proportion = self$tune_testing_proportion,
+          grid_proportion = self$tune_grid_proportion
         )
 
         tuner$tune()

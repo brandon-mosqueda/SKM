@@ -24,6 +24,7 @@ Tuner <- R6Class(
     cv_type = NULL,
     folds_number = NULL,
     testing_proportion = NULL,
+    grid_proportion = NULL,
 
     tabs_number = NULL,
 
@@ -45,6 +46,7 @@ Tuner <- R6Class(
                           cv_type,
                           folds_number,
                           testing_proportion,
+                          grid_proportion,
                           loss_function = NULL,
                           tabs_number = 0) {
       self$x <- x
@@ -77,8 +79,20 @@ Tuner <- R6Class(
         folds_number = self$folds_number,
         testing_proportion = self$testing_proportion
       )
-      self$all_combinations <- expand.grid(self$hyperparams)
-      self$combinations_number <- nrow(self$all_combinations)
+      self$grid_proportion <- grid_proportion
+
+      all_combinations <- expand.grid(self$hyperparams)
+      combinations_number <- nrow(all_combinations)
+
+      combinations_indices <- sample(
+        combinations_number,
+        ceiling(combinations_number * self$grid_proportion)
+      )
+      all_combinations <- all_combinations[combinations_indices, ]
+      combinations_number <- nrow(all_combinations)
+
+      self$all_combinations <- all_combinations
+      self$combinations_number <- combinations_number
     },
 
     # Methods --------------------------------------------------
@@ -119,6 +133,13 @@ Tuner <- R6Class(
       return(loss)
     },
     tune = function() {
+      if (self$combinations_number == 1) {
+        self$best_combination <- as.list(self$all_combinations)
+        attr(self$best_combination, "out.attrs") <- NULL
+
+        return(0)
+      }
+
       echo("%s*** Tuning ***", get_tabs(self$tabs_number))
       echo(
         "%sTotal combinations: %s",

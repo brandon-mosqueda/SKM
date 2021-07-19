@@ -74,15 +74,16 @@ assert_subset_string <- function(x,
 
 assert_valid_tune_cv <- function(tune_cv_type,
                                  tune_folds_number,
-                                 tune_testing_proportion) {
+                                 tune_testing_proportion,
+                                 tune_grid_proportion) {
   tune_cv_type <- tolower(tune_cv_type)
   assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
+
   min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
   assert_number(tune_folds_number, finite = TRUE, lower = min_folds_number)
 
-  if (tune_cv_type == "random") {
-    assert_number(tune_testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
-  }
+  assert_number(tune_testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+  assert_number(tune_grid_proportion, lower = 1e-3, upper = 1)
 }
 
 validate_base_params <- function(x,
@@ -91,6 +92,7 @@ validate_base_params <- function(x,
                                  tune_cv_type,
                                  tune_folds_number,
                                  tune_testing_proportion,
+                                 tune_grid_proportion,
                                  seed,
                                  verbose) {
   validate_xy(x, y, is_multivariate = is_multivariate)
@@ -98,7 +100,8 @@ validate_base_params <- function(x,
   assert_valid_tune_cv(
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
-    tune_testing_proportion = tune_testing_proportion
+    tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion
   )
 
   assert_number(seed, null.ok = TRUE, na.ok = FALSE, finite = TRUE)
@@ -254,6 +257,7 @@ validate_support_vector_machine <- function(x,
                                             tune_cv_type,
                                             tune_folds_number,
                                             tune_testing_proportion,
+                                            tune_grid_proportion,
 
                                             scale,
                                             class_weights,
@@ -275,6 +279,7 @@ validate_support_vector_machine <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
     seed = seed,
     verbose = verbose
   )
@@ -311,6 +316,7 @@ validate_random_forest <- function(x,
                                    tune_cv_type,
                                    tune_folds_number,
                                    tune_testing_proportion,
+                                   tune_grid_proportion,
 
                                    split_rule,
                                    splits_number,
@@ -328,6 +334,7 @@ validate_random_forest <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
     seed = seed,
     verbose = verbose
   )
@@ -382,6 +389,7 @@ validate_generalized_linear_model <- function(x,
                                               tune_cv_type,
                                               tune_folds_number,
                                               tune_testing_proportion,
+                                              tune_grid_proportion,
 
                                               lambdas_number,
                                               lambda_min_ratio,
@@ -398,6 +406,7 @@ validate_generalized_linear_model <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
     seed = seed,
     verbose = verbose
   )
@@ -426,6 +435,7 @@ validate_generalized_boosted_machine <- function(x,
                                                  tune_cv_type,
                                                  tune_folds_number,
                                                  tune_testing_proportion,
+                                                 tune_grid_proportion,
 
                                                  records_weights,
                                                  predictors_relationship,
@@ -440,6 +450,7 @@ validate_generalized_boosted_machine <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
     seed = seed,
     verbose = verbose
   )
@@ -495,6 +506,7 @@ validate_deep_learning <- function(x,
                                    tune_cv_type,
                                    tune_folds_number,
                                    tune_testing_proportion,
+                                   tune_grid_proportion,
 
                                    early_stop,
                                    early_stop_patience,
@@ -508,6 +520,7 @@ validate_deep_learning <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
+    tune_grid_proportion = tune_grid_proportion,
     seed = seed,
     verbose = verbose
   )
