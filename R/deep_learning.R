@@ -1,3 +1,6 @@
+#' @importFrom reticulate py_suppress_warnings py_capture_output
+#' @importFrom tensorflow set_random_seed
+
 #' @include utils.R
 #' @include validator.R
 #' @include deep_learning_model.R
@@ -64,7 +67,13 @@ deep_learning <- function(x, y,
   if (!is.null(seed)) {
     old_random_state <- get_rand_state()
 
-    set.seed(seed)
+    # set_random_seed sets R seed too
+    py_suppress_warnings(set_random_seed(seed))
+    warning(
+      "When you use a seed GPU parallelism are disabled since it can result ",
+      "in non-deterministic execution patterns, so if you have a GPU in your ",
+      "computer and you want to use it for parallelism, do not use a seed."
+    )
   }
   on.exit(set_rand_state(old_random_state))
 
@@ -90,7 +99,7 @@ deep_learning <- function(x, y,
   )
 
   wrapper_function <- get_verbose_function(verbose)
-  wrapper_function(model$fit())
+  wrapper_function(py_capture_output(py_suppress_warnings(model$fit())))
 
   end_time <- Sys.time()
   model$execution_time <- difftime(end_time, start_time)

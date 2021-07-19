@@ -1,7 +1,6 @@
 #' @importFrom R6 R6Class
-#' @importFrom reticulate py_suppress_warnings
+#' @importFrom reticulate py_suppress_warnings py_capture_output
 
-#' @import tensorflow
 #' @import keras
 
 #' @include utils.R
@@ -49,6 +48,11 @@ DeepLearningModel <- R6Class(
       self$other_params$early_stop_patience <- early_stop_patience
 
       self$other_params$hidden_layers_number <- length(layers)
+    },
+    predict = function(...) {
+      py_capture_output(py_suppress_warnings(predictions <- super$predict(...)))
+
+      return(predictions)
     }
   ),
   private = list(
@@ -59,7 +63,7 @@ DeepLearningModel <- R6Class(
 
       self$y <- prepare_y_to_deep_learning(self$y, self$responses$y$type)
 
-      if (is_categorical_response(self$responses[[name]]$type)) {
+      if (is_categorical_response(self$responses$y$type)) {
         colnames(self$y) <- self$responses$y$levels
       }
     },
@@ -350,7 +354,7 @@ DeepLearningModel <- R6Class(
                                     other_params,
                                     hyperparams) {
       predictions <- list()
-      all_predictions <- py_suppress_warnings(data.frame(predict(model, x)))
+      all_predictions <- data.frame(predict(model, x))
       colnames(all_predictions) <- other_params$y_colnames
 
       for (name in names(responses)) {
