@@ -38,6 +38,9 @@ Collate:
     'cross_validator.R'
     'custom_cross_validator.R'
     'model_helpers.R'
+    'metrics.R'
+    'tuner.R'
+    'deep_learning_tuner.R'
     'model.R'
     'deep_learning_model.R'
     'kernels.R'
@@ -49,11 +52,9 @@ Collate:
     'generalized_linear_model_model.R'
     'generalized_linear_model.R'
     'k_fold_cross_validator.R'
-    'metrics.R'
     'random_cross_validator.R'
     'random_forest.R'
     'support_vector_machine_model.R'
     'support_vector_machine.R'
-    'tuner.R'
 Author: Osval Antonio Montesinos López [aut],
         Brandon Alejandro Mosqueda González [aut]

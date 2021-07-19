@@ -6,6 +6,7 @@
 
 #' @include utils.R
 #' @include model.R
+#' @include deep_learning_tuner.R
 #' @include model_helpers.R
 
 DeepLearningModel <- R6Class(
@@ -24,6 +25,8 @@ DeepLearningModel <- R6Class(
                           early_stop,
                           early_stop_patience) {
       super$initialize(..., name = "Deep Learning")
+
+      self$tuner_class <- DeepLearningTuner
 
       self$hyperparams$learning_rate <- learning_rate
       self$hyperparams$epochs_number <- epochs_number
@@ -45,7 +48,6 @@ DeepLearningModel <- R6Class(
       self$other_params$early_stop <- early_stop
       self$other_params$early_stop_patience <- early_stop_patience
 
-      self$other_params$validation_proportion <- self$tune_testing_proportion
       self$other_params$hidden_layers_number <- length(layers)
     }
   ),
@@ -56,6 +58,10 @@ DeepLearningModel <- R6Class(
       super$prepare_univariate_y()
 
       self$y <- prepare_y_to_deep_learning(self$y, self$responses$y$type)
+
+      if (is_categorical_response(self$responses[[name]]$type)) {
+        colnames(self$y) <- self$responses$y$levels
+      }
     },
     prepare_multivariate_y = function() {
       super$prepare_multivariate_y()
@@ -129,7 +135,12 @@ DeepLearningModel <- R6Class(
       self$other_params <- true_other_params
     },
 
-    train_univariate = function(x, y, hyperparams, other_params) {
+    train_univariate = function(x,
+                                y,
+                                hyperparams,
+                                other_params,
+                                x_testing = NULL,
+                                y_testing = NULL) {
       responses <- other_params$responses
       model <- keras_model_sequential()
 
@@ -189,16 +200,24 @@ DeepLearningModel <- R6Class(
         )
       }
 
-      model %>%
+      validation_data <- NULL
+      if (!is.null(x_testing) && !is.null(y_testing)) {
+        validation_data <- list(x_testing, y_testing)
+      }
+
+      fit_model <- model %>%
         fit(
-          x,
-          y,
-          shuffle = FALSE,
+          x = x,
+          y = y,
           epochs = hyperparams$epochs,
           batch_size = hyperparams$batch_size,
+          validation_data = validation_data,
           verbose = 0,
           callbacks = callbacks
         )
+
+      # Add the validation loss to the returned model (for tuning)
+      model$validation_loss <- tail(fit_model$metrics$val_loss, 1)
 
       return(model)
     },
@@ -222,7 +241,12 @@ DeepLearningModel <- R6Class(
       return(predictions)
     },
 
-    train_multivariate = function(x, y, hyperparams, other_params) {
+    train_multivariate = function(x,
+                                  y,
+                                  hyperparams,
+                                  other_params,
+                                  x_testing = NULL,
+                                  y_testing = NULL) {
       responses <- other_params$responses
       input <- layer_input(shape = ncol(x), name = "covars")
 
@@ -299,14 +323,24 @@ DeepLearningModel <- R6Class(
         )
       }
 
-      model %>%
+      validation_data <- NULL
+      if (!is.null(x_testing) && !is.null(y_testing)) {
+        validation_data <- list(x_testing, y_testing)
+      }
+
+      fit_model <- model %>%
         fit(
           x = x,
           y = output_layers$y,
           epochs = hyperparams$epochs,
           batch_size = hyperparams$batch_size,
-          verbose = 0
+          validation_data = validation_data,
+          verbose = 0,
+          callbacks = callbacks
         )
+
+      # Add the validation loss to the returned model (for tuning)
+      model$validation_loss <- tail(fit_model$metrics$val_loss, 1)
 
       return(model)
     },

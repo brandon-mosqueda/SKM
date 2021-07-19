@@ -1,6 +1,7 @@
 #' @importFrom R6 R6Class
 
 #' @include utils.R
+#' @include tuner.R
 #' @include model_helpers.R
 
 Model <- R6Class(
@@ -13,6 +14,7 @@ Model <- R6Class(
     responses = list(),
 
     fitted_model = NULL,
+    tuner_class = NULL,
     best_hyperparams = NULL,
     hyperparams_grid = NULL,
     hyperparams = list(),
@@ -48,6 +50,8 @@ Model <- R6Class(
 
       self$other_params <- list()
       self$hyperparams <- list()
+
+      self$tuner_class <- Tuner
     },
 
     # Methods --------------------------------------------------
@@ -160,7 +164,7 @@ Model <- R6Class(
           predict_function <- private$predict_multivariate
         }
 
-        tuner <- Tuner$new(
+        tuner <- self$tuner_class$new(
           x = self$x,
           y = self$y,
           responses = self$responses,
