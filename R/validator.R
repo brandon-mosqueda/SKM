@@ -508,6 +508,7 @@ validate_deep_learning <- function(x,
                                    tune_testing_proportion,
                                    tune_grid_proportion,
 
+                                   shuffle,
                                    early_stop,
                                    early_stop_patience,
 
@@ -532,6 +533,7 @@ validate_deep_learning <- function(x,
   assert_layers(layers)
   assert_output_penalties(output_penalties)
 
+  assert_logical(shuffle, len = 1, any.missing = FALSE)
   assert_logical(early_stop, len = 1, any.missing = FALSE)
   assert_int(early_stop_patience, lower = 1)
 }

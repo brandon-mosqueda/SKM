@@ -82,6 +82,13 @@ test_that("to_matrix", {
     any.missing = FALSE
   )
 
+  temp <- matrix(1:12, 4, 3)
+  temp_intercept <- cbind(1, temp)
+  colnames(temp) <- c(" df ", "135", "--.a")
+  colnames(temp_intercept) <- c("(Intercept)", colnames(temp))
+  expect_identical(to_matrix(temp), temp)
+  expect_identical(to_matrix(temp, TRUE), temp_intercept)
+
   diverse_data <- data.frame(
     a = rnorm(10),
     b = rpois(10, 5),

@@ -31,7 +31,8 @@ Imports:
     glmnet,
     gbm,
     keras,
-    tensorflow
+    tensorflow,
+    reticulate
 Collate:
     'globals.R'
     'utils.R'

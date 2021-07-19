@@ -45,7 +45,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 
     if (with_intercept) {
       x <- cbind(1, x)
-      colnames(x)[1] <- "Intercept"
+      colnames(x)[1] <- "(Intercept)"
     }
   } else if (is.data.frame(x)) {
     current_na_state <- options()$na.action
@@ -73,7 +73,7 @@ to_data_frame <- function(x) {
     }
   }
 
-  x <- as.data.frame(x)
+  x <- as.data.frame(x, check.names = FALSE)
 
   x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
 

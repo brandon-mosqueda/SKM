@@ -30,6 +30,7 @@ deep_learning <- function(x, y,
                           tune_testing_proportion = 0.2,
                           tune_grid_proportion = 1,
 
+                          shuffle = TRUE,
                           early_stop = FALSE,
                           early_stop_patience = 50,
 
@@ -57,6 +58,7 @@ deep_learning <- function(x, y,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
 
+      shuffle = shuffle,
       early_stop = early_stop,
       early_stop_patience = early_stop_patience,
 
@@ -97,6 +99,7 @@ deep_learning <- function(x, y,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
 
+    shuffle = shuffle,
     early_stop = early_stop,
     early_stop_patience = early_stop_patience
   )

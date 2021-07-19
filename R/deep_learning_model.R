@@ -21,6 +21,7 @@ DeepLearningModel <- R6Class(
                           layers,
                           output_penalties,
 
+                          shuffle,
                           early_stop,
                           early_stop_patience) {
       super$initialize(..., name = "Deep Learning")
@@ -44,6 +45,7 @@ DeepLearningModel <- R6Class(
         i <- i + 1
       }
 
+      self$other_params$shuffle <- shuffle
       self$other_params$early_stop <- early_stop
       self$other_params$early_stop_patience <- early_stop_patience
 
@@ -131,14 +133,6 @@ DeepLearningModel <- R6Class(
       }
     },
 
-    tune = function() {
-      true_other_params <- self$other_params
-
-      super$tune()
-
-      self$other_params <- true_other_params
-    },
-
     train_univariate = function(x,
                                 y,
                                 hyperparams,
@@ -213,6 +207,7 @@ DeepLearningModel <- R6Class(
         fit(
           x = x,
           y = y,
+          shuffle = other_params$shuffle,
           epochs = hyperparams$epochs,
           batch_size = hyperparams$batch_size,
           validation_data = validation_data,
@@ -343,6 +338,7 @@ DeepLearningModel <- R6Class(
         fit(
           x = x,
           y = output_layers$y,
+          shuffle = other_params$shuffle,
           epochs = hyperparams$epochs,
           batch_size = hyperparams$batch_size,
           validation_data = validation_data,
