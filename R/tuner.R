@@ -81,7 +81,11 @@ Tuner <- R6Class(
       )
       self$grid_proportion <- grid_proportion
 
-      all_combinations <- expand.grid(self$hyperparams)
+      all_combinations <- expand.grid(
+        self$hyperparams,
+        KEEP.OUT.ATTRS = FALSE,
+        stringsAsFactors = FALSE
+      )
       combinations_number <- nrow(all_combinations)
 
       combinations_indices <- sample(
@@ -135,7 +139,6 @@ Tuner <- R6Class(
     tune = function() {
       if (self$combinations_number == 1) {
         self$best_combination <- as.list(self$all_combinations)
-        attr(self$best_combination, "out.attrs") <- NULL
 
         return(0)
       }
@@ -184,7 +187,6 @@ Tuner <- R6Class(
 
       self$all_combinations <- arrange(self$all_combinations, loss)
       self$best_combination <- as.list(self$all_combinations[1, ])
-      attr(self$best_combination, "out.attrs") <- NULL
     }
   )
 )

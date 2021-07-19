@@ -72,8 +72,8 @@ TUNE_CV_TYPES <- c("K_fold", "Random")
 # Others --------------------------------------------------
 
 RESPONSE_TYPES <- list(
-  CONTINUOUS = 1,
-  DISCRETE = 2,
-  BINARY = 3,
-  CATEGORICAL = 4
+  CONTINUOUS = "continuous",
+  DISCRETE = "discrete",
+  BINARY = "binary",
+  CATEGORICAL = "categorical"
 )

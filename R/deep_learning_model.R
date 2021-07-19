@@ -329,7 +329,14 @@ DeepLearningModel <- R6Class(
 
       validation_data <- NULL
       if (!is.null(x_testing) && !is.null(y_testing)) {
-        validation_data <- list(x_testing, y_testing)
+        validation_data <- list(x = x_testing)
+        y_validation <- list()
+
+        for (name in names(responses)) {
+          y_validation[[name]] <- y_testing[, responses[[name]]$colnames]
+        }
+
+        validation_data$y <- y_validation
       }
 
       fit_model <- model %>%
