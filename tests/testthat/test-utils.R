@@ -89,6 +89,21 @@ test_that("to_matrix", {
   expect_identical(to_matrix(temp), temp)
   expect_identical(to_matrix(temp, TRUE), temp_intercept)
 
+  expect_matrix(
+    to_matrix(as.character(1:10)),
+    any.missing = FALSE,
+    ncols = 9,
+    nrows = 10
+  )
+
+  temp <- matrix(as.character(1:12), 4, 3)
+  temp_numeric <- matrix(as.numeric(temp), 4, 3)
+  colnames(temp_numeric) <- paste0("x", 1:3)
+  expect_equal(
+    to_matrix(temp),
+    temp_numeric
+  )
+
   diverse_data <- data.frame(
     a = rnorm(10),
     b = rpois(10, 5),

@@ -30,7 +30,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
     if (is.character(x)) {
       x <- factor(x)
     } else {
-      x <- t(t(x))
+      x <- data.matrix(x)
     }
   }
 
@@ -39,6 +39,12 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
   }
 
   if (is.matrix(x)) {
+    if (!is.numeric(x)) {
+      prev_names <- colnames(x)
+      x <- matrix(as.numeric(x), ncol = ncol(x))
+      colnames(x) <- prev_names
+    }
+
     if (is.null(colnames(x))) {
       colnames(x) <- paste0("x", 1:ncol(x))
     }

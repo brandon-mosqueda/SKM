@@ -215,7 +215,8 @@ assert_sparse_kernel <- function(kernel,
                                  rows_proportion,
                                  degree,
                                  gamma,
-                                 coef0) {
+                                 coef0,
+                                 params_length = NULL) {
   if (!is.null(kernel)) {
     assert_string(kernel)
     assert_subset_string(
@@ -232,9 +233,24 @@ assert_sparse_kernel <- function(kernel,
 
     assert_number(rows_proportion, lower = 0.001, upper = 1)
 
-    assert_numeric(degree, finite = TRUE, any.missing = FALSE)
-    assert_numeric(gamma, finite = TRUE, any.missing = FALSE)
-    assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
+    assert_numeric(
+      degree,
+      finite = TRUE,
+      any.missing = FALSE,
+      len = params_length
+    )
+    assert_numeric(
+      gamma,
+      finite = TRUE,
+      any.missing = FALSE,
+      len = params_length
+    )
+    assert_numeric(
+      coef0,
+      finite = TRUE,
+      any.missing = FALSE,
+      len = params_length
+    )
   }
 }
 

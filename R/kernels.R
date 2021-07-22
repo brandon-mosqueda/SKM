@@ -1,5 +1,6 @@
 #' @include utils.R
 #' @include globals.R
+#' @include validator.R
 
 # Helpers --------------------------------------------------
 
@@ -30,10 +31,12 @@ is_arc_cosine_kernel <- function(kernel) {
 
 # Conventional kernels --------------------------------------------------
 
+#' @export
 linear_kernel <- function(x, divisor = 1) {
   return(tcrossprod(x) / divisor)
 }
 
+#' @export
 radial_kernel <- function(x1, x2 = x1, gamma = 1) {
   return(exp(-gamma *
     outer(
@@ -44,14 +47,17 @@ radial_kernel <- function(x1, x2 = x1, gamma = 1) {
   ))
 }
 
+#' @export
 polynomial_kernel <- function(x1, x2 = x1, gamma = 1, coef0 = 0, degree = 3) {
   return((gamma * (as.matrix(x1) %*% t(x2)) + coef0)^degree)
 }
 
+#' @export
 sigmoid_kernel <- function(x1, x2 = x1, gamma = 1, coef0 = 0) {
   return(tanh(gamma * (as.matrix(x1) %*% t(x2)) + coef0))
 }
 
+#' @export
 exponential_kernel <- function(x1, x2 = x1, gamma = 1) {
   return(exp(-gamma *
     outer(
@@ -62,6 +68,7 @@ exponential_kernel <- function(x1, x2 = x1, gamma = 1) {
   ))
 }
 
+#' @export
 arc_cosine_kernel <- function(x1, x2) {
   n1 <- nrow(x1)
   n2 <- nrow(x2)
@@ -226,18 +233,31 @@ sparse_kernel <- function(x,
   return(P)
 }
 
-apply_kernel <- function(x,
-                         kernel,
-                         rows_proportion = 0.8,
-                         arc_cosine_deep = 1,
-                         gamma = 1 / ncol(x),
-                         coef0 = 0,
-                         degree = 3) {
-  kernel <- tolower(kernel)
+#' @export
+kernelize <- function(x,
+                      kernel,
+                      rows_proportion = 0.8,
+                      arc_cosine_deep = 1,
+                      gamma = 1 / ncol(x),
+                      coef0 = 0,
+                      degree = 3) {
+  assert_sparse_kernel(
+    kernel = kernel,
+    arc_cosine_deep = arc_cosine_deep,
+    rows_proportion = rows_proportion,
+    degree = degree,
+    gamma = gamma,
+    coef0 = coef0,
+    params_length = 1
+  )
+
+  validate_x(x)
+
+  x <- remove_no_variance_cols(to_matrix(x))
 
   if (is_sparse_kernel(kernel)) {
     x <- sparse_kernel(
-      x,
+      x = x,
       rows_proportion = rows_proportion,
       kernel = kernel,
       arc_cosine_deep = arc_cosine_deep,
@@ -247,7 +267,7 @@ apply_kernel <- function(x,
     )
   } else if (is_conventional_kernel(kernel)) {
     x <- conventional_kernel(
-      x,
+      x = x,
       arc_cosine_deep = arc_cosine_deep,
       gamma = gamma,
       coef0 = coef0,
