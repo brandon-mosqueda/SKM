@@ -99,15 +99,20 @@ DeepLearningModel <- R6Class(
     prepare_others = function() {
       # Convert all the neurons proportion to integer values
       for (i in 1:self$other_params$hidden_layers_number) {
-        layer_neurons <- self$hyperparams[[sprintf("neurons_number_%s", i)]]
+        neurons_i <- sprintf("neurons_number_%s", i)
+        layer_neurons <- self$hyperparams[[neurons_i]]
         layer_neurons <- sapply(
           layer_neurons,
           proportion_to,
           to = ncol(self$x),
           upper = NEURONS_PROPORTION_MAX_VALUE
         )
+        self$hyperparams[[neurons_i]] <- layer_neurons
 
-        self$hyperparams[[sprintf("neurons_number_%s", i)]] <- layer_neurons
+        activation_i <- sprintf("activation_%s", i)
+        self$hyperparams[[activation_i]] <- tolower(
+          self$hyperparams[[activation_i]]
+        )
       }
 
       for (name in names(self$responses)) {

@@ -34,7 +34,7 @@ RandomForestModel <- R6Class(
       self$hyperparams$node_depth <- node_depth
       self$hyperparams$sampled_x_vars_number <- sampled_x_vars_number
 
-      self$other_params$split_rule <- split_rule
+      self$other_params$split_rule <- tolower(split_rule)
       self$other_params$splits_number <- splits_number
       self$other_params$importance <- importance
       self$other_params$x_vars_weights <- x_vars_weights

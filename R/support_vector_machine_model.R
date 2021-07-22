@@ -47,7 +47,7 @@ SupportVectorMachineModel <- R6Class(
       self$hyperparams$cost <- cost
 
       self$other_params$scale <- scale
-      self$other_params$kernel <- kernel
+      self$other_params$kernel <- tolower(kernel)
       self$other_params$class_weights <- class_weights
       self$other_params$cache_size <- cache_size
       self$other_params$tolerance <- tolerance

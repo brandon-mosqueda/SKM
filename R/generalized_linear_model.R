@@ -6,13 +6,13 @@
 generalized_linear_model <- function(x, y,
 
                                      alpha = 1,
+                                     lambda = NULL,
 
                                      tune_cv_type = "K_fold",
                                      tune_folds_number = 5,
                                      tune_testing_proportion = 0.2,
                                      tune_grid_proportion = 1,
 
-                                     lambda = NULL,
                                      lambdas_number = 100,
                                      lambda_min_ratio = ifelse(
                                        nrow(x) < ncol(x),
