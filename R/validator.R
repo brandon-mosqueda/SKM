@@ -188,6 +188,28 @@ validate_bayesian_xy <- function(x, y, is_multivariate) {
   validate_bayesian_x(x = x, y = y)
 }
 
+validate_covariance_structure <- function(covariance_structure,
+                                          responses_number) {
+  assert_list(covariance_structure, len = 3)
+  assert_subset_string(
+    covariance_structure$type,
+    BAYESIAN_COVARIANCE_STRUCTURE_TYPES,
+    ignore.case = TRUE,
+    empty.ok = FALSE,
+    len = 1
+  )
+
+  assert_number(covariance_structure$df0, lower = 0, finite = TRUE)
+
+  assert_matrix(
+    covariance_structure$S0,
+    nrows = responses_number,
+    ncols = responses_number,
+    any.missing = FALSE,
+    null.ok = TRUE
+  )
+}
+
 assert_sparse_kernel <- function(kernel,
                                  arc_cosine_deep,
                                  rows_proportion,
@@ -596,6 +618,7 @@ validate_bayesian_model <- function(x,
                                     iterations_number,
                                     burn_in,
                                     thinning,
+                                    covariance_structure,
                                     records_weights,
                                     response_groups,
                                     testing_indices,
@@ -625,18 +648,22 @@ validate_bayesian_model <- function(x,
     any.missing = FALSE
   )
 
-  assert_numeric(
-    records_weights,
-    len = get_length(y),
-    null.ok = TRUE,
-    finite = TRUE
-  )
+  if (is_multivariate) {
+    validate_covariance_structure(covariance_structure, ncol(y))
+  } else {
+    assert_numeric(
+      records_weights,
+      len = get_length(y),
+      null.ok = TRUE,
+      finite = TRUE
+    )
 
-  assert_vector(
-    as.vector(response_groups),
-    len = get_length(y),
-    null.ok = TRUE
-  )
+    assert_vector(
+      as.vector(response_groups),
+      len = get_length(y),
+      null.ok = TRUE
+    )
+  }
 
   assert_numeric(
     testing_indices,

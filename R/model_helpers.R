@@ -403,6 +403,19 @@ prepare_bayesian_model <- function(model) {
   ))
 }
 
+prepare_covariance_type <- function(type) {
+  lower_type <- tolower(type)
+
+  return(switch(
+    lower_type,
+    unstructured = "UN",
+    diagonal = "DIAG",
+    factor_analytic = "FA",
+    recursive = "REC",
+    stop(sprintf("{%s} is not a valid covariance structure type", type))
+  ))
+}
+
 get_bglr_matrix_param_name <- function(model) {
   if (tolower(model) == "rkhs") {
     return("K")

@@ -15,6 +15,7 @@ BayesianModel <- R6Class(
                           iterations_number,
                           burn_in,
                           thinning,
+                          covariance_structure,
                           records_weights,
                           response_groups,
                           testing_indices) {
@@ -23,6 +24,7 @@ BayesianModel <- R6Class(
       self$other_params$iterations_number <- iterations_number
       self$other_params$burn_in <- burn_in
       self$other_params$thinning <- thinning
+      self$other_params$covariance_structure <- covariance_structure
       self$other_params$records_weights <- records_weights
       self$other_params$response_groups <- response_groups
       self$other_params$testing_indices <- testing_indices
@@ -71,18 +73,6 @@ BayesianModel <- R6Class(
       }
     },
     prepare_others = function() {
-      self$other_params$records_weights <- remove_if_has_more(
-        self$other_params$records_weights,
-        ncol(self$x[[1]]$x),
-        self$removed_x_cols
-      )
-
-      self$other_params$response_groups <- remove_if_has_more(
-        self$other_params$response_groups,
-        ncol(self$x[[1]]$x),
-        self$removed_x_cols
-      )
-
       if (is.null(self$other_params$testing_indices)) {
         self$other_params$testing_indices <- which_is_na(self$y)
       } else {
@@ -100,22 +90,37 @@ BayesianModel <- R6Class(
         if (!is.null(self$other_params$testing_indices)) {
           self$y[self$other_params$testing_indices, ] <- NA
         }
+
+        self$other_params$covariance_structure$type <- prepare_covariance_type(
+          self$other_params$covariance_structure$type
+        )
       } else {
+        self$other_params$records_weights <- remove_if_has_more(
+          self$other_params$records_weights,
+          ncol(self$x[[1]]$x),
+          self$removed_x_cols
+        )
+
+        self$other_params$response_groups <- remove_if_has_more(
+          self$other_params$response_groups,
+          ncol(self$x[[1]]$x),
+          self$removed_x_cols
+        )
+
         self$other_params$bglr_response_type <- get_bglr_response_type(
           self$responses$y$type
         )
-
-        for (i in 1:length(self$x)) {
-          x_name <- get_bglr_matrix_param_name(self$x[[i]]$model)
-          x_index <- which(names(self$x[[i]]) == "x")
-          names(self$x[[i]])[x_index] <- x_name
-        }
 
         if (!is.null(self$other_params$testing_indices)) {
           self$y[self$other_params$testing_indices] <- NA
         }
       }
 
+      for (i in 1:length(self$x)) {
+        x_name <- get_bglr_matrix_param_name(self$x[[i]]$model)
+        x_index <- which(names(self$x[[i]]) == "x")
+        names(self$x[[i]])[x_index] <- x_name
+      }
     },
 
     has_to_tune = function() return(FALSE),
@@ -184,15 +189,46 @@ BayesianModel <- R6Class(
       return(predictions)
     },
 
-    train_multivariate = function() {
+    train_multivariate = function(x, y, hyperparams, other_params) {
+      mkdir(other_params$trash_dir)
 
+      model <- hush(Multitrait(
+        y = y,
+        ETA = x,
+
+        resCov = other_params$covariance_structure,
+        nIter = other_params$iterations_number,
+        burnIn = other_params$burn_in,
+        thin = other_params$thinning,
+
+        verbose = FALSE,
+        saveAt = file.path(other_params$trash_dir, "bayesian_")
+      ))
+
+      rmdir(other_params$trash_dir)
+
+      return(model)
     },
     predict_multivariate = function(model,
                                     x,
                                     responses,
                                     other_params,
                                     hyperparams) {
+      predictions <- list()
+      all_predictions <- model$yHat
+      if (is.null(all_predictions)) {
+        all_predictions <- model$ETAHat
+      }
 
+      all_predictions <- all_predictions[other_params$testing_indices, ]
+
+      for (response_name in names(responses)) {
+        predictions[[response_name]] <- list(
+          predicted = all_predictions[, response_name]
+        )
+      }
+
+      return(predictions)
     }
   )
 )

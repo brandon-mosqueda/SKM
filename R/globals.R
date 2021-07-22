@@ -76,6 +76,13 @@ BAYESIAN_MODELS <- c(
 
 BAYESIAN_TRASH_DIR <- ".skm_bayesian_temporal_files"
 
+BAYESIAN_COVARIANCE_STRUCTURE_TYPES <- c(
+  "Unstructured",
+  "Diagonal",
+  "Factor_analytic",
+  "Recursive"
+)
+
 # Cross validation --------------------------------------------------
 
 CV_TYPES <- c("K_fold", "Random")
