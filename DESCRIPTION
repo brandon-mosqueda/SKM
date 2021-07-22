@@ -26,26 +26,29 @@ Imports:
     R6,
     dplyr,
     checkmate,
+    reticulate,
     randomForestSRC,
     e1071,
     glmnet,
     gbm,
     keras,
     tensorflow,
-    reticulate
+    BGLR
 Collate:
     'globals.R'
     'utils.R'
-    'cross_validator.R'
-    'custom_cross_validator.R'
     'model_helpers.R'
     'metrics.R'
     'tuner.R'
-    'deep_learning_tuner.R'
     'model.R'
-    'deep_learning_model.R'
+    'bayesian_model_model.R'
     'kernels.R'
     'validator.R'
+    'bayesian_model.R'
+    'cross_validator.R'
+    'custom_cross_validator.R'
+    'deep_learning_tuner.R'
+    'deep_learning_model.R'
     'deep_learning.R'
     'random_forest_model.R'
     'generalized_boosted_machine.R'

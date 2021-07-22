@@ -63,6 +63,19 @@ DEFAULT_LASSO_PENALTY <- 0
 
 NEURONS_PROPORTION_MAX_VALUE <- 10
 
+BAYESIAN_MODELS <- c(
+  "FIXED",
+  "RKHS",
+  "BGBLUP",
+  "BRR",
+  "Bayes_Lasso",
+  "Bayes_A",
+  "Bayes_B",
+  "Bayes_C"
+)
+
+BAYESIAN_TRASH_DIR <- ".skm_bayesian_temporal_files"
+
 # Cross validation --------------------------------------------------
 
 CV_TYPES <- c("K_fold", "Random")

@@ -36,6 +36,26 @@ prepare_multivariate_y <- function() {
   }
 }
 
+prepare_multivariate_y_only_numeric <- function() {
+  super$prepare_multivariate_y()
+
+  are_all_numeric <- all(sapply(
+    self$responses,
+    function(response) is_numeric_response(response$type)
+  ))
+
+  if (!are_all_numeric) {
+    warning(
+      "In ",
+      self$name,
+      " multivariate models it can only be used ",
+      "numeric responses variables, so some of the responses were ",
+      "converted to numeric"
+    )
+    self$y <- data.matrix(self$y)
+  }
+}
+
 prepare_degree <- function(kernel, degree) {
   if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_DEGREE))) {
     return(NULL)
@@ -349,4 +369,44 @@ predict_numeric <- function(predictions) {
   return(list(
     predicted = as.numeric(predictions)
   ))
+}
+
+# Bayesian --------------------------------------------------
+
+get_bglr_response_type <- function(response_type) {
+  if (is_class_response(response_type)) {
+    return("ordinal")
+  } else if (is_numeric_response(response_type)) {
+    return("gaussian")
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid response type",
+      set_collapse(response_type)
+    ))
+  }
+}
+
+prepare_bayesian_model <- function(model) {
+  lower_model <- tolower(model)
+
+  return(switch(
+    lower_model,
+    fixed = "FIXED",
+    rkhs = "RKHS",
+    bgblup = "BGBLUP",
+    brr = "BRR",
+    bayes_lasso = "BL",
+    bayes_a = "BayesA",
+    bayes_b = "BayesB",
+    bayes_c = "BayesC",
+    stop(sprintf("{%s} is not a valid bayesian model", model))
+  ))
+}
+
+get_bglr_matrix_param_name <- function(model) {
+  if (tolower(model) == "rkhs") {
+    return("K")
+  }
+
+  return("X")
 }

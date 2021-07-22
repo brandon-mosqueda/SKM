@@ -104,15 +104,25 @@ validate_base_params <- function(x,
     tune_grid_proportion = tune_grid_proportion
   )
 
+  validate_seed(seed)
+  validate_verbose(verbose)
+}
+
+validate_seed <- function(seed) {
   assert_number(seed, null.ok = TRUE, na.ok = FALSE, finite = TRUE)
+}
+
+validate_verbose <- function(verbose) {
   assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
-validate_xy <- function(x, y, is_multivariate) {
+validate_x <- function(x) {
   if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
     stop("x must be data.frame, a matrix or a vector")
   }
+}
 
+validate_y <- function(y, is_multivariate) {
   if (!is.vector(y) && !is.factor(y) && !is.matrix(y) && !is.data.frame(y)) {
     stop("y must be a data.frame, a matrix or a vector")
   }
@@ -131,10 +141,51 @@ validate_xy <- function(x, y, is_multivariate) {
       )
     }
   }
+}
 
+validate_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
   if (get_length(x) != get_length(y)) {
-    stop("x and y must have the same number of observations")
+    stop(
+      x_label,
+      " and ",
+      y_label,
+      " must have the same number of observations"
+    )
   }
+}
+
+validate_xy <- function(x, y, is_multivariate) {
+  validate_x(x)
+  validate_y(y, is_multivariate)
+
+  validate_same_length(x, y)
+}
+
+validate_bayesian_model_parameter <- function(model) {
+  assert_subset_string(
+    model,
+    BAYESIAN_MODELS,
+    ignore.case = TRUE,
+    empty.ok = TRUE,
+    len = 1
+  )
+}
+
+validate_bayesian_x <- function(x, y) {
+  assert_list(x, min.len = 1, any.missing = FALSE)
+
+  for (x_list in x) {
+    assert_list(x_list, any.missing = FALSE, min.len = 1)
+
+    validate_x(x_list$x)
+    validate_same_length(x_list$x, y)
+    validate_bayesian_model_parameter(x_list$model)
+  }
+}
+
+validate_bayesian_xy <- function(x, y, is_multivariate) {
+  validate_y(y, is_multivariate)
+  validate_bayesian_x(x = x, y = y)
 }
 
 assert_sparse_kernel <- function(kernel,
@@ -536,4 +587,63 @@ validate_deep_learning <- function(x,
   assert_logical(shuffle, len = 1, any.missing = FALSE)
   assert_logical(early_stop, len = 1, any.missing = FALSE)
   assert_int(early_stop_patience, lower = 1)
+}
+
+validate_bayesian_model <- function(x,
+                                    y,
+                                    is_multivariate,
+
+                                    iterations_number,
+                                    burn_in,
+                                    thinning,
+                                    records_weights,
+                                    response_groups,
+                                    testing_indices,
+
+                                    seed,
+                                    verbose) {
+  validate_bayesian_xy(x = x, y = y, is_multivariate = is_multivariate)
+  validate_seed(seed)
+  validate_verbose(verbose)
+
+  assert_numeric(
+    iterations_number,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+  assert_numeric(
+    burn_in,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+  assert_numeric(
+    thinning,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+
+  assert_numeric(
+    records_weights,
+    len = get_length(y),
+    null.ok = TRUE,
+    finite = TRUE
+  )
+
+  assert_vector(
+    as.vector(response_groups),
+    len = get_length(y),
+    null.ok = TRUE
+  )
+
+  assert_numeric(
+    testing_indices,
+    lower = 1,
+    upper = get_length(y),
+    null.ok = TRUE,
+    any.missing = FALSE,
+    unique = TRUE
+  )
 }

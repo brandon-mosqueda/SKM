@@ -37,11 +37,11 @@ Model <- R6Class(
     initialize = function(x,
                           y,
                           name,
-                          tune_cv_type,
-                          tune_folds_number,
-                          tune_testing_proportion,
-                          tune_grid_proportion,
-                          is_multivariate) {
+                          tune_cv_type = NULL,
+                          tune_folds_number = NULL,
+                          tune_testing_proportion = NULL,
+                          tune_grid_proportion = NULL,
+                          is_multivariate = FALSE) {
       self$x <- x
       self$y <- y
       self$name <- name

@@ -35,24 +35,7 @@ GeneralizedLinearModel <- R6Class(
   private = list(
     # Methods --------------------------------------------------
 
-    prepare_multivariate_y = function() {
-      super$prepare_multivariate_y()
-
-      # glm only accepts multivariate for numeric variables
-      are_all_numeric <- all(sapply(
-        self$responses,
-        function(response) is_numeric_response(response$type)
-      ))
-
-      if (!are_all_numeric) {
-        warning(
-          "In generalized linear multivariate models it can only be used ",
-          "numeric responses variables, so some of the responses were ",
-          "converted to numeric"
-        )
-        self$y <- data.matrix(self$y)
-      }
-    },
+    prepare_multivariate_y = prepare_multivariate_y_only_numeric,
     prepare_others = function() {
       self$other_params$response_family <- get_glmnet_family(
         response_type = self$responses$y$type,
