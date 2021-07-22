@@ -251,7 +251,7 @@ kernelize <- function(x,
     params_length = 1
   )
 
-  validate_x(x)
+  assert_x(x)
 
   x <- remove_no_variance_cols(to_matrix(x))
 

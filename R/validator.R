@@ -72,10 +72,10 @@ assert_subset_string <- function(x,
 
 # Helpers --------------------------------------------------
 
-assert_valid_tune_cv <- function(tune_cv_type,
-                                 tune_folds_number,
-                                 tune_testing_proportion,
-                                 tune_grid_proportion) {
+assert_tune_cv <- function(tune_cv_type,
+                           tune_folds_number,
+                           tune_testing_proportion,
+                           tune_grid_proportion) {
   tune_cv_type <- tolower(tune_cv_type)
   assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
 
@@ -86,43 +86,43 @@ assert_valid_tune_cv <- function(tune_cv_type,
   assert_number(tune_grid_proportion, lower = 1e-3, upper = 1)
 }
 
-validate_base_params <- function(x,
-                                 y,
-                                 is_multivariate,
-                                 tune_cv_type,
-                                 tune_folds_number,
-                                 tune_testing_proportion,
-                                 tune_grid_proportion,
-                                 seed,
-                                 verbose) {
-  validate_xy(x, y, is_multivariate = is_multivariate)
+assert_base_params <- function(x,
+                               y,
+                               is_multivariate,
+                               tune_cv_type,
+                               tune_folds_number,
+                               tune_testing_proportion,
+                               tune_grid_proportion,
+                               seed,
+                               verbose) {
+  assert_xy(x, y, is_multivariate = is_multivariate)
 
-  assert_valid_tune_cv(
+  assert_tune_cv(
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion
   )
 
-  validate_seed(seed)
-  validate_verbose(verbose)
+  assert_seed(seed)
+  assert_verbose(verbose)
 }
 
-validate_seed <- function(seed) {
+assert_seed <- function(seed) {
   assert_number(seed, null.ok = TRUE, na.ok = FALSE, finite = TRUE)
 }
 
-validate_verbose <- function(verbose) {
+assert_verbose <- function(verbose) {
   assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
-validate_x <- function(x) {
+assert_x <- function(x) {
   if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
     stop("x must be data.frame, a matrix or a vector")
   }
 }
 
-validate_y <- function(y, is_multivariate) {
+assert_y <- function(y, is_multivariate) {
   if (!is.vector(y) && !is.factor(y) && !is.matrix(y) && !is.data.frame(y)) {
     stop("y must be a data.frame, a matrix or a vector")
   }
@@ -143,7 +143,7 @@ validate_y <- function(y, is_multivariate) {
   }
 }
 
-validate_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
+assert_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
   if (get_length(x) != get_length(y)) {
     stop(
       x_label,
@@ -154,14 +154,14 @@ validate_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
   }
 }
 
-validate_xy <- function(x, y, is_multivariate) {
-  validate_x(x)
-  validate_y(y, is_multivariate)
+assert_xy <- function(x, y, is_multivariate) {
+  assert_x(x)
+  assert_y(y, is_multivariate)
 
-  validate_same_length(x, y)
+  assert_same_length(x, y)
 }
 
-validate_bayesian_model_parameter <- function(model) {
+assert_bayesian_model <- function(model) {
   assert_subset_string(
     model,
     BAYESIAN_MODELS,
@@ -171,25 +171,25 @@ validate_bayesian_model_parameter <- function(model) {
   )
 }
 
-validate_bayesian_x <- function(x, y) {
+assert_bayesian_x <- function(x, y) {
   assert_list(x, min.len = 1, any.missing = FALSE)
 
   for (x_list in x) {
     assert_list(x_list, any.missing = FALSE, min.len = 1)
 
-    validate_x(x_list$x)
-    validate_same_length(x_list$x, y)
-    validate_bayesian_model_parameter(x_list$model)
+    assert_x(x_list$x)
+    assert_same_length(x_list$x, y)
+    assert_bayesian_model(x_list$model)
   }
 }
 
-validate_bayesian_xy <- function(x, y, is_multivariate) {
-  validate_y(y, is_multivariate)
-  validate_bayesian_x(x = x, y = y)
+assert_bayesian_xy <- function(x, y, is_multivariate) {
+  assert_y(y, is_multivariate)
+  assert_bayesian_x(x = x, y = y)
 }
 
-validate_covariance_structure <- function(covariance_structure,
-                                          responses_number) {
+assert_covariance_structure <- function(covariance_structure,
+                                        responses_number) {
   assert_list(covariance_structure, len = 3)
   assert_subset_string(
     covariance_structure$type,
@@ -361,7 +361,7 @@ validate_support_vector_machine <- function(x,
 
                                             seed,
                                             verbose) {
-  validate_base_params(
+  assert_base_params(
     x = x,
     y = y,
     is_multivariate = FALSE,
@@ -416,7 +416,7 @@ validate_random_forest <- function(x,
 
                                    seed,
                                    verbose) {
-  validate_base_params(
+  assert_base_params(
     x = x,
     y = y,
     is_multivariate = is_multivariate,
@@ -488,7 +488,7 @@ validate_generalized_linear_model <- function(x,
 
                                               seed,
                                               verbose) {
-  validate_base_params(
+  assert_base_params(
     x = x,
     y = y,
     is_multivariate = is_multivariate,
@@ -532,7 +532,7 @@ validate_generalized_boosted_machine <- function(x,
 
                                                  seed,
                                                  verbose) {
-  validate_base_params(
+  assert_base_params(
     x = x,
     y = y,
     is_multivariate = FALSE,
@@ -603,7 +603,7 @@ validate_deep_learning <- function(x,
 
                                    seed,
                                    verbose) {
-  validate_base_params(
+  assert_base_params(
     x = x,
     y = y,
     is_multivariate = is_multivariate,
@@ -641,9 +641,9 @@ validate_bayesian_model <- function(x,
 
                                     seed,
                                     verbose) {
-  validate_bayesian_xy(x = x, y = y, is_multivariate = is_multivariate)
-  validate_seed(seed)
-  validate_verbose(verbose)
+  assert_bayesian_xy(x = x, y = y, is_multivariate = is_multivariate)
+  assert_seed(seed)
+  assert_verbose(verbose)
 
   assert_numeric(
     iterations_number,
@@ -665,7 +665,7 @@ validate_bayesian_model <- function(x,
   )
 
   if (is_multivariate) {
-    validate_covariance_structure(covariance_structure, ncol(y))
+    assert_covariance_structure(covariance_structure, ncol(y))
   } else {
     assert_numeric(
       records_weights,
