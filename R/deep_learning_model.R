@@ -142,33 +142,19 @@ DeepLearningModel <- R6Class(
       responses <- other_params$responses
       model <- keras_model_sequential()
 
-      model %>%
-        layer_dense(
-          units = hyperparams$neurons_number_1,
-          activation = hyperparams$activation_1,
-          kernel_regularizer = regularizer_l1_l2(
-            l1 = hyperparams$lasso_penalty_1,
-            l2 = hyperparams$ridge_penalty_1
-          ),
-          input_shape = ncol(x),
-          name = "hidden_layer_1"
-        ) %>%
-        layer_dropout(rate = hyperparams$dropout_1)
-
-      if (other_params$hidden_layers_number > 1) {
-        for (i in 2:other_params$hidden_layers_number) {
-          model %>%
-            layer_dense(
-              units = hyperparams[[sprintf("neurons_number_%s", i)]],
-              activation = hyperparams[[sprintf("activation_%s", i)]],
-              kernel_regularizer = regularizer_l1_l2(
-                l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
-                l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
-              ),
-              name = sprintf("hidden_layer_%s", i)
-            ) %>%
-            layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
-        }
+      for (i in 1:other_params$hidden_layers_number) {
+        model <- model %>%
+          layer_dense(
+            units = hyperparams[[sprintf("neurons_number_%s", i)]],
+            activation = hyperparams[[sprintf("activation_%s", i)]],
+            kernel_regularizer = regularizer_l1_l2(
+              l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
+              l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
+            ),
+            input_shape = if (i == 1) ncol(x) else NULL,
+            name = sprintf("hidden_layer_%s", i)
+          ) %>%
+          layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
       }
 
       model %>%
@@ -178,7 +164,8 @@ DeepLearningModel <- R6Class(
           kernel_regularizer = regularizer_l1_l2(
             l1 = hyperparams$output_lasso_penalty,
             l2 = hyperparams$output_ridge_penalty
-          )
+          ),
+          name = "output_layer"
         )
 
       model %>%
@@ -247,34 +234,21 @@ DeepLearningModel <- R6Class(
                                   x_testing = NULL,
                                   y_testing = NULL) {
       responses <- other_params$responses
-      input <- layer_input(shape = ncol(x), name = "covars")
+      input <- layer_input(shape = ncol(x), name = "input_layer")
+      base_model <- input
 
-      base_model <- input %>%
-        layer_dense(
-          units = hyperparams$neurons_number_1,
-          activation = hyperparams$activation_1,
-          kernel_regularizer = regularizer_l1_l2(
-            l1 = hyperparams$lasso_penalty_1,
-            l2 = hyperparams$ridge_penalty_1
-          ),
-          name = "hidden_layer_1"
-        ) %>%
-        layer_dropout(rate = hyperparams$dropout_1)
-
-      if (other_params$hidden_layers_number > 1) {
-        for (i in 2:other_params$hidden_layers_number) {
-          base_model <- base_model %>%
-            layer_dense(
-              units = hyperparams[[sprintf("neurons_number_%s", i)]],
-              activation = hyperparams[[sprintf("activation_%s", i)]],
-              kernel_regularizer = regularizer_l1_l2(
-                l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
-                l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
-              ),
-              name = sprintf("hidden_layer_%s", i)
-            ) %>%
-            layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
-        }
+      for (i in 1:other_params$hidden_layers_number) {
+        base_model <- base_model %>%
+          layer_dense(
+            units = hyperparams[[sprintf("neurons_number_%s", i)]],
+            activation = hyperparams[[sprintf("activation_%s", i)]],
+            kernel_regularizer = regularizer_l1_l2(
+              l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
+              l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
+            ),
+            name = sprintf("hidden_layer_%s", i)
+          ) %>%
+          layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
       }
 
       output_layers <- list(

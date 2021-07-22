@@ -72,7 +72,7 @@ deep_learning <- function(x, y,
     old_random_state <- get_rand_state()
 
     # set_random_seed sets R seed too
-    py_suppress_warnings(set_random_seed(seed))
+    py_suppress_warnings(py_capture_output(set_random_seed(seed)))
     warning(
       "When you use a seed GPU parallelism are disabled since it can result ",
       "in non-deterministic execution patterns, so if you have a GPU in your ",
