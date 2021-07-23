@@ -94,6 +94,7 @@ Tuner <- R6Class(
       )
       all_combinations <- all_combinations[combinations_indices, ]
       combinations_number <- nrow(all_combinations)
+      all_combinations$loss <- as.numeric(NA)
 
       self$all_combinations <- all_combinations
       self$combinations_number <- combinations_number
@@ -140,7 +141,7 @@ Tuner <- R6Class(
       if (self$combinations_number == 1) {
         self$best_combination <- as.list(self$all_combinations)
 
-        return(0)
+        return(invisible(self$best_combination))
       }
 
       echo("%s*** Tuning ***", get_tabs(self$tabs_number))
@@ -151,7 +152,6 @@ Tuner <- R6Class(
       )
 
       folds <- self$cross_validator$get_folds()
-      self$all_combinations$loss <- as.numeric(NA)
 
       for (combination_i in 1:self$combinations_number) {
         echo(
@@ -187,6 +187,8 @@ Tuner <- R6Class(
 
       self$all_combinations <- arrange(self$all_combinations, loss)
       self$best_combination <- as.list(self$all_combinations[1, ])
+
+      return(invisible(self$best_combination))
     }
   )
 )

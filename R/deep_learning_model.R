@@ -181,11 +181,11 @@ DeepLearningModel <- R6Class(
         )
 
       callbacks <- NULL
-      if (self$other_params$early_stop) {
+      if (other_params$early_stop) {
         callbacks <- callback_early_stopping(
           monitor = "val_loss",
           mode = "min",
-          patience = self$other_params$early_stop_patience,
+          patience = other_params$early_stop_patience,
           verbose = 0
         )
       }

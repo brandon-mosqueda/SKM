@@ -146,7 +146,7 @@ GeneralizedLinearModel <- R6Class(
       all_predictions <- all_predictions[, , 1]
       predictions <- list()
 
-      for (response in names(self$responses)) {
+      for (response in names(responses)) {
         predictions[[response]] <- list(
           predicted = all_predictions[, response]
         )

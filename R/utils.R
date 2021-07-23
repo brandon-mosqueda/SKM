@@ -312,11 +312,7 @@ hush <- function(code, all = FALSE) {
     )
   }
 
-  if (all) {
-    return(invisible(temp))
-  } else {
-    return(temp)
-  }
+  return(invisible(temp))
 }
 
 get_verbose_function <- function(verbose) {
