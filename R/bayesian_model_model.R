@@ -44,6 +44,16 @@ BayesianModel <- R6Class(
         self$x[[i]]$x <- remove_no_variance_cols(to_matrix(self$x[[i]]$x))
         self$x[[i]]$model <- prepare_bayesian_model(self$x[[i]]$model)
       }
+
+      i <- 1
+      names(self$x) <- sapply(names(self$x), function(name) {
+        if (is_empty(name) || name == "") {
+          name <- sprintf("x_%s", i)
+          i <<- i + 1
+        }
+
+        return(name)
+      })
     },
     handle_nas = function() {
       na_indices <- c()
@@ -59,7 +69,9 @@ BayesianModel <- R6Class(
       if (!is.null(na_indices)) {
         self$removed_rows <- unique(na_indices)
 
-        self$x <- get_records(self$x, -self$removed_rows)
+        for (i in 1:length(self$x)) {
+          self$x[[i]]$x <- get_records(self$x[[i]]$x, -self$removed_rows)
+        }
 
         if (!is.null(self$other_params$testing_indices)) {
           self$y <- get_records(self$y, -self$removed_rows)
@@ -192,11 +204,8 @@ BayesianModel <- R6Class(
       coefs <- list()
       all_coefs <- self$fitted_model$ETA
 
-      i <- 1
-      for (temp in all_coefs) {
-        x_i <- sprintf("x_%s", i)
-        coefs[[x_i]] <- temp$b
-        i <- i + 1
+      for (coef_name in names(all_coefs)) {
+        coefs[[coef_name]] <- all_coefs[[coef_name]]$b
       }
 
       return(coefs)
@@ -248,14 +257,16 @@ BayesianModel <- R6Class(
       all_coefs <- self$fitted_model$ETA
 
       response_i <- 1
-      for (name in colnames(self$y)) {
-        coefs[[name]] <- list()
-        coef_i <- 1
+      for (response_name in colnames(self$y)) {
+        coefs[[response_name]] <- list()
 
-        for (temp in all_coefs) {
-          coef_name <- sprintf("x_%s", coef_i)
-          coefs[[name]][[coef_name]] <- temp$beta[, response_i]
-          coef_i <- coef_i + 1
+        for (coef_name in names(all_coefs)) {
+          coefs[[response_name]][[coef_name]] <-
+            all_coefs[[coef_name]]$beta[, response_i]
+
+          names(coefs[[response_name]][[coef_name]]) <- colnames(
+            nonull(self$x[[coef_name]]$X, self$x[[coef_name]]$K)
+          )
         }
 
         response_i <- response_i + 1

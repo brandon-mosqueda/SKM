@@ -3,3 +3,4 @@ notes.tnotes
 vscode.code-workspace
 man/
 manual_tests/
+.skm_*
