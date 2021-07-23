@@ -20,7 +20,11 @@ GeneralizedLinearModel <- R6Class(
                           records_weights,
                           standardize,
                           fit_intercept) {
-      super$initialize(..., name = "Generalized Linear Model")
+      super$initialize(
+        ...,
+        name = "Generalized Linear Model",
+        allow_coefficients = TRUE
+      )
 
       self$hyperparams$alpha <- alpha
       self$hyperparams$lambda <- lambda
@@ -104,6 +108,33 @@ GeneralizedLinearModel <- R6Class(
         return(list(predicted = c(predict(model, x))))
       }
     },
+    coefficients_univariate = function() {
+      if (is_categorical_response(self$responses$y$type)) {
+        coefs_cols_num <- ncol(self$x)
+        if (self$other_params$fit_intercept) {
+          coefs_cols_num <- coefs_cols_num + 1
+        }
+        coefs <- matrix(, 0, coefs_cols_num)
+        classes <- self$responses$y$levels
+        all_coefs <- coef(self$fitted_model)
+
+        for (class in classes) {
+          coefs <- rbind(coefs, as.numeric(all_coefs[[class]]))
+        }
+
+        colnames(coefs) <- rownames(all_coefs[[1]])
+        if (self$other_params$fit_intercept) {
+          colnames(coefs)[1] <- "(Intercept)"
+        }
+        rownames(coefs) <- classes
+      } else {
+        temp <- coef(self$fitted_model)
+        coefs <- as.numeric(temp)
+        names(coefs) <- rownames(temp)
+      }
+
+      return(coefs)
+    },
 
     train_multivariate = train_glm,
     predict_multivariate = function(model,
@@ -122,6 +153,23 @@ GeneralizedLinearModel <- R6Class(
       }
 
       return(predictions)
+    },
+    coefficients_multivariate = function() {
+      coefs <- list()
+      all_coefs <- coef(self$fitted_model)
+
+      for (name in names(self$responses)) {
+        temp <- as.numeric(all_coefs[[name]])
+        names(temp) <- rownames(all_coefs[[name]])
+
+        if (self$other_params$fit_intercept) {
+          names(temp)[1] <- "(Intercept)"
+        }
+
+        coefs[[name]] <- temp
+      }
+
+      return(coefs)
     }
   )
 )

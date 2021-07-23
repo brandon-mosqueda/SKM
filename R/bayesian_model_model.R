@@ -19,7 +19,7 @@ BayesianModel <- R6Class(
                           records_weights,
                           response_groups,
                           testing_indices) {
-      super$initialize(..., name = "Bayesian Model")
+      super$initialize(..., name = "Bayesian Model", allow_coefficients = TRUE)
 
       self$other_params$iterations_number <- iterations_number
       self$other_params$burn_in <- burn_in

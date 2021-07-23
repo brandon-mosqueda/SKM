@@ -11,6 +11,7 @@ Model <- R6Class(
 
     name = NULL,
     is_multivariate = NULL,
+    allow_coefficients = NULL,
     responses = list(),
 
     fitted_model = NULL,
@@ -41,7 +42,8 @@ Model <- R6Class(
                           tune_folds_number = NULL,
                           tune_testing_proportion = NULL,
                           tune_grid_proportion = NULL,
-                          is_multivariate = FALSE) {
+                          is_multivariate = FALSE,
+                          allow_coefficients = FALSE) {
       self$x <- x
       self$y <- y
       self$name <- name
@@ -50,6 +52,7 @@ Model <- R6Class(
       self$tune_testing_proportion <- tune_testing_proportion
       self$tune_grid_proportion <- tune_grid_proportion
       self$is_multivariate <- is_multivariate
+      self$allow_coefficients <- allow_coefficients
 
       self$other_params <- list()
       self$hyperparams <- list()
@@ -98,6 +101,17 @@ Model <- R6Class(
           hyperparams = hyperparams,
           other_params = other_params
         )
+      }
+    },
+    coefficients = function() {
+      if (self$allow_coefficients) {
+        if (self$is_multivariate) {
+          private$coefficients_multivariate()
+        } else {
+          private$coefficients_univariate()
+        }
+      } else {
+        warning(self$name, " does not computes any type of coefficients.")
       }
     }
   ),
@@ -200,11 +214,17 @@ Model <- R6Class(
 
     prepare_univariate_y = prepare_univariate_y,
     prepare_multivariate_y = prepare_multivariate_y,
+
     prepare_others = invisible,
+
     train_univariate = not_implemented_function,
     train_multivariate = not_implemented_function,
+
     predict_univariate = not_implemented_function,
-    predict_multivariate = not_implemented_function
+    predict_multivariate = not_implemented_function,
+
+    coefficients_univariate = not_implemented_function,
+    coefficients_multivariate = not_implemented_function
   )
 )
 
@@ -217,4 +237,9 @@ predict.Model <- function(model, x) {
     other_params = model$other_params,
     hyperparams = model$best_hyperparams
   ))
+}
+
+#' @export
+coef.Model <- function(model) {
+  return(model$coefficients())
 }
