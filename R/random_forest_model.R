@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-#' @importFrom randomForestSRC rfsrc
+#' @importFrom randomForestSRC rfsrc vimp get.mv.vimp
 
 #' @include utils.R
 #' @include model.R
@@ -121,6 +121,19 @@ RandomForestModel <- R6Class(
 
       return(predictions)
     },
+    coefficients_univariate = function() {
+      if (self$other_params$importance) {
+        coefs <- self$fitted_model$importance
+      } else {
+        coefs <- vimp(self$fitted_model)$importance
+      }
+
+      if (is_class_response(self$responses$y$type)) {
+        coefs <- t(coefs)
+      }
+
+      return(coefs)
+    },
 
     train_multivariate = train_random_forest,
     predict_multivariate = function(model,
@@ -151,6 +164,16 @@ RandomForestModel <- R6Class(
       }
 
       return(predictions)
+    },
+    coefficients_multivariate = function() {
+      coefs <- list()
+      all_coefs <- get.mv.vimp(self$fitted_model)
+
+      for (name in names(self$responses)) {
+        coefs[[name]] <- all_coefs[, name]
+      }
+
+      return(coefs)
     }
   )
 )
