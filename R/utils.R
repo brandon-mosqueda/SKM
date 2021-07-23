@@ -20,90 +20,6 @@ lm_slope <- function(x, y) {
   return(lm(y ~ x, data = data.frame(x = x, y = y))$coefficients[2])
 }
 
-#' @export
-to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
-  if (na.rm) {
-    x <- na.omit(x)
-  }
-
-  if (is.vector(x)) {
-    if (is.character(x)) {
-      x <- factor(x)
-    } else {
-      x <- data.matrix(x)
-    }
-  }
-
-  if (is.factor(x)) {
-    x <- as.data.frame(x)
-  }
-
-  if (is.matrix(x)) {
-    if (!is.numeric(x)) {
-      prev_names <- colnames(x)
-      x <- matrix(as.numeric(x), ncol = ncol(x))
-      colnames(x) <- prev_names
-    }
-
-    if (is.null(colnames(x))) {
-      colnames(x) <- paste0("x", 1:ncol(x))
-    }
-
-    if (with_intercept) {
-      x <- cbind(1, x)
-      colnames(x)[1] <- "(Intercept)"
-    }
-  } else if (is.data.frame(x)) {
-    current_na_state <- options()$na.action
-    if (!na.rm) {
-      options(na.action = "na.pass")
-    }
-    x <- model.matrix( ~ ., x)
-    options(na.action = current_na_state)
-
-    if (!with_intercept) {
-      x <- x[, -1]
-    }
-  }
-
-  return(x)
-}
-
-#' @export
-to_data_frame <- function(x) {
-  if (is.vector(x)) {
-    if (is.character(x)) {
-      x <- factor(x)
-    } else {
-      x <- t(t(x))
-    }
-  }
-
-  x <- as.data.frame(x, check.names = FALSE)
-
-  x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
-
-  return(x)
-}
-
-#' @export
-remove_no_variance_cols <- function(x) {
-  if (!has_dims(x)) {
-    stop("x must be a data.frame or a matrix")
-  }
-
-  cols_variances <- apply(x, 2, function(x) var(x, na.rm = TRUE))
-  zero_variances_cols <- which(is.na(cols_variances) | cols_variances == 0)
-  names(zero_variances_cols) <- NULL
-
-  if (!is_empty(zero_variances_cols)) {
-    x <- x[, -zero_variances_cols]
-    attr(x, "removed_cols") <- zero_variances_cols
-  }
-
-  return(x)
-}
-
 #' @title Cholesky
 #'
 #' @description Compute the Cholesky factorization of a non-real symmetric
@@ -221,6 +137,90 @@ is_empty_dir <- function(directory) {
 }
 
 # Utilities --------------------------------------------------
+
+#' @export
+to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
+  if (na.rm) {
+    x <- na.omit(x)
+  }
+
+  if (is.vector(x)) {
+    if (is.character(x)) {
+      x <- factor(x)
+    } else {
+      x <- data.matrix(x)
+    }
+  }
+
+  if (is.factor(x)) {
+    x <- as.data.frame(x)
+  }
+
+  if (is.matrix(x)) {
+    if (!is.numeric(x)) {
+      prev_names <- colnames(x)
+      x <- matrix(as.numeric(x), ncol = ncol(x))
+      colnames(x) <- prev_names
+    }
+
+    if (is.null(colnames(x))) {
+      colnames(x) <- paste0("x", 1:ncol(x))
+    }
+
+    if (with_intercept) {
+      x <- cbind(1, x)
+      colnames(x)[1] <- "(Intercept)"
+    }
+  } else if (is.data.frame(x)) {
+    current_na_state <- options()$na.action
+    if (!na.rm) {
+      options(na.action = "na.pass")
+    }
+    x <- model.matrix( ~ ., x)
+    options(na.action = current_na_state)
+
+    if (!with_intercept) {
+      x <- x[, -1]
+    }
+  }
+
+  return(x)
+}
+
+#' @export
+to_data_frame <- function(x) {
+  if (is.vector(x)) {
+    if (is.character(x)) {
+      x <- factor(x)
+    } else {
+      x <- t(t(x))
+    }
+  }
+
+  x <- as.data.frame(x, check.names = FALSE)
+
+  x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
+
+  return(x)
+}
+
+#' @export
+remove_no_variance_cols <- function(x) {
+  if (!has_dims(x)) {
+    stop("x must be a data.frame or a matrix")
+  }
+
+  cols_variances <- apply(x, 2, function(x) var(x, na.rm = TRUE))
+  zero_variances_cols <- which(is.na(cols_variances) | cols_variances == 0)
+  names(zero_variances_cols) <- NULL
+
+  if (!is_empty(zero_variances_cols)) {
+    x <- x[, -zero_variances_cols]
+    attr(x, "removed_cols") <- zero_variances_cols
+  }
+
+  return(x)
+}
 
 not_implemented_function <- function() {
   stop("Not implemented function")

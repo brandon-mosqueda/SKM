@@ -57,30 +57,6 @@ prepare_multivariate_y_only_numeric <- function() {
   self$y <- data.matrix(self$y)
 }
 
-prepare_degree <- function(kernel, degree) {
-  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_DEGREE))) {
-    return(NULL)
-  }
-
-  return(degree)
-}
-
-prepare_gamma <- function(kernel, gamma) {
-  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_GAMMA))) {
-    return(NULL)
-  }
-
-  return(gamma)
-}
-
-prepare_coef0 <- function(kernel, coef0) {
-  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_COEF0))) {
-    return(NULL)
-  }
-
-  return(coef0)
-}
-
 get_cross_validator <- function(type,
                                 records_number,
                                 folds_number,
@@ -120,41 +96,55 @@ proportion_to <- function(proportion, to, lower = 0, upper = 1) {
   ))
 }
 
-get_glmnet_family <- function(response_type, is_multivariate) {
-  if (is_multivariate) {
-    family <- "mgaussian"
-  } else if (is_continuous_response(response_type)) {
-    family <- "gaussian"
-  } else if (is_discrete_response(response_type)) {
-    family <- "poisson"
-  } else if (is_categorical_response(response_type)) {
-    family <- "multinomial"
-  } else if (is_binary_response(response_type)) {
-    family <- "binomial"
+remove_if_has_more <- function(x, compare_value, indices_to_remove) {
+  if (
+    !is.null(indices_to_remove) &&
+    !is_empty(x) &&
+    get_length(x) > compare_value
+  ) {
+    x <- get_records(x, -indices_to_remove)
   }
 
-  return(family)
+  return(x)
 }
 
-train_glm <- function(x, y, hyperparams, other_params) {
-  model <- glmnet(
-    x = x,
-    y = y,
+# GBM --------------------------------------------------
 
-    family = other_params$response_family,
+get_gbm_distribution <- function(response_type) {
+  if (is_continuous_response(response_type)) {
+    distribution <- "gaussian"
+  } else if (is_binary_response(response_type)) {
+    distribution <- "bernoulli"
+  } else if (is_categorical_response(response_type)) {
+    distribution <- "multinomial"
+  } else if (is_discrete_response(response_type)) {
+    distribution <- "poisson"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
 
-    alpha = hyperparams$alpha,
-    lambda = hyperparams$lambda,
-
-    nlambda = other_params$lambdas_number,
-    lambda.min.ratio = other_params$lambda_min_ratio,
-    weights = other_params$records_weights,
-    standardize = other_params$standardize,
-    intercept = other_params$fit_intercept
-  )
-
-  return(model)
+  return(distribution)
 }
+
+get_gbm_predict_type <- function(response_type) {
+  if (is_numeric_response(response_type)) {
+    type <- "link"
+  } else if (is_class_response(response_type)) {
+    type <- "response"
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of response",
+      set_collapse(response_type)
+    ))
+  }
+
+  return(type)
+}
+
+# Random Forest --------------------------------------------------
 
 prepare_random_forest_na_action <- function(na_action) {
   na_action <- tolower(na_action)
@@ -209,50 +199,68 @@ train_random_forest <- function(x, y, hyperparams, other_params) {
   return(model)
 }
 
-get_gbm_distribution <- function(response_type) {
-  if (is_continuous_response(response_type)) {
-    distribution <- "gaussian"
-  } else if (is_binary_response(response_type)) {
-    distribution <- "bernoulli"
-  } else if (is_categorical_response(response_type)) {
-    distribution <- "multinomial"
+# glm --------------------------------------------------
+
+get_glmnet_family <- function(response_type, is_multivariate) {
+  if (is_multivariate) {
+    family <- "mgaussian"
+  } else if (is_continuous_response(response_type)) {
+    family <- "gaussian"
   } else if (is_discrete_response(response_type)) {
-    distribution <- "poisson"
-  } else {
-    stop(sprintf(
-      "{%s} is not a valid type of response",
-      set_collapse(response_type)
-    ))
+    family <- "poisson"
+  } else if (is_categorical_response(response_type)) {
+    family <- "multinomial"
+  } else if (is_binary_response(response_type)) {
+    family <- "binomial"
   }
 
-  return(distribution)
+  return(family)
 }
 
-get_gbm_predict_type <- function(response_type) {
-  if (is_numeric_response(response_type)) {
-    type <- "link"
-  } else if (is_class_response(response_type)) {
-    type <- "response"
-  } else {
-    stop(sprintf(
-      "{%s} is not a valid type of response",
-      set_collapse(response_type)
-    ))
-  }
+train_glm <- function(x, y, hyperparams, other_params) {
+  model <- glmnet(
+    x = x,
+    y = y,
 
-  return(type)
+    family = other_params$response_family,
+
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
+
+    nlambda = other_params$lambdas_number,
+    lambda.min.ratio = other_params$lambda_min_ratio,
+    weights = other_params$records_weights,
+    standardize = other_params$standardize,
+    intercept = other_params$fit_intercept
+  )
+
+  return(model)
 }
 
-remove_if_has_more <- function(x, compare_value, indices_to_remove) {
-  if (
-    !is.null(indices_to_remove) &&
-    !is_empty(x) &&
-    get_length(x) > compare_value
-  ) {
-    x <- get_records(x, -indices_to_remove)
+# SVM --------------------------------------------------
+
+prepare_degree <- function(kernel, degree) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_DEGREE))) {
+    return(NULL)
   }
 
-  return(x)
+  return(degree)
+}
+
+prepare_gamma <- function(kernel, gamma) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_GAMMA))) {
+    return(NULL)
+  }
+
+  return(gamma)
+}
+
+prepare_coef0 <- function(kernel, coef0) {
+  if (is.null(kernel) || !(tolower(kernel) %in% tolower(KERNELS_WITH_COEF0))) {
+    return(NULL)
+  }
+
+  return(coef0)
 }
 
 # Deep learning --------------------------------------------------
