@@ -161,17 +161,22 @@ assert_xy <- function(x, y, is_multivariate) {
   assert_same_length(x, y)
 }
 
-assert_bayesian_model <- function(model) {
+assert_bayesian_model <- function(model, is_multivariate) {
+  valid_models <- BAYESIAN_MODELS
+  if (is_multivariate) {
+    valid_models <- MULTIVARIATE_BAYESIAN_MODELS
+  }
+
   assert_subset_string(
     model,
-    BAYESIAN_MODELS,
+    valid_models,
     ignore.case = TRUE,
     empty.ok = TRUE,
     len = 1
   )
 }
 
-assert_bayesian_x <- function(x, y) {
+assert_bayesian_x <- function(x, y, is_multivariate) {
   assert_list(x, min.len = 1, any.missing = FALSE)
 
   for (x_list in x) {
@@ -179,13 +184,16 @@ assert_bayesian_x <- function(x, y) {
 
     assert_x(x_list$x)
     assert_same_length(x_list$x, y)
-    assert_bayesian_model(x_list$model)
+    assert_bayesian_model(
+      model = x_list$model,
+      is_multivariate = is_multivariate
+    )
   }
 }
 
 assert_bayesian_xy <- function(x, y, is_multivariate) {
   assert_y(y, is_multivariate)
-  assert_bayesian_x(x = x, y = y)
+  assert_bayesian_x(x = x, y = y, is_multivariate = is_multivariate)
 }
 
 assert_covariance_structure <- function(covariance_structure,

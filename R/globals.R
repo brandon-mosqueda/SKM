@@ -74,6 +74,8 @@ BAYESIAN_MODELS <- c(
   "Bayes_C"
 )
 
+MULTIVARIATE_BAYESIAN_MODELS <- c("FIXED", "RKHS", "BGBLUP", "BRR")
+
 BAYESIAN_TRASH_DIR <- ".skm_bayesian_temporal_files"
 
 BAYESIAN_COVARIANCE_STRUCTURE_TYPES <- c(

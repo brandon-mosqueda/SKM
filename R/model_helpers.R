@@ -52,8 +52,9 @@ prepare_multivariate_y_only_numeric <- function() {
       "numeric responses variables, so some of the responses were ",
       "converted to numeric"
     )
-    self$y <- data.matrix(self$y)
   }
+
+  self$y <- data.matrix(self$y)
 }
 
 prepare_degree <- function(kernel, degree) {

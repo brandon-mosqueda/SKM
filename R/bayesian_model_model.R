@@ -188,6 +188,19 @@ BayesianModel <- R6Class(
 
       return(predictions)
     },
+    coefficients_univariate = function() {
+      coefs <- list()
+      all_coefs <- self$fitted_model$ETA
+
+      i <- 1
+      for (temp in all_coefs) {
+        x_i <- sprintf("x_%s", i)
+        coefs[[x_i]] <- temp$b
+        i <- i + 1
+      }
+
+      return(coefs)
+    },
 
     train_multivariate = function(x, y, hyperparams, other_params) {
       mkdir(other_params$trash_dir)
@@ -229,6 +242,26 @@ BayesianModel <- R6Class(
       }
 
       return(predictions)
+    },
+    coefficients_multivariate = function() {
+      coefs <- list()
+      all_coefs <- self$fitted_model$ETA
+
+      response_i <- 1
+      for (name in colnames(self$y)) {
+        coefs[[name]] <- list()
+        coef_i <- 1
+
+        for (temp in all_coefs) {
+          coef_name <- sprintf("x_%s", coef_i)
+          coefs[[name]][[coef_name]] <- temp$beta[, response_i]
+          coef_i <- coef_i + 1
+        }
+
+        response_i <- response_i + 1
+      }
+
+      return(coefs)
     }
   )
 )
