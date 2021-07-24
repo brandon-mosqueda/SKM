@@ -18,8 +18,8 @@ expect_model <- function(model,
                          is_multivariate) {
   expect_class(model, class_name)
   expect_difftime(model$execution_time)
-  expect_equal(model$removed_rows, removed_rows)
-  expect_equal(model$removed_x_cols, removed_x_cols)
+  expect_equal(sort(model$removed_rows), sort(removed_rows))
+  expect_equal(sort(model$removed_x_cols), sort(removed_x_cols))
 
   if (!is_empty(removed_rows)) {
     y <- get_records(y, -removed_rows)
@@ -93,6 +93,7 @@ expect_class_predictions <- function(predictions, len, response) {
 }
 
 expect_predictions <- function(model, x, responses) {
+  x <- na.omit(x)
   predictions <- predict(model, x)
 
   for (name in names(responses)) {
@@ -202,7 +203,10 @@ expect_random_forest <- function(model,
   expect_equal(model$is_regression_model, is_regression_model)
 
   expect_list(model$other_params, any.missing = FALSE)
-  expect_identical(model$other_params$na_action, "na.omit")
+  expect_subset(
+    model$other_params$na_action,
+    c("na.omit", "na.impute")
+  )
   expect_formula(model$other_params$model_formula)
   expect_logical(model$other_params$importance, len = 1, any.missing = FALSE)
   expect_number(model$other_params$splits_number, lower = 1, finite = TRUE)
@@ -219,7 +223,8 @@ expect_random_forest <- function(model,
     len = nrow(x)
   )
 
-  expect_predictions(model = model, x = x, responses = responses)
+  x_testing <- x[sample(nrow(x), nrow(x) * 0.5), ]
+  expect_predictions(model = model, x = x_testing, responses = responses)
 
   expect_coefs(
     model = model,

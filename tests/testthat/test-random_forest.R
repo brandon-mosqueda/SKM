@@ -153,3 +153,70 @@ test_that("Univariate categorical (tuning)", {
     tune_grid_proportion = 0.5
   )
 })
+
+test_that("Univariate numeric (NA no tuning)", {
+  x <- x_num
+  y <- y_num
+  x[2, 3] <- NA
+  x[56, 2] <- NA
+  x[144, 1] <- NA
+  y[100] <- NA
+  model <- suppressWarnings(random_forest(x, y, seed = 1, verbose = FALSE))
+
+  expect_random_forest(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = list(trees_number = 500, node_size = 5),
+    responses = list(
+      y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    removed_rows = c(2, 56, 100, 144)
+  )
+})
+
+test_that("Univariate numeric (NA tuning)", {
+  x <- x_num
+  y <- y_num
+  x[2, 3] <- NA
+  x[56, 2] <- NA
+  x[144, 1] <- NA
+  y[100] <- NA
+
+  hyperparams <- list(
+    trees_number = c(10, 20),
+    node_size = c(3, 5),
+    node_depth = c(15, 5),
+    sampled_x_vars_number = c(0.5, 0.3, 0.8)
+  )
+
+  model <- suppressWarnings(random_forest(
+    x,
+    y,
+
+    trees_number = hyperparams$trees_number,
+    node_size = hyperparams$node_size,
+    node_depth = hyperparams$node_depth,
+    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    tune_cv_type = "Random",
+    tune_folds_number = 3,
+    tune_grid_proportion = 0.4,
+
+    na_action = "impute",
+
+    seed = 1,
+    verbose = FALSE
+  ))
+
+  expect_random_forest(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = hyperparams,
+    responses = list(
+      y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    tune_grid_proportion = 0.4
+  )
+})
