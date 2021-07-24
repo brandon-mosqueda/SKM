@@ -34,6 +34,8 @@ expect_random_forest <- function(model,
   expect_list(model$other_params, any.missing = FALSE)
   expect_identical(model$other_params$na_action, "na.omit")
   expect_formula(model$other_params$model_formula)
+  expect_logical(model$other_params$importance, len = 1, any.missing = FALSE)
+  expect_number(model$other_params$splits_number, lower = 1, finite = TRUE)
 
   expect_predictions(model = model, x = x, responses = responses)
 
@@ -53,6 +55,38 @@ test_that("Univariate numeric (no tuning)", {
     x = x_num,
     y = y_num,
     hyperparams = list(trees_number = 500, node_size = 5),
+    responses = list(
+      y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    )
+  )
+})
+
+test_that("Univariate numeric (tuning)", {
+  hyperparams <- list(
+    trees_number = c(10, 20),
+    node_size = c(3, 5),
+    node_depth = 15,
+    sampled_x_vars_number = 0.5
+  )
+
+  model <- random_forest(
+    x_num,
+    y_num,
+
+    trees_number = hyperparams$trees_number,
+    node_size = hyperparams$node_size,
+    node_depth = hyperparams$node_depth,
+    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    seed = 1,
+    verbose = FALSE
+  )
+
+  expect_random_forest(
+    model = model,
+    x = x_num,
+    y = y_num,
+    hyperparams = hyperparams,
     responses = list(
       y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     )
