@@ -275,3 +275,68 @@ test_that("Multivariate numeric (tuning)", {
     is_multivariate = TRUE
   )
 })
+
+test_that("Multivariate combined (no tuning)", {
+  model <- random_forest(x_multi_cat, y_multi_cat, seed = 1, verbose = FALSE)
+
+  expect_random_forest(
+    model = model,
+    x = x_multi_cat,
+    y = y_multi_cat,
+    hyperparams = list(trees_number = 500, node_size = 5),
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(
+        type = RESPONSE_TYPES$CATEGORICAL,
+        levels = levels(y_multi_cat$y2)
+      )
+    ),
+    is_regression_model = FALSE,
+    is_multivariate = TRUE
+  )
+})
+
+test_that("Multivariate combined (tuning)", {
+  hyperparams <- list(
+    trees_number = c(2, 4),
+    node_size = c(3, 5),
+    node_depth = c(5, 10),
+    sampled_x_vars_number = c(0.4, 0.2)
+  )
+
+  model <- random_forest(
+    x_multi_cat,
+    y_multi_cat,
+
+    trees_number = hyperparams$trees_number,
+    node_size = hyperparams$node_size,
+    node_depth = hyperparams$node_depth,
+    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    tune_cv_type = "random",
+    tune_folds_number = 4,
+    tune_grid_proportion = 0.3,
+
+    records_weights = runif(nrow(x_multi_cat)),
+
+    seed = 1,
+    verbose = FALSE
+  )
+
+  expect_random_forest(
+    model = model,
+    x = x_multi_cat,
+    y = y_multi_cat,
+    hyperparams = hyperparams,
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(
+        type = RESPONSE_TYPES$CATEGORICAL,
+        levels = levels(y_multi_cat$y2)
+      )
+    ),
+    tune_grid_proportion = 0.3,
+    is_regression_model = FALSE,
+    is_multivariate = TRUE
+  )
+})

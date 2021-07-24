@@ -154,7 +154,7 @@ RandomForestModel <- R6Class(
 
           predictions[[response_name]] <- list(
             predicted = response_predictions$class,
-            probabilities = response_predictions$predicted
+            probabilities = as.data.frame(response_predictions$predicted)
           )
         } else {
           predictions[[response_name]] <- list(

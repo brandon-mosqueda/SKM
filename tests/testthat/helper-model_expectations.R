@@ -249,7 +249,7 @@ expect_random_forest <- function(model,
     expected_names = colnames(x),
     responses = responses,
     is_multivariate = is_multivariate,
-    by_category = TRUE,
+    by_category = !is_multivariate,
     has_all_row = TRUE
   )
 }
