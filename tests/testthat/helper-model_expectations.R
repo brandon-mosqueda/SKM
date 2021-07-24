@@ -9,6 +9,7 @@ expect_model <- function(model,
                          x_ncols,
                          hyperparams,
                          responses,
+                         tune_grid_proportion,
                          class_name,
                          fitted_class,
                          removed_rows,
@@ -32,6 +33,9 @@ expect_model <- function(model,
   )
 
   all_hyperparams <- expand.grid(hyperparams)
+  n <- nrow(all_hyperparams)
+  rows <- sample(n, ceiling(n * tune_grid_proportion))
+  all_hyperparams <- all_hyperparams[rows, ]
 
   expect_list(model$hyperparams, any.missing = FALSE)
   expect_data_frame(
@@ -47,7 +51,7 @@ expect_model <- function(model,
   expect_list(model$responses, any.missing = FALSE)
   for (name in names(responses)) {
     expect_identical(model$responses[[name]]$type, responses[[name]]$type)
-    expect_null(model$responses[[name]]$levels, responses[[name]]$levels)
+    expect_identical(model$responses[[name]]$levels, responses[[name]]$levels)
   }
 
   expect_identical(model$allow_coefficients, allow_coefficients)
@@ -80,7 +84,11 @@ expect_class_predictions <- function(predictions, len, response) {
     predictions$probabilities,
     any.missing = FALSE,
     nrows = len,
-    colnames = response$levels
+    ncols = length(response$levels)
+  )
+  expect_names(
+    colnames(predictions$probabilities),
+    identical.to = response$levels
   )
 }
 
@@ -108,16 +116,24 @@ expect_numeric_coefs <- function(coefs, expected_names) {
   expect_names(names(coefs), identical.to = expected_names)
 }
 
-expect_class_coefs <- function(coefs, classes, coefs_names, by_category) {
+expect_class_coefs <- function(coefs,
+                               classes,
+                               coefs_names,
+                               by_category,
+                               has_all_row) {
   if (by_category) {
     expect_matrix(
       coefs,
       any.missing = FALSE,
-      nrows = length(classes),
+      nrows = length(classes) + as.numeric(has_all_row),
       ncols = length(coefs_names)
     )
 
-    expect_names(rownames(coefs), identical.to = classes)
+    rows_names <- classes
+    if (has_all_row) {
+      rows_names <- c("all", classes)
+    }
+    expect_names(rownames(coefs), identical.to = rows_names)
     expect_names(colnames(coefs), identical.to = coefs_names)
   } else {
     expect_numeric_coefs(coefs = coefs, expected_names = coefs_names)
@@ -128,7 +144,8 @@ expect_coefs <- function(model,
                          expected_names,
                          responses,
                          is_multivariate,
-                         by_category = FALSE) {
+                         by_category = FALSE,
+                         has_all_row = TRUE) {
   coefs <- coef(model)
 
   if (!is_multivariate) {
@@ -148,7 +165,8 @@ expect_coefs <- function(model,
         coefs = coefs[[name]],
         classes = response$levels,
         coefs_names = expected_names,
-        by_category = by_category
+        by_category = by_category,
+        has_all_row = has_all_row
       )
     }
   }
