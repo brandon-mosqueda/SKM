@@ -128,7 +128,7 @@ GeneralizedBoostedMachineModel <- R6Class(
 
         predictions <- list(
           predicted = predictions,
-          probabilities = probabilities
+          probabilities = as.data.frame(probabilities)
         )
       } else if (is_class_response(responses$y$type)) {
         probabilities <- as.data.frame(predictions[, , 1])

@@ -45,6 +45,10 @@ expect_model <- function(model,
     nrows = nrow(all_hyperparams),
     ncols = ncol(all_hyperparams) + 1
   )
+  expect_names(
+    colnames(model$hyperparams_grid),
+    permutation.of = c("loss", names(hyperparams))
+  )
 
   expect_equal(model$best_hyperparams, as.list(head(model$hyperparams_grid, 1)))
 
@@ -265,6 +269,7 @@ expect_generalized_boosted_machine <- function(model,
                                                y,
                                                hyperparams,
                                                responses,
+                                               distribution,
                                                tune_grid_proportion = 1,
                                                removed_rows = NULL,
                                                removed_x_cols = NULL) {
@@ -281,19 +286,20 @@ expect_generalized_boosted_machine <- function(model,
     removed_rows = removed_rows,
     removed_x_cols = removed_x_cols,
     allow_coefficients = FALSE,
-    is_multivariate = FALSE
+    is_multivariate = FALSE,
+    by_category = FALSE,
+    has_all_row = FALSE
   )
 
   expect_list(model$other_params, any.missing = FALSE)
-  expect_subset(
-    model$other_params$na_action,
-    c("na.omit", "na.impute")
+  expect_number(
+    model$other_params$cores_number,
+    lower = 1,
+    finite = TRUE,
+    null.ok = TRUE
   )
-  expect_formula(model$other_params$model_formula)
-  expect_logical(model$other_params$importance, len = 1, any.missing = FALSE)
-  expect_number(model$other_params$splits_number, lower = 1, finite = TRUE)
   expect_numeric(
-    model$other_params$x_vars_weights,
+    model$other_params$predictors_relationship,
     null.ok = TRUE,
     any.missing = FALSE,
     len = ncol(x)
@@ -304,4 +310,6 @@ expect_generalized_boosted_machine <- function(model,
     any.missing = FALSE,
     len = nrow(x)
   )
+
+  expect_equal(model$other_params$distribution, distribution)
 }
