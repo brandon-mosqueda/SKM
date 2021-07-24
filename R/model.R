@@ -30,7 +30,6 @@ Model <- R6Class(
     y = NULL,
     removed_x_cols = NULL,
     removed_rows = NULL,
-    validate_params = NULL,
     execution_time = NULL,
 
     # Constructor --------------------------------------------------
@@ -200,8 +199,11 @@ Model <- R6Class(
         self$best_hyperparams <- tuner$best_combination
         self$hyperparams_grid <- tuner$all_combinations
       } else {
-        self$best_hyperparams <- self$hyperparams
         self$hyperparams_grid <- self$hyperparams
+        self$hyperparams_grid$loss <- as.numeric(NA)
+        self$best_hyperparams <- self$hyperparams_grid
+
+        self$hyperparams_grid <- as.data.frame(self$hyperparams_grid)
       }
     },
     train = function(...) {
