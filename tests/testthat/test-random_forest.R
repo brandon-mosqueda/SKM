@@ -340,3 +340,76 @@ test_that("Multivariate combined (tuning)", {
     is_multivariate = TRUE
   )
 })
+
+test_that("Multivariate numeric (NA no tuning)", {
+  x <- x_multi
+  y <- y_multi
+  x[5, 1] <- NA
+  x[10, 1] <- NA
+  x[50, 1] <- NA
+  y[44, 1] <- NA
+  y[22, 1] <- NA
+  model <- suppressWarnings(random_forest(x, y, seed = 1, verbose = FALSE))
+
+  expect_random_forest(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = list(trees_number = 500, node_size = 5),
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    is_regression_model = TRUE,
+    is_multivariate = TRUE,
+    removed_rows = c(5, 10, 50, 44, 22)
+  )
+})
+
+test_that("Multivariate numeric (tuning)", {
+  x <- x_multi
+  y <- y_multi
+  x[5, 1] <- NA
+  x[10, 1] <- NA
+  x[50, 1] <- NA
+  y[44, 1] <- NA
+  y[22, 1] <- NA
+
+  hyperparams <- list(
+    trees_number = 5,
+    node_size = c(3, 5),
+    node_depth = 10,
+    sampled_x_vars_number = 0.4
+  )
+
+  model <- random_forest(
+    x,
+    y,
+
+    trees_number = hyperparams$trees_number,
+    node_size = hyperparams$node_size,
+    node_depth = hyperparams$node_depth,
+    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    tune_cv_type = "random",
+    tune_folds_number = 4,
+
+    na_action = "impute",
+
+    seed = 1,
+    verbose = FALSE
+  )
+
+  expect_random_forest(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = hyperparams,
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    is_regression_model = TRUE,
+    is_multivariate = TRUE
+  )
+})
