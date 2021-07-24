@@ -1,7 +1,3 @@
-suppressMessages(library(dplyr))
-
-manual_test <- FALSE
-
 data(Iris)
 
 test_that("Univariate numeric (no tuning)", {

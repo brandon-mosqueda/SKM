@@ -15,7 +15,9 @@ expect_model <- function(model,
                          removed_rows,
                          removed_x_cols,
                          allow_coefficients,
-                         is_multivariate) {
+                         is_multivariate,
+                         by_category,
+                         has_all_row) {
   expect_class(model, class_name)
   expect_difftime(model$execution_time)
   expect_equal(sort(model$removed_rows), sort(removed_rows))
@@ -56,6 +58,25 @@ expect_model <- function(model,
 
   expect_identical(model$allow_coefficients, allow_coefficients)
   expect_identical(model$is_multivariate, is_multivariate)
+
+  x_testing <- x[sample(nrow(x), nrow(x) * 0.5), ]
+  expect_predictions(
+    model = model,
+    x = x_testing,
+    responses = responses,
+    is_multivariate = is_multivariate
+  )
+
+  if (allow_coefficients) {
+    expect_coefs(
+      model = model,
+      expected_names = colnames(x),
+      responses = responses,
+      is_multivariate = is_multivariate,
+      by_category = by_category,
+      has_all_row = has_all_row
+    )
+  }
 }
 
 expect_numeric_predictions <- function(predictions, len) {
@@ -210,7 +231,9 @@ expect_random_forest <- function(model,
     removed_rows = removed_rows,
     removed_x_cols = removed_x_cols,
     allow_coefficients = TRUE,
-    is_multivariate = is_multivariate
+    is_multivariate = is_multivariate,
+    by_category = !is_multivariate,
+    has_all_row = TRUE
   )
 
   expect_equal(model$is_regression_model, is_regression_model)
@@ -235,21 +258,50 @@ expect_random_forest <- function(model,
     any.missing = FALSE,
     len = nrow(x)
   )
+}
 
-  x_testing <- x[sample(nrow(x), nrow(x) * 0.5), ]
-  expect_predictions(
+expect_generalized_boosted_machine <- function(model,
+                                               x,
+                                               y,
+                                               hyperparams,
+                                               responses,
+                                               tune_grid_proportion = 1,
+                                               removed_rows = NULL,
+                                               removed_x_cols = NULL) {
+  expect_model(
     model = model,
-    x = x_testing,
+    x = x,
+    y = y,
+    x_ncols = ncol(x),
+    hyperparams = hyperparams,
     responses = responses,
-    is_multivariate = is_multivariate
+    tune_grid_proportion = tune_grid_proportion,
+    class_name = "GeneralizedBoostedMachineModel",
+    fitted_class = "gbm",
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols,
+    allow_coefficients = FALSE,
+    is_multivariate = FALSE
   )
 
-  expect_coefs(
-    model = model,
-    expected_names = colnames(x),
-    responses = responses,
-    is_multivariate = is_multivariate,
-    by_category = !is_multivariate,
-    has_all_row = TRUE
+  expect_list(model$other_params, any.missing = FALSE)
+  expect_subset(
+    model$other_params$na_action,
+    c("na.omit", "na.impute")
+  )
+  expect_formula(model$other_params$model_formula)
+  expect_logical(model$other_params$importance, len = 1, any.missing = FALSE)
+  expect_number(model$other_params$splits_number, lower = 1, finite = TRUE)
+  expect_numeric(
+    model$other_params$x_vars_weights,
+    null.ok = TRUE,
+    any.missing = FALSE,
+    len = ncol(x)
+  )
+  expect_numeric(
+    model$other_params$records_weights,
+    null.ok = TRUE,
+    any.missing = FALSE,
+    len = nrow(x)
   )
 }
