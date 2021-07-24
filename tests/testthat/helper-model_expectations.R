@@ -92,16 +92,30 @@ expect_class_predictions <- function(predictions, len, response) {
   )
 }
 
-expect_predictions <- function(model, x, responses) {
+expect_predictions <- function(model, x, responses, is_multivariate) {
   x <- na.omit(x)
   predictions <- predict(model, x)
 
+  if (!is_multivariate) {
+    predictions <- list(y = predictions)
+  }
+
+  expect_list(predictions, len = length(responses), any.missing = FALSE)
+
   for (name in names(responses)) {
     response <- responses[[name]]
+
     if (is_numeric_response(response$type)) {
-      expect_numeric_predictions(predictions, len = nrow(x))
+      expect_numeric_predictions(
+        predictions[[name]],
+        len = nrow(x)
+      )
     } else {
-      expect_class_predictions(predictions, len = nrow(x), response = response)
+      expect_class_predictions(
+        predictions[[name]],
+        len = nrow(x),
+        response = response
+      )
     }
   }
 }
@@ -182,7 +196,6 @@ expect_random_forest <- function(model,
                                  is_regression_model = NULL,
                                  removed_rows = NULL,
                                  removed_x_cols = NULL,
-                                 allow_coefficients = TRUE,
                                  is_multivariate = FALSE) {
   expect_model(
     model = model,
@@ -196,7 +209,7 @@ expect_random_forest <- function(model,
     fitted_class = "rfsrc",
     removed_rows = removed_rows,
     removed_x_cols = removed_x_cols,
-    allow_coefficients = allow_coefficients,
+    allow_coefficients = TRUE,
     is_multivariate = is_multivariate
   )
 
@@ -224,7 +237,12 @@ expect_random_forest <- function(model,
   )
 
   x_testing <- x[sample(nrow(x), nrow(x) * 0.5), ]
-  expect_predictions(model = model, x = x_testing, responses = responses)
+  expect_predictions(
+    model = model,
+    x = x_testing,
+    responses = responses,
+    is_multivariate = is_multivariate
+  )
 
   expect_coefs(
     model = model,

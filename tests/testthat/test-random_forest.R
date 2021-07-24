@@ -220,3 +220,58 @@ test_that("Univariate numeric (NA tuning)", {
     tune_grid_proportion = 0.4
   )
 })
+
+test_that("Multivariate numeric (no tuning)", {
+  model <- random_forest(x_multi, y_multi, seed = 1, verbose = FALSE)
+
+  expect_random_forest(
+    model = model,
+    x = x_multi,
+    y = y_multi,
+    hyperparams = list(trees_number = 500, node_size = 5),
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    is_regression_model = TRUE,
+    is_multivariate = TRUE
+  )
+})
+
+test_that("Multivariate numeric (tuning)", {
+  hyperparams <- list(
+    trees_number = 5,
+    node_size = c(3, 5),
+    node_depth = 10,
+    sampled_x_vars_number = 0.4
+  )
+
+  model <- random_forest(
+    x_multi,
+    y_multi,
+
+    trees_number = hyperparams$trees_number,
+    node_size = hyperparams$node_size,
+    node_depth = hyperparams$node_depth,
+    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    tune_cv_type = "random",
+    tune_folds_number = 4,
+
+    seed = 1,
+    verbose = FALSE
+  )
+
+  expect_random_forest(
+    model = model,
+    x = x_multi,
+    y = y_multi,
+    hyperparams = hyperparams,
+    responses = list(
+      y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    is_regression_model = TRUE,
+    is_multivariate = TRUE
+  )
+})
