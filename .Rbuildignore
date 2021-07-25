@@ -1,0 +1,10 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.vscode$
+\.gitignore
+install.sh
+^\.skm_.+
+notes.tnotes
+manual_tests
+test.R
+vscode.code-workspace

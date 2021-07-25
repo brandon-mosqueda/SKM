@@ -4,7 +4,7 @@ Version: 1.0
 Authors@R: c(person(
               given = "Osval Antonio",
               family = "Montesinos López",
-              role = c("aut", "cre"),
+              role = c("aut"),
               email = "oamontes2@hotmail.com"),
              person(
               given = "Brandon Alejandro",
@@ -14,6 +14,7 @@ Authors@R: c(person(
 Description: Provides a simple and uniform way of implementing some of the most
   powerful machine learning models with sparse kernels options for general
   purpose.
+Depends: R (>= 3.5.0)
 License: LGPL-3
 Encoding: UTF-8
 LazyData: true
