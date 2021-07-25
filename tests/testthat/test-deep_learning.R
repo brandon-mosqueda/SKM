@@ -602,7 +602,7 @@ test_that("Multivariate numeric (NA tuning)", {
     output_lasso_penalty = c(1, 0)
   )
 
-  model <- deep_learning(
+  model <- suppressWarnings(deep_learning(
     x,
     y,
 
@@ -627,7 +627,7 @@ test_that("Multivariate numeric (NA tuning)", {
     tune_folds_number = 3,
 
     verbose = FALSE
-  )
+  ))
 
   y <- to_matrix(y)
   rownames(y) <- NULL

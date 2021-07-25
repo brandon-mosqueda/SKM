@@ -19,54 +19,33 @@ expect_model <- function(model,
                          has_all_row,
                          is_x_matrix = FALSE,
                          has_intercept = FALSE) {
-  expect_class(model, class_name)
-  expect_difftime(model$execution_time)
-  expect_equal(sort(model$removed_rows), sort(removed_rows))
-  expect_equal(sort(model$removed_x_cols), sort(removed_x_cols))
-
-  if (!is_empty(removed_rows)) {
-    y <- get_records(y, -removed_rows)
-  }
-  expect_equal(model$y, y)
-
-  expect_x_function <- expect_data_frame
-  if (is_x_matrix) {
-    expect_x_function <- expect_matrix
-  }
-  expect_x_function(
-    model$x,
-    nrows = nrow(x) - length(removed_rows),
-    ncols = ncol(x) - length(removed_x_cols)
+  expect_base_params(
+    model = model,
+    class_name = class_name,
+    allow_coefficients = allow_coefficients,
+    is_multivariate = is_multivariate,
+    fitted_class = fitted_class,
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols
   )
 
-  all_hyperparams <- expand.grid(hyperparams)
-  n <- nrow(all_hyperparams)
-  rows <- sample(n, ceiling(n * tune_grid_proportion))
-  all_hyperparams <- all_hyperparams[rows, ]
+  expect_y(model = model, y = y, removed_rows = removed_rows)
 
-  expect_list(model$hyperparams, any.missing = FALSE)
-  expect_data_frame(
-    model$hyperparams_grid,
-    nrows = nrow(all_hyperparams),
-    ncols = ncol(all_hyperparams) + 1
-  )
-  expect_names(
-    colnames(model$hyperparams_grid),
-    permutation.of = c("loss", names(hyperparams))
+  expect_x(
+    model = model,
+    x = x,
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols,
+    is_x_matrix = is_x_matrix
   )
 
-  expect_equal(model$best_hyperparams, as.list(head(model$hyperparams_grid, 1)))
+  expect_hyperparams(
+    model = model,
+    hyperparams = hyperparams,
+    tune_grid_proportion = tune_grid_proportion
+  )
 
-  expect_class(model$fitted_model, fitted_class)
-
-  expect_list(model$responses, any.missing = FALSE)
-  for (name in names(responses)) {
-    expect_identical(model$responses[[name]]$type, responses[[name]]$type)
-    expect_identical(model$responses[[name]]$levels, responses[[name]]$levels)
-  }
-
-  expect_identical(model$allow_coefficients, allow_coefficients)
-  expect_identical(model$is_multivariate, is_multivariate)
+  expect_responses(model, responses)
 
   x_testing <- x[sample(nrow(x), nrow(x) * 0.5), ]
   expect_predictions(
@@ -91,6 +70,69 @@ expect_model <- function(model,
       has_intercept = has_intercept
     )
   }
+}
+
+expect_base_params <- function(model,
+                               class_name,
+                               allow_coefficients,
+                               is_multivariate,
+                               fitted_class,
+                               removed_rows,
+                               removed_x_cols) {
+  expect_class(model, class_name)
+  expect_difftime(model$execution_time)
+  expect_identical(model$allow_coefficients, allow_coefficients)
+  expect_identical(model$is_multivariate, is_multivariate)
+  expect_class(model$fitted_model, fitted_class)
+  expect_equal(sort(model$removed_rows), sort(removed_rows))
+  expect_equal(sort(model$removed_x_cols), sort(removed_x_cols))
+}
+
+expect_y <- function(model, y, removed_rows) {
+  if (!is_empty(removed_rows)) {
+    y <- get_records(y, -removed_rows)
+  }
+  expect_equal(model$y, y)
+}
+
+expect_x <- function(model, x, removed_rows, removed_x_cols, is_x_matrix) {
+  expect_x_function <- expect_data_frame
+  if (is_x_matrix) {
+    expect_x_function <- expect_matrix
+  }
+  expect_x_function(
+    model$x,
+    nrows = nrow(x) - length(removed_rows),
+    ncols = ncol(x) - length(removed_x_cols)
+  )
+}
+
+expect_responses <- function(model, responses) {
+  expect_list(model$responses, any.missing = FALSE)
+  for (name in names(responses)) {
+    expect_identical(model$responses[[name]]$type, responses[[name]]$type)
+    expect_identical(model$responses[[name]]$levels, responses[[name]]$levels)
+  }
+}
+
+expect_hyperparams <- function(model, hyperparams, tune_grid_proportion) {
+  all_hyperparams <- expand.grid(hyperparams)
+  n <- nrow(all_hyperparams)
+  rows <- sample(n, ceiling(n * tune_grid_proportion))
+  all_hyperparams <- all_hyperparams[rows, ]
+
+  expect_list(model$hyperparams, any.missing = FALSE)
+  expect_data_frame(
+    model$hyperparams_grid,
+    nrows = nrow(all_hyperparams),
+    ncols = ncol(all_hyperparams) + 1
+  )
+  expect_names(
+    colnames(model$hyperparams_grid),
+    permutation.of = c("loss", names(hyperparams))
+  )
+
+  expect_equal(model$best_hyperparams, as.list(head(model$hyperparams_grid, 1)))
 }
 
 expect_numeric_predictions <- function(predictions, len) {
@@ -127,8 +169,12 @@ expect_class_predictions <- function(predictions, len, response) {
 }
 
 expect_predictions <- function(model, x, responses, is_multivariate) {
-  x <- na.omit(x)
-  predictions <- predict(model, x)
+  if (is.null(x)) {
+    predictions <- predict(model)
+  } else {
+    x <- na.omit(x)
+    predictions <- predict(model, x)
+  }
 
   if (!is_multivariate) {
     predictions <- list(y = predictions)
@@ -486,4 +532,100 @@ expect_deep_learning <- function(model,
   expect_logical(model$other_params$shuffle, len = 1, any.missing = FALSE)
   expect_logical(model$other_params$early_stop, len = 1, any.missing = FALSE)
   expect_number(model$other_params$early_stop_patience, finite = TRUE)
+}
+
+expect_bayesian_model <- function(model,
+                                  x,
+                                  y,
+                                  responses,
+                                  bglr_response_type,
+                                  testing_indices = NULL,
+                                  removed_rows = NULL,
+                                  removed_x_cols = NULL,
+                                  is_multivariate = FALSE) {
+  expect_base_params(
+    model = model,
+    class_name = "BayesianModel",
+    allow_coefficients = TRUE,
+    is_multivariate = is_multivariate,
+    fitted_class = "BGLR",
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols
+  )
+
+  expect_y(model = model, y = y, removed_rows = removed_rows)
+
+  for (x_name in names(x)) {
+    expect_list(model$x[[x_name]], any.missing = FALSE, len = 2)
+    inner_x <- nonull(model$x[[x_name]]$X, model$x[[x_name]]$K)
+    original_x <- x[[x_name]]$x
+
+    if (!is_empty(removed_rows)) {
+      original_x <- get_records(x[[x_name]]$x, -removed_rows)
+    }
+    expect_equal(original_x, inner_x)
+
+    assert_bayesian_model(model$x[[x_name]]$model, is_multivariate)
+
+    # Coefficients --------------------------------------------------
+    expected_names <- colnames(inner_x)
+    if (!is_empty(removed_x_cols)) {
+      expected_names <- expected_names[-removed_x_cols]
+    }
+    coefs <- coef(model)
+    if (!is_multivariate) {
+      coefs <- list(y = coefs)
+    }
+
+    for (response_name in names(responses)) {
+      expect_numeric_coefs(
+        coefs = coefs[[response_name]][[x_name]],
+        expected_names = expected_names,
+        has_intercept = FALSE
+      )
+    }
+  }
+
+  expect_responses(model, responses)
+
+  expect_predictions(
+    model = model,
+    x = NULL,
+    responses = responses,
+    is_multivariate = is_multivariate
+  )
+
+  expect_list(model$other_params, any.missing = FALSE)
+
+  expect_number(model$other_params$iterations_number, lower = 1, finite = TRUE)
+  expect_number(model$other_params$burn_in, lower = 1, finite = TRUE)
+  expect_number(model$other_params$thinning, lower = 1, finite = TRUE)
+
+  if (is_multivariate) {
+    assert_covariance_structure(
+      covariance_structure = model$other_params$covariance_structure,
+      responses_number = ncol(y)
+    )
+  }
+
+  expect_equal(
+    sort(model$other_params$testing_indices),
+    sort(testing_indices)
+  )
+
+  expect_numeric(
+    model$other_params$records_weights,
+    null.ok = TRUE,
+    any.missing = FALSE,
+    len = nrow(x) - length(removed_rows)
+  )
+
+  expect_numeric(
+    model$other_params$response_groups,
+    null.ok = TRUE,
+    any.missing = FALSE,
+    len = nrow(x) - length(removed_rows)
+  )
+
+  expect_equal(model$other_params$bglr_response_type, bglr_response_type)
 }

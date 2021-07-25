@@ -45,15 +45,23 @@ BayesianModel <- R6Class(
         self$x[[i]]$model <- prepare_bayesian_model(self$x[[i]]$model)
       }
 
-      i <- 1
-      names(self$x) <- sapply(names(self$x), function(name) {
-        if (is_empty(name) || name == "") {
-          name <- sprintf("x_%s", i)
-          i <<- i + 1
-        }
+      x_names <- names(self$x)
+      if (is.null(x_names)) {
+        x_names <- paste0("x_", seq(length(self$x)))
+      } else {
+        i <- 1
+        x_names <- sapply(x_names, function(name) {
+          print(name)
+          if (is_empty(name) || name == "") {
+            name <- sprintf("x_%s", i)
+            i <<- i + 1
+          }
 
-        return(name)
-      })
+          return(name)
+        })
+      }
+
+      names(self$x) <- x_names
     },
     handle_nas = function() {
       na_indices <- c()
