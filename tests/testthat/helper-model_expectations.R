@@ -78,9 +78,13 @@ expect_model <- function(model,
   )
 
   if (allow_coefficients) {
+    expected_names <- colnames(x)
+    if (!is_empty(removed_x_cols)) {
+      expected_names <- expected_names[-removed_x_cols]
+    }
     expect_coefs(
       model = model,
-      expected_names = colnames(x),
+      expected_names = expected_names,
       responses = responses,
       is_multivariate = is_multivariate,
       by_category = by_category,
@@ -278,13 +282,13 @@ expect_random_forest <- function(model,
     model$other_params$x_vars_weights,
     null.ok = TRUE,
     any.missing = FALSE,
-    len = ncol(x)
+    len = ncol(x) - length(removed_x_cols)
   )
   expect_numeric(
     model$other_params$records_weights,
     null.ok = TRUE,
     any.missing = FALSE,
-    len = nrow(x)
+    len = nrow(x) - length(removed_rows)
   )
 }
 
@@ -326,13 +330,13 @@ expect_generalized_boosted_machine <- function(model,
     model$other_params$predictors_relationship,
     null.ok = TRUE,
     any.missing = FALSE,
-    len = ncol(x)
+    len = ncol(x) - length(removed_x_cols)
   )
   expect_numeric(
     model$other_params$records_weights,
     null.ok = TRUE,
     any.missing = FALSE,
-    len = nrow(x)
+    len = nrow(x) - length(removed_rows)
   )
 
   expect_equal(model$other_params$distribution, distribution)
@@ -401,7 +405,7 @@ expect_generalized_linear_model <- function(model,
     model$other_params$records_weights,
     null.ok = TRUE,
     any.missing = FALSE,
-    len = nrow(x)
+    len = nrow(x) - length(removed_rows)
   )
 
   expect_equal(model$other_params$response_family, response_family)

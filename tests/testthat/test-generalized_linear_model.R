@@ -1,81 +1,80 @@
 data(Iris)
 
 test_that("Univariate numeric (no tuning)", {
-  model <- random_forest(x_num, y_num, seed = 1, verbose = FALSE)
+  model <- generalized_linear_model(x_num, y_num, seed = 1, verbose = FALSE)
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x_num,
+    x = to_matrix(x_num),
     y = y_num,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    hyperparams = list(alpha = 1),
     responses = list(
       y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
-    )
+    ),
+    lambdas_number = 100,
+    response_family = "gaussian"
   )
 })
 
 test_that("Univariate numeric (tuning)", {
   hyperparams <- list(
-    trees_number = c(10, 20),
-    node_size = c(3, 5),
-    node_depth = 15,
-    sampled_x_vars_number = 0.5
+    alpha = c(0, 0.5, 1),
+    lambda = c(0.1, 0.2, 0.5)
   )
 
-  model <- random_forest(
+  model <- generalized_linear_model(
     x_num,
     y_num,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
+
+    records_weights = runif(nrow(x_num)),
 
     seed = 1,
     verbose = FALSE
   )
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x_num,
+    x = to_matrix(x_num),
     y = y_num,
     hyperparams = hyperparams,
     responses = list(
       y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
-    )
+    ),
+    lambdas_number = NULL,
+    response_family = "gaussian"
   )
 })
 
 test_that("Univariate binary (no tuning)", {
-  model <- random_forest(x_bin, y_bin, seed = 1, verbose = FALSE)
+  model <- generalized_linear_model(x_bin, y_bin, seed = 1, verbose = FALSE)
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x_bin,
+    x = to_matrix(x_bin),
     y = y_bin,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    hyperparams = list(alpha = 1),
     responses = list(
       y = list(type = RESPONSE_TYPES$BINARY, levels = levels(y_bin))
-    )
+    ),
+    lambdas_number = 100,
+    response_family = "binomial"
   )
 })
 
 test_that("Univariate binary (tuning)", {
   hyperparams <- list(
-    trees_number = c(5, 10),
-    node_size = c(5),
-    node_depth = c(10, 15),
-    sampled_x_vars_number = c(0.5, 0.2)
+    alpha = seq(0.3, 1, by = 0.1)
   )
 
-  model <- random_forest(
+  model <- generalized_linear_model(
     x_bin,
     y_bin,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
+    lambdas_number = 10,
 
     tune_cv_type = "Random",
     tune_folds_number = 2,
@@ -86,7 +85,7 @@ test_that("Univariate binary (tuning)", {
     verbose = FALSE
   )
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
     x = x_bin,
     y = y_bin,
@@ -94,51 +93,53 @@ test_that("Univariate binary (tuning)", {
     responses = list(
       y = list(type = RESPONSE_TYPES$BINARY, levels = levels(y_bin))
     ),
-    tune_grid_proportion = 0.8
+    tune_grid_proportion = 0.8,
+    lambdas_number = 10,
+    response_family = "binomial"
   )
 })
 
 test_that("Univariate categorical (no tuning)", {
-  model <- random_forest(x_cat, y_cat, seed = 1, verbose = FALSE)
+  model <- generalized_linear_model(x_cat, y_cat, seed = 1, verbose = FALSE)
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
     x = x_cat,
     y = y_cat,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    hyperparams = list(alpha = 1),
     responses = list(
       y = list(type = RESPONSE_TYPES$CATEGORICAL, levels = levels(y_cat))
-    )
+    ),
+    response_family = "multinomial",
+    lambdas_number = 100
   )
 })
 
 test_that("Univariate categorical (tuning)", {
   hyperparams <- list(
-    trees_number = c(5, 10),
-    node_size = c(5),
-    sampled_x_vars_number = c(0.5, 0.2, 1)
+    alpha = c(0.01, 0.5, 0.6, 0.75, 1),
+    lambda = c(0.5, 0.2, 1)
   )
 
-  model <- random_forest(
+  model <- generalized_linear_model(
     x_cat,
     y_cat,
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
 
     tune_cv_type = "K_fold",
     tune_folds_number = 5,
     tune_grid_proportion = 0.5,
 
-    x_vars_weights = runif(ncol(x_cat)),
     records_weights = runif(nrow(x_cat)),
+    standardize = FALSE,
 
     seed = 1,
     verbose = FALSE
   )
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
     x = x_cat,
     y = y_cat,
@@ -146,7 +147,9 @@ test_that("Univariate categorical (tuning)", {
     responses = list(
       y = list(type = RESPONSE_TYPES$CATEGORICAL, levels = levels(y_cat))
     ),
-    tune_grid_proportion = 0.5
+    tune_grid_proportion = 0.5,
+    response_family = "multinomial",
+    lambdas_number = 100
   )
 })
 
@@ -157,17 +160,24 @@ test_that("Univariate numeric (NA no tuning)", {
   x[56, 2] <- NA
   x[144, 1] <- NA
   y[100] <- NA
-  model <- suppressWarnings(random_forest(x, y, seed = 1, verbose = FALSE))
+  model <- suppressWarnings(generalized_linear_model(
+    x,
+    y,
+    seed = 1,
+    verbose = FALSE
+  ))
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x,
+    x = to_matrix(x),
     y = y,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    hyperparams = list(alpha = 1),
     responses = list(
       y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    removed_rows = c(2, 56, 100, 144)
+    removed_rows = c(2, 56, 100, 144),
+    response_family = "gaussian",
+    lambdas_number = 100
   )
 })
 
@@ -180,76 +190,72 @@ test_that("Univariate numeric (NA tuning)", {
   y[100] <- NA
 
   hyperparams <- list(
-    trees_number = c(10, 20),
-    node_size = c(3, 5),
-    node_depth = c(15, 5),
-    sampled_x_vars_number = c(0.5, 0.3, 0.8)
+    alpha = seq(0, 1, by = 0.2),
+    lambda = c(0.5, 0.3, 0.8)
   )
 
-  model <- suppressWarnings(random_forest(
+  model <- suppressWarnings(generalized_linear_model(
     x,
     y,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
 
     tune_cv_type = "Random",
     tune_folds_number = 3,
     tune_grid_proportion = 0.4,
 
-    na_action = "impute",
-
     seed = 1,
     verbose = FALSE
   ))
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x,
+    x = to_matrix(x),
     y = y,
     hyperparams = hyperparams,
     responses = list(
       y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    tune_grid_proportion = 0.4
+    tune_grid_proportion = 0.4,
+    response_family = "gaussian",
+    lambdas_number = 100,
+    removed_rows = c(2, 56, 144, 100)
   )
 })
 
 test_that("Multivariate numeric (no tuning)", {
-  model <- random_forest(x_multi, y_multi, seed = 1, verbose = FALSE)
+  model <- generalized_linear_model(x_multi, y_multi, seed = 1, verbose = FALSE)
 
-  expect_random_forest(
+  y <- to_matrix(y_multi)
+  rownames(y) <- NULL
+  expect_generalized_linear_model(
     model = model,
-    x = x_multi,
-    y = y_multi,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    x = to_matrix(x_multi),
+    y = y,
+    hyperparams = list(alpha = 1),
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
       y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    is_regression_model = TRUE,
-    is_multivariate = TRUE
+    is_multivariate = TRUE,
+    response_family = "mgaussian",
+    lambdas_number = 100
   )
 })
 
 test_that("Multivariate numeric (tuning)", {
   hyperparams <- list(
-    trees_number = 5,
-    node_size = c(3, 5),
-    node_depth = 10,
-    sampled_x_vars_number = 0.4
+    alpha = c(0.5, 0.6, 0.7),
+    lambda = c(0.1, 0.002, 0.05)
   )
 
-  model <- random_forest(
+  model <- generalized_linear_model(
     x_multi,
     y_multi,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
 
     tune_cv_type = "random",
     tune_folds_number = 4,
@@ -258,145 +264,153 @@ test_that("Multivariate numeric (tuning)", {
     verbose = FALSE
   )
 
-  expect_random_forest(
+  y <- to_matrix(y_multi)
+  rownames(y) <- NULL
+  expect_generalized_linear_model(
     model = model,
-    x = x_multi,
-    y = y_multi,
+    x = to_matrix(x_multi),
+    y = y,
     hyperparams = hyperparams,
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
       y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    is_regression_model = TRUE,
-    is_multivariate = TRUE
+    is_multivariate = TRUE,
+    response_family = "mgaussian",
+    lambdas_number = 100
   )
 })
 
 test_that("Multivariate combined (no tuning)", {
-  model <- random_forest(x_multi_cat, y_multi_cat, seed = 1, verbose = FALSE)
+  model <- suppressWarnings(generalized_linear_model(
+    x_multi_cat,
+    y_multi_cat,
+    seed = 1,
+    verbose = FALSE
+  ))
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
     x = x_multi_cat,
-    y = y_multi_cat,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    y = data.matrix(y_multi_cat),
+    hyperparams = list(alpha = 1),
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
-      y2 = list(
-        type = RESPONSE_TYPES$CATEGORICAL,
-        levels = levels(y_multi_cat$y2)
-      )
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    is_regression_model = FALSE,
-    is_multivariate = TRUE
+    is_multivariate = TRUE,
+    lambdas_number = 100,
+    response_family = "mgaussian"
   )
 })
 
 test_that("Multivariate combined (tuning)", {
   hyperparams <- list(
-    trees_number = c(2, 4),
-    node_size = c(3, 5),
-    node_depth = c(5, 10),
-    sampled_x_vars_number = c(0.4, 0.2)
+    alpha = c(0, 1, 0.3, 0.5)
   )
 
-  model <- random_forest(
+  model <- suppressWarnings(generalized_linear_model(
     x_multi_cat,
     y_multi_cat,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
 
     tune_cv_type = "random",
     tune_folds_number = 4,
     tune_grid_proportion = 0.3,
 
+    lambdas_number = 20,
     records_weights = runif(nrow(x_multi_cat)),
 
     seed = 1,
     verbose = FALSE
-  )
+  ))
 
-  expect_random_forest(
+  y <- data.matrix(y_multi_cat)
+  rownames(y) <- NULL
+  expect_generalized_linear_model(
     model = model,
     x = x_multi_cat,
-    y = y_multi_cat,
+    y = y,
     hyperparams = hyperparams,
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
-      y2 = list(
-        type = RESPONSE_TYPES$CATEGORICAL,
-        levels = levels(y_multi_cat$y2)
-      )
+      y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
     tune_grid_proportion = 0.3,
-    is_regression_model = FALSE,
-    is_multivariate = TRUE
+    is_multivariate = TRUE,
+    response_family = "mgaussian",
+    lambdas_number = 20
   )
 })
 
 test_that("Multivariate numeric (NA no tuning)", {
   x <- x_multi
-  y <- y_multi
+  y <- data.matrix(y_multi)
+  rownames(y) <- NULL
   x[5, 1] <- NA
   x[10, 1] <- NA
   x[50, 1] <- NA
   y[44, 1] <- NA
   y[22, 1] <- NA
-  model <- suppressWarnings(random_forest(x, y, seed = 1, verbose = FALSE))
+  model <- suppressWarnings(generalized_linear_model(
+    x,
+    y,
+    seed = 1,
+    verbose = FALSE
+  ))
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
-    x = x,
+    x = to_matrix(x),
     y = y,
-    hyperparams = list(trees_number = 500, node_size = 5),
+    hyperparams = list(alpha = 1),
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
       y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    is_regression_model = TRUE,
     is_multivariate = TRUE,
+    response_family = "mgaussian",
+    lambdas_number = 100,
     removed_rows = c(5, 10, 50, 44, 22)
   )
 })
 
 test_that("Multivariate numeric (NA tuning)", {
-  x <- x_multi
-  y <- y_multi
+  x <- to_matrix(x_multi)
+  y <- data.matrix(y_multi)
+  rownames(y) <- NULL
   x[5, 1] <- NA
   x[10, 1] <- NA
   x[50, 1] <- NA
   y[44, 1] <- NA
   y[22, 1] <- NA
+  y[5, 2] <- NA
+  y[6, 2] <- NA
+  x <- cbind(1, x)
 
   hyperparams <- list(
-    trees_number = 5,
-    node_size = c(3, 5),
-    node_depth = 10,
-    sampled_x_vars_number = 0.4
+    alpha = seq(0, 1, by = 0.25),
+    lambda = seq(0, 1.5, by = 0.3)
   )
 
-  model <- random_forest(
+  model <- suppressWarnings(generalized_linear_model(
     x,
     y,
 
-    trees_number = hyperparams$trees_number,
-    node_size = hyperparams$node_size,
-    node_depth = hyperparams$node_depth,
-    sampled_x_vars_number = hyperparams$sampled_x_vars_number,
+    alpha = hyperparams$alpha,
+    lambda = hyperparams$lambda,
 
     tune_cv_type = "random",
     tune_folds_number = 4,
 
-    na_action = "impute",
+    records_weights = runif(nrow(x)),
 
     seed = 1,
     verbose = FALSE
-  )
+  ))
 
-  expect_random_forest(
+  expect_generalized_linear_model(
     model = model,
     x = x,
     y = y,
@@ -405,7 +419,10 @@ test_that("Multivariate numeric (NA tuning)", {
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
       y2 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
     ),
-    is_regression_model = TRUE,
-    is_multivariate = TRUE
+    is_multivariate = TRUE,
+    response_family = "mgaussian",
+    lambdas_number = 100,
+    removed_rows = c(5, 10, 50, 44, 22, 6),
+    removed_x_cols = 1
   )
 })
