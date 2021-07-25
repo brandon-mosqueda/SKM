@@ -102,7 +102,7 @@ GeneralizedLinearModel <- R6Class(
 
         return(list(
           predicted = predictions,
-          probabilities = probabilities
+          probabilities = as.data.frame(probabilities)
         ))
       } else {
         return(list(predicted = c(predict(model, x))))

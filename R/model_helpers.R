@@ -52,6 +52,11 @@ prepare_multivariate_y_only_numeric <- function() {
       "numeric responses variables, so some of the responses were ",
       "converted to numeric"
     )
+
+    for (name in names(self$responses)) {
+      self$responses[[name]]$type <- RESPONSE_TYPES$CONTINUOUS
+      self$responses[[name]]$levels <- NULL
+    }
   }
 
   self$y <- data.matrix(self$y)

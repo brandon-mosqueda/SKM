@@ -17,7 +17,9 @@ expect_model <- function(model,
                          allow_coefficients,
                          is_multivariate,
                          by_category,
-                         has_all_row) {
+                         has_all_row,
+                         is_x_matrix = FALSE,
+                         has_intercept = FALSE) {
   expect_class(model, class_name)
   expect_difftime(model$execution_time)
   expect_equal(sort(model$removed_rows), sort(removed_rows))
@@ -28,7 +30,11 @@ expect_model <- function(model,
   }
   expect_equal(model$y, y)
 
-  expect_data_frame(
+  expect_x_function <- expect_data_frame
+  if (is_x_matrix) {
+    expect_x_function <- expect_matrix
+  }
+  expect_x_function(
     model$x,
     nrows = nrow(x) - length(removed_rows),
     ncols = x_ncols - length(removed_x_cols)
@@ -78,7 +84,8 @@ expect_model <- function(model,
       responses = responses,
       is_multivariate = is_multivariate,
       by_category = by_category,
-      has_all_row = has_all_row
+      has_all_row = has_all_row,
+      has_intercept = has_intercept
     )
   }
 }
@@ -145,7 +152,11 @@ expect_predictions <- function(model, x, responses, is_multivariate) {
   }
 }
 
-expect_numeric_coefs <- function(coefs, expected_names) {
+expect_numeric_coefs <- function(coefs, expected_names, has_intercept) {
+  if (has_intercept) {
+    expected_names <- c("(Intercept)", expected_names)
+  }
+
   expect_numeric(
     coefs,
     finite = TRUE,
@@ -160,8 +171,14 @@ expect_class_coefs <- function(coefs,
                                classes,
                                coefs_names,
                                by_category,
-                               has_all_row) {
+                               has_all_row,
+                               has_intercept) {
+
   if (by_category) {
+    if (has_intercept) {
+      coefs_names <- c("(Intercept)", coefs_names)
+    }
+
     expect_matrix(
       coefs,
       any.missing = FALSE,
@@ -176,7 +193,11 @@ expect_class_coefs <- function(coefs,
     expect_names(rownames(coefs), identical.to = rows_names)
     expect_names(colnames(coefs), identical.to = coefs_names)
   } else {
-    expect_numeric_coefs(coefs = coefs, expected_names = coefs_names)
+    expect_numeric_coefs(
+      coefs = coefs,
+      expected_names = coefs_names,
+      has_intercept = has_intercept
+    )
   }
 }
 
@@ -184,6 +205,7 @@ expect_coefs <- function(model,
                          expected_names,
                          responses,
                          is_multivariate,
+                         has_intercept = FALSE,
                          by_category = FALSE,
                          has_all_row = TRUE) {
   coefs <- coef(model)
@@ -198,7 +220,8 @@ expect_coefs <- function(model,
     if (is_numeric_response(response$type)) {
       expect_numeric_coefs(
         coefs = coefs[[name]],
-        expected_names = expected_names
+        expected_names = expected_names,
+        has_intercept = has_intercept
       )
     } else {
       expect_class_coefs(
@@ -206,7 +229,8 @@ expect_coefs <- function(model,
         classes = response$levels,
         coefs_names = expected_names,
         by_category = by_category,
-        has_all_row = has_all_row
+        has_all_row = has_all_row,
+        has_intercept = has_intercept
       )
     }
   }
@@ -312,4 +336,73 @@ expect_generalized_boosted_machine <- function(model,
   )
 
   expect_equal(model$other_params$distribution, distribution)
+}
+
+expect_generalized_linear_model <- function(model,
+                                            x,
+                                            y,
+                                            hyperparams,
+                                            responses,
+                                            response_family,
+                                            lambdas_number,
+                                            tune_grid_proportion = 1,
+                                            removed_rows = NULL,
+                                            removed_x_cols = NULL,
+                                            is_multivariate = FALSE) {
+  if (is.null(hyperparams$lambda)) {
+    expect_equal(model$other_params$lambdas_number, lambdas_number)
+    expect_numeric(
+      model$hyperparams$lambda,
+      max.len = lambdas_number,
+      min.len = 1,
+      any.missing = FALSE
+    )
+    hyperparams$lambda <- model$hyperparams$lambda
+  }
+
+  expect_model(
+    model = model,
+    x = x,
+    y = y,
+    x_ncols = ncol(x),
+    hyperparams = hyperparams,
+    responses = responses,
+    tune_grid_proportion = tune_grid_proportion,
+    class_name = "GeneralizedLinearModel",
+    fitted_class = "glmnet",
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols,
+    allow_coefficients = TRUE,
+    is_multivariate = is_multivariate,
+    by_category = !is_multivariate && is_categorical_response(responses$y$type),
+    has_all_row = FALSE,
+    is_x_matrix = TRUE,
+    has_intercept = model$other_params$fit_intercept
+  )
+
+  expect_logical(model$other_params$fit_intercept, len = 1, any.missing = FALSE)
+
+  expect_list(model$other_params, any.missing = FALSE)
+  expect_number(
+    model$other_params$lambdas_number,
+    lower = 1,
+    finite = TRUE,
+    null.ok = TRUE
+  )
+  expect_number(
+    model$other_params$lambda_min_ratio,
+    lower = 0,
+    finite = TRUE,
+    null.ok = TRUE
+  )
+  expect_logical(model$other_params$standardize, len = 1, any.missing = FALSE)
+
+  expect_numeric(
+    model$other_params$records_weights,
+    null.ok = TRUE,
+    any.missing = FALSE,
+    len = nrow(x)
+  )
+
+  expect_equal(model$other_params$response_family, response_family)
 }
