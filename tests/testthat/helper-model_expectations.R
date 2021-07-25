@@ -548,7 +548,7 @@ expect_bayesian_model <- function(model,
     class_name = "BayesianModel",
     allow_coefficients = TRUE,
     is_multivariate = is_multivariate,
-    fitted_class = "BGLR",
+    fitted_class = if (is_multivariate) "list" else "BGLR",
     removed_rows = removed_rows,
     removed_x_cols = removed_x_cols
   )
@@ -602,10 +602,15 @@ expect_bayesian_model <- function(model,
   expect_number(model$other_params$thinning, lower = 1, finite = TRUE)
 
   if (is_multivariate) {
-    assert_covariance_structure(
-      covariance_structure = model$other_params$covariance_structure,
-      responses_number = ncol(y)
+    expect_list(model$other_params$covariance_structure, len = 3)
+    expect_number(model$other_params$covariance_structure$df0, finite = TRUE)
+    expect_matrix(
+      model$other_params$covariance_structure$S0,
+      nrows = ncol(y),
+      ncols = ncol(y),
+      null.ok = TRUE
     )
+    expect_string(model$other_params$covariance_structure$type)
   }
 
   expect_equal(
