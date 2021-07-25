@@ -221,7 +221,7 @@ DeepLearningModel <- R6Class(
         probabilities <- predict_proba(model, x)
 
         predictions <- predict_class(
-          probabilities = probabilities,
+          probabilities = as.data.frame(probabilities),
           response_type = responses$y$type,
           levels = responses$y$levels
         )
@@ -346,7 +346,7 @@ DeepLearningModel <- R6Class(
           probabilities <- all_predictions[, cols_names]
 
           predictions[[name]] <- predict_class(
-            probabilities = probabilities,
+            probabilities = as.data.frame(probabilities),
             response_type = responses[[name]]$type,
             levels = responses[[name]]$levels
           )

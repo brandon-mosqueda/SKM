@@ -110,7 +110,6 @@ expect_class_predictions <- function(predictions, len, response) {
   expect_factor(
     predictions$predicted,
     levels = response$levels,
-    empty.levels.ok = FALSE,
     any.missing = FALSE,
     len = len
   )
@@ -454,4 +453,37 @@ expect_support_vector_machine <- function(model,
     any.missing = FALSE,
     max.len = ncol(x) - length(removed_x_cols)
   )
+}
+
+expect_deep_learning <- function(model,
+                                 x,
+                                 y,
+                                 hyperparams,
+                                 responses,
+                                 tune_grid_proportion = 1,
+                                 removed_rows = NULL,
+                                 removed_x_cols = NULL,
+                                 is_multivariate = FALSE) {
+  expect_model(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = hyperparams,
+    responses = responses,
+    tune_grid_proportion = tune_grid_proportion,
+    class_name = "DeepLearningModel",
+    fitted_class = "keras.engine.training.Model",
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols,
+    allow_coefficients = FALSE,
+    is_multivariate = is_multivariate,
+    by_category = FALSE,
+    has_all_row = FALSE,
+    is_x_matrix = TRUE
+  )
+
+  expect_list(model$other_params, any.missing = FALSE)
+  expect_logical(model$other_params$shuffle, len = 1, any.missing = FALSE)
+  expect_logical(model$other_params$early_stop, len = 1, any.missing = FALSE)
+  expect_number(model$other_params$early_stop_patience, finite = TRUE)
 }
