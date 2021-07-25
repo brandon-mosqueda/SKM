@@ -70,9 +70,10 @@ BayesianModel <- R6Class(
         na_indices <- c(na_indices, which_is_na(self$x[[i]]$x))
       }
 
-      if (!is.null(self$other_params$testing_indices)) {
-        na_indices <- c(na_indices, which_is_na(self$y))
-      }
+      self$other_params$testing_indices <- c(
+        self$other_params$testing_indices,
+        which_is_na(self$y)
+      )
 
       if (!is.null(na_indices)) {
         self$removed_rows <- unique(na_indices)
@@ -81,8 +82,22 @@ BayesianModel <- R6Class(
           self$x[[i]]$x <- get_records(self$x[[i]]$x, -self$removed_rows)
         }
 
+        self$y <- get_records(self$y, -self$removed_rows)
+
         if (!is.null(self$other_params$testing_indices)) {
-          self$y <- get_records(self$y, -self$removed_rows)
+          # Change the index to the new positions
+          temp <- rep(FALSE, max(self$other_params$testing_indices))
+          temp[self$other_params$testing_indices] <- TRUE
+          temp <- temp[-self$removed_rows]
+          self$other_params$testing_indices <- which(temp)
+
+          if (is_empty(self$other_params$testing_indices)) {
+            self$other_params$testing_indices <- NULL
+            warning(
+              "All testing indices were removed due to there are records in X ",
+              "that contains NA values"
+            )
+          }
         }
 
         warning(

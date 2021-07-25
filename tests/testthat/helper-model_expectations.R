@@ -565,7 +565,7 @@ expect_bayesian_model <- function(model,
     }
     expect_equal(original_x, inner_x)
 
-    assert_bayesian_model(model$x[[x_name]]$model, is_multivariate)
+    expect_string(model$x[[x_name]]$model)
 
     # Coefficients --------------------------------------------------
     expected_names <- colnames(inner_x)
