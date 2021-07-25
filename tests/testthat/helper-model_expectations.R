@@ -6,7 +6,6 @@ expect_difftime <- function(x) {
 expect_model <- function(model,
                          x,
                          y,
-                         x_ncols,
                          hyperparams,
                          responses,
                          tune_grid_proportion,
@@ -37,7 +36,7 @@ expect_model <- function(model,
   expect_x_function(
     model$x,
     nrows = nrow(x) - length(removed_rows),
-    ncols = x_ncols - length(removed_x_cols)
+    ncols = ncol(x) - length(removed_x_cols)
   )
 
   all_hyperparams <- expand.grid(hyperparams)
@@ -254,7 +253,6 @@ expect_random_forest <- function(model,
     model = model,
     x = x,
     y = y,
-    x_ncols = ncol(x),
     hyperparams = hyperparams,
     responses = responses,
     tune_grid_proportion = tune_grid_proportion,
@@ -305,7 +303,6 @@ expect_generalized_boosted_machine <- function(model,
     model = model,
     x = x,
     y = y,
-    x_ncols = ncol(x),
     hyperparams = hyperparams,
     responses = responses,
     tune_grid_proportion = tune_grid_proportion,
@@ -368,7 +365,6 @@ expect_generalized_linear_model <- function(model,
     model = model,
     x = x,
     y = y,
-    x_ncols = ncol(x),
     hyperparams = hyperparams,
     responses = responses,
     tune_grid_proportion = tune_grid_proportion,
@@ -409,4 +405,53 @@ expect_generalized_linear_model <- function(model,
   )
 
   expect_equal(model$other_params$response_family, response_family)
+}
+
+expect_support_vector_machine <- function(model,
+                                          x,
+                                          y,
+                                          hyperparams,
+                                          responses,
+                                          tune_grid_proportion = 1,
+                                          removed_rows = NULL,
+                                          removed_x_cols = NULL) {
+  expect_model(
+    model = model,
+    x = x,
+    y = y,
+    hyperparams = hyperparams,
+    responses = responses,
+    tune_grid_proportion = tune_grid_proportion,
+    class_name = "SupportVectorMachineModel",
+    fitted_class = "svm",
+    removed_rows = removed_rows,
+    removed_x_cols = removed_x_cols,
+    allow_coefficients = FALSE,
+    is_multivariate = FALSE,
+    by_category = FALSE,
+    has_all_row = FALSE,
+    is_x_matrix = TRUE
+  )
+
+  expect_list(model$other_params, any.missing = FALSE)
+
+  assert_svm_kernel(model$other_params$kernel)
+  expect_numeric(
+    model$other_params$class_weights,
+    finite = TRUE,
+    any.missing = FALSE,
+    null.ok = TRUE
+  )
+  expect_number(model$other_params$cache_size, finite = TRUE)
+  expect_number(model$other_params$tolerance, finite = TRUE)
+  expect_number(model$other_params$epsilon, finite = TRUE)
+
+  expect_logical(model$other_params$shrinking, len = 1, any.missing = FALSE)
+  expect_logical(model$other_params$fitted, len = 1, any.missing = FALSE)
+
+  expect_logical(
+    model$other_params$scale,
+    any.missing = FALSE,
+    max.len = ncol(x) - length(removed_x_cols)
+  )
 }

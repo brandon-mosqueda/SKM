@@ -24,7 +24,7 @@ KERNELS_WITH_DEGREE <- c("Polynomial", "Sparse_Polynomial")
 KERNELS_WITH_GAMMA <- c(
   "Polynomial", "Sparse_Polynomial",
   "Sigmoid", "Sparse_Sigmoid",
-  "Gaussian", "Sparse_Gaussian",
+  "Gaussian", "Sparse_Gaussian", "radial",
   "Exponential", "Sparse_Exponential"
 )
 KERNELS_WITH_COEF0 <- c(

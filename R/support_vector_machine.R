@@ -6,6 +6,7 @@
 support_vector_machine <- function(x, y,
 
                                    kernel = "linear",
+
                                    degree = 3,
                                    gamma = if (is.vector(x)) 1 else 1 / ncol(x),
                                    coef0 = 0,
@@ -35,6 +36,7 @@ support_vector_machine <- function(x, y,
       y = y,
 
       kernel = kernel,
+
       degree = degree,
       gamma = gamma,
       coef0 = coef0,
@@ -73,6 +75,7 @@ support_vector_machine <- function(x, y,
     y = y,
 
     kernel = kernel,
+
     degree = degree,
     gamma = gamma,
     coef0 = coef0,

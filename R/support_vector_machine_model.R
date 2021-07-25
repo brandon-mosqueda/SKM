@@ -13,6 +13,7 @@ SupportVectorMachineModel <- R6Class(
 
     initialize = function(...,
                           kernel,
+
                           degree,
                           gamma,
                           coef0,
@@ -105,7 +106,7 @@ SupportVectorMachineModel <- R6Class(
 
         predictions <- list(
           predicted = predictions,
-          probabilities = probabilities
+          probabilities = as.data.frame(probabilities[, responses$y$levels])
         )
       } else {
         predictions <- list(predicted = predictions)
