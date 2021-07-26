@@ -119,12 +119,16 @@ assert_verbose <- function(verbose) {
 assert_x <- function(x) {
   if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
     stop("x must be data.frame, a matrix or a vector")
+  } else if (is_empty(x)) {
+    stop("x must not be empty")
   }
 }
 
 assert_y <- function(y, is_multivariate) {
   if (!is.vector(y) && !is.factor(y) && !is.matrix(y) && !is.data.frame(y)) {
     stop("y must be a data.frame, a matrix or a vector")
+  } else if (is_empty(y)) {
+    stop("y must not be empty")
   }
 
   if (is_multivariate) {
@@ -338,6 +342,17 @@ assert_output_penalties <- function(output_penalties) {
 
   assert_penalty(output_penalties$ridge_penalty, null.ok = FALSE)
   assert_penalty(output_penalties$lasso_penalty, null.ok = FALSE)
+}
+
+assert_cv_kfold <- function(records_number, k) {
+  assert_number(records_number, lower = 2, finite = TRUE)
+  assert_number(k, lower = 2, upper = records_number)
+}
+
+assert_cv_random <- function(records_number, folds_number, testing_proportion) {
+  assert_number(records_number, lower = 2, finite = TRUE)
+  assert_number(folds_number, lower = 1, finite = TRUE)
+  assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
 }
 
 # Single fit functions --------------------------------------------------

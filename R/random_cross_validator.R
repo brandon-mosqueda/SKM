@@ -22,7 +22,7 @@ RandomCV <- R6Class(
         current_fold <- list()
         current_fold$testing <- sample(
           records,
-          self$records_number * self$testing_proportion
+          ceiling(self$records_number * self$testing_proportion)
         )
         current_fold$training <- records[-current_fold$testing]
 

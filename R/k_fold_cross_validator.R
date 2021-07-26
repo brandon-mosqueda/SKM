@@ -16,10 +16,10 @@ KFoldCV <- R6Class(
 
     get_folds = function() {
       folds_vector <- cut(
-        sample(1:self$records_number, self$records_number),
+        sample(self$records_number, self$records_number),
         breaks = self$folds_number
       )
-      folds_vector <- findInterval(folds_vector, 1:self$records_number)
+      folds_vector <- findInterval(folds_vector, seq(self$records_number))
 
       folds <- list()
       records <- seq(self$records_number)

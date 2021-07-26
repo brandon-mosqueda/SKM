@@ -1,6 +1,7 @@
 #' @import dplyr
 
 #' @include globals.R
+#' @include validator.R
 
 # Computations --------------------------------------------------
 
@@ -557,6 +558,40 @@ is_class_response <- function(response_type) {
   return(
     is_binary_response(response_type) || is_categorical_response(response_type)
   )
+}
+
+# Cross validation --------------------------------------------------
+
+#' @export
+cv_kfold <- function(records_number, k = 5) {
+  assert_cv_kfold(records_number, k)
+
+  cross_validator <- KFoldCV$new(
+    folds_number = k,
+    records_number = records_number
+  )
+
+  return(cross_validator$get_folds())
+}
+
+
+#' @export
+cv_random <- function(records_number,
+                      folds_number = 5,
+                      testing_proportion = 0.2) {
+  assert_cv_random(
+    records_number = records_number,
+    folds_number = folds_number,
+    testing_proportion = testing_proportion
+  )
+
+  cross_validator <- RandomCV$new(
+    folds_number = folds_number,
+    records_number = records_number,
+    testing_proportion = testing_proportion
+  )
+
+  return(cross_validator$get_folds())
 }
 
 # Randomness --------------------------------------------------

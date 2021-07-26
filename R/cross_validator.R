@@ -2,6 +2,7 @@
 
 #' @include utils.R
 
+#' @export
 CrossValidator <- R6Class(
   classname = "CrossValidator",
   public = list(

@@ -167,7 +167,7 @@ sparse_kernel <- function(x,
                           degree = 3) {
   kernel <- tolower(kernel)
   kernel <- gsub("sparse_", "", kernel)
-  final_rows <- sample(1:nrow(x), nrow(x) * rows_proportion)
+  final_rows <- sample(nrow(x), ceiling(nrow(x) * rows_proportion))
 
   # Step 1 compute K_m
   x_m <- x[final_rows, ]
