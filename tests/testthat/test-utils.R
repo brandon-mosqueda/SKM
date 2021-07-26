@@ -122,6 +122,51 @@ test_that("to_matrix", {
     ncols = 7,
     any.missing = FALSE
   )
+
+  # Row and cols names validation ----------------------------------------------
+  a <- matrix(seq(9), 3, 3)
+  b <- a
+  colnames(b) <- paste0("x", seq(3))
+  expect_identical(to_matrix(a), b)
+  b <- cbind(1, b)
+  colnames(b)[1] <- "(Intercept)"
+  expect_identical(to_matrix(a, TRUE), b)
+
+  rownames(a) <- paste0("row", seq(3))
+  b <- a
+  colnames(b) <- paste0("x", seq(3))
+  expect_identical(to_matrix(a), b)
+  b <- cbind(1, b)
+  colnames(b)[1] <- "(Intercept)"
+  expect_identical(to_matrix(a, TRUE), b)
+
+  rownames(a) <- NULL
+  colnames(a) <- paste0("col", seq(3))
+  expect_identical(to_matrix(a), a)
+  b <- cbind(1, a)
+  colnames(b)[1] <- "(Intercept)"
+  expect_identical(to_matrix(a, TRUE), b)
+
+  rownames(a) <- paste0("row", seq(3))
+  colnames(a) <- paste0("col", seq(3))
+  expect_identical(to_matrix(a), a)
+  b <- cbind(1, a)
+  colnames(b)[1] <- "(Intercept)"
+  expect_identical(to_matrix(a, TRUE), b)
+
+  a <- seq(10)
+  b <- matrix(seq(10), 10, 1)
+  colnames(b) <- "x1"
+  expect_identical(to_matrix(a), b)
+  b <- cbind(1, b)
+  colnames(b)[1] <- "(Intercept)"
+  expect_identical(to_matrix(a, TRUE), b)
+
+  a <- data.frame(a = seq(5))
+  colnames(a) <- NULL
+  b <- as.matrix(data.frame(x1 = as.double(seq(5))))
+  rownames(b) <- seq(5)
+  expect_identical(to_matrix(a), b)
 })
 
 test_that("to_data_frame", {
@@ -136,10 +181,10 @@ test_that("to_data_frame", {
   expect_equal(to_data_frame(1:10), data.frame(V1 = 1:10))
   expect_equal(to_data_frame(binaries), data.frame(V1 = factor(binaries)))
 
-  expect_equal(to_data_frame(categories), data.frame(x = factor(categories)))
+  expect_equal(to_data_frame(categories), data.frame(V1 = factor(categories)))
   expect_equal(
     to_data_frame(factor(categories)),
-    data.frame(x = factor(categories))
+    data.frame(V1 = factor(categories))
   )
 
   expect_equal(

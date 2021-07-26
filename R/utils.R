@@ -173,6 +173,9 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
       colnames(x)[1] <- "(Intercept)"
     }
   } else if (is.data.frame(x)) {
+    if (is.null(colnames(x))) {
+      colnames(x) <- paste0("x", seq(ncol(x)))
+    }
     current_na_state <- options()$na.action
     if (!na.rm) {
       options(na.action = "na.pass")
@@ -181,7 +184,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
     options(na.action = current_na_state)
 
     if (!with_intercept) {
-      x <- x[, -1]
+      x <- x[, -1, drop = FALSE]
     }
   }
 
@@ -190,15 +193,8 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 
 #' @export
 to_data_frame <- function(x) {
-  if (is.vector(x)) {
-    if (is.character(x)) {
-      x <- factor(x)
-    } else {
-      x <- t(t(x))
-    }
-  }
-
-  x <- as.data.frame(x, check.names = FALSE)
+  V1 <- x
+  x <- as.data.frame(V1, check.names = FALSE)
 
   x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
 
