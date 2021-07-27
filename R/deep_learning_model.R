@@ -4,6 +4,7 @@
 
 #' @include utils.R
 #' @include model.R
+#' @include globals.R
 #' @include deep_learning_tuner.R
 #' @include model_helpers.R
 
@@ -36,8 +37,14 @@ DeepLearningModel <- R6Class(
       self$hyperparams$learning_rate <- learning_rate
       self$hyperparams$epochs_number <- epochs_number
       self$hyperparams$batch_size <- batch_size
-      self$hyperparams$output_ridge_penalty <- output_penalties$ridge_penalty
-      self$hyperparams$output_lasso_penalty <- output_penalties$lasso_penalty
+      self$hyperparams$output_ridge_penalty <- nonull(
+        output_penalties$ridge_penalty,
+        DEFAULT_RIDGE_PENALTY
+      )
+      self$hyperparams$output_lasso_penalty <- nonull(
+        output_penalties$lasso_penalty,
+        DEFAULT_LASSO_PENALTY
+      )
 
       i <- 1
       for (layer in layers) {
@@ -143,13 +150,20 @@ DeepLearningModel <- R6Class(
       # Convert all the neurons proportion to integer values
       for (i in 1:self$other_params$hidden_layers_number) {
         neurons_i <- sprintf("neurons_number_%s", i)
+        proportion_i <- sprintf("neurons_proportion_%s", i)
         layer_neurons <- self$hyperparams[[neurons_i]]
-        layer_neurons <- sapply(
-          layer_neurons,
-          proportion_to,
-          to = ncol(self$x),
-          upper = NEURONS_PROPORTION_MAX_VALUE
-        )
+        if (is.null(layer_neurons)) {
+          layer_neurons <- sapply(
+            self$hyperparams[[proportion_i]],
+            proportion_to,
+            to = ncol(self$x),
+            upper = Inf
+          )
+
+          self$hyperparams[[proportion_i]] <- NULL
+        } else {
+          layer_neurons <- ceiling(layer_neurons)
+        }
         self$hyperparams[[neurons_i]] <- layer_neurons
 
         activation_i <- sprintf("activation_%s", i)

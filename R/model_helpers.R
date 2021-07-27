@@ -295,7 +295,14 @@ prepare_coef0 <- function(kernel, coef0) {
 # Deep learning --------------------------------------------------
 
 get_default_layer_params <- function(layer) {
-  layer$neurons_number <- nonull(layer$neurons_number, DEFAULT_LAYER_NEURONS)
+  if (is.null(layer$neurons_number) && is.null(layer$neurons_proportion)) {
+    layer$neurons_number <- DEFAULT_LAYER_NEURONS
+  } else if (
+    !is.null(layer$neurons_number) &&
+    !is.null(layer$neurons_proportion)
+  ) {
+    layer$neurons_proportion <- NULL
+  }
   layer$activation <- nonull(layer$activation, DEFAULT_LAYER_ACTIVATION)
   layer$dropout <- nonull(layer$dropout, DEFAULT_LAYER_DROPOUT)
   layer$ridge_penalty <- nonull(layer$ridge_penalty, DEFAULT_RIDGE_PENALTY)

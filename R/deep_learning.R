@@ -12,7 +12,8 @@ deep_learning <- function(x, y,
                           batch_size = 32,
                           layers = list(
                             list(
-                              neurons_number = 0.5,
+                              neurons_number = 50,
+                              neurons_proportion = NULL,
                               activation = "relu",
                               dropout = 0,
                               ridge_penalty = 0,
