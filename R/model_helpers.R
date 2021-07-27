@@ -242,6 +242,31 @@ train_glm <- function(x, y, hyperparams, other_params) {
   return(model)
 }
 
+predict_univariate_glm <- function(model, data, response) {
+  predictions <- predict(model, newdata = data)
+
+  if (is_numeric_response(response$type)) {
+    names(predictions) <- NULL
+    predictions <- list(predicted = predictions)
+  } else if (is_binary_response(response$type)) {
+    probabilities <- cbind(1 - predictions, predictions)
+    colnames(probabilities) <- response$levels
+
+    predictions <- ifelse(predictions > 0.5, 2, 1)
+    predictions <- response$levels[predictions]
+    predictions <- factor(predictions, levels = response$levels)
+
+    predictions <- list(
+      predicted = predictions,
+      probabilities = probabilities
+    )
+  } else {
+    stop("Not implement for other types of response variables")
+  }
+
+  return(predictions)
+}
+
 # SVM --------------------------------------------------
 
 prepare_degree <- function(kernel, degree) {

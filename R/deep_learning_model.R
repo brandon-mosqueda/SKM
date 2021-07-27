@@ -1,5 +1,4 @@
 #' @importFrom R6 R6Class
-#' @importFrom reticulate py_suppress_warnings py_capture_output
 
 #' @import keras
 
@@ -12,6 +11,10 @@ DeepLearningModel <- R6Class(
   classname = "DeepLearningModel",
   inherit = Model,
   public = list(
+    # Properties --------------------------------------------------
+
+    linear_model = NULL,
+
     # Constructor --------------------------------------------------
 
     initialize = function(...,
@@ -21,6 +24,8 @@ DeepLearningModel <- R6Class(
                           layers,
                           output_penalties,
 
+                          with_platt_scaling,
+                          platt_proportion,
                           shuffle,
                           early_stop,
                           early_stop_patience) {
@@ -45,20 +50,58 @@ DeepLearningModel <- R6Class(
         i <- i + 1
       }
 
+      self$other_params$with_platt_scaling <- with_platt_scaling
+      self$other_params$platt_proportion <- platt_proportion
       self$other_params$shuffle <- shuffle
       self$other_params$early_stop <- early_stop
       self$other_params$early_stop_patience <- early_stop_patience
 
       self$other_params$hidden_layers_number <- length(layers)
     },
-    predict = function(...) {
-      py_capture_output(py_suppress_warnings(predictions <- super$predict(...)))
+    predict = function(...,
+                       x,
+                       hyperparams,
+                       other_params) {
+      x <- private$get_x_for_model(x, remove_cols = FALSE)
+      if (!is.null(self$removed_x_cols)) {
+        x <- x[, -self$removed_x_cols]
+      }
 
-      return(predictions)
+      if (self$is_multivariate) {
+        py_hush(private$predict_multivariate(
+          ...,
+          x = x,
+          hyperparams = hyperparams,
+          other_params = other_params
+        ))
+      } else {
+        if (self$other_params$with_platt_scaling) {
+          py_hush(private$predict_platt_univariate(
+            ...,
+            x = x,
+            hyperparams = hyperparams,
+            other_params = other_params
+          ))
+        } else {
+          py_hush(private$predict_univariate(
+            ...,
+            x = x,
+            hyperparams = hyperparams,
+            other_params = other_params
+          ))
+        }
+      }
     }
   ),
   private = list(
     # Methods --------------------------------------------------
+
+    can_be_used_platt = function() {
+      return(
+        !self$is_multivariate &&
+        !is_categorical_response(self$responses$y$type)
+      )
+    },
 
     prepare_univariate_y = function() {
       super$prepare_univariate_y()
@@ -136,8 +179,80 @@ DeepLearningModel <- R6Class(
       if (self$is_multivariate) {
         self$other_params$y_colnames <- colnames(self$y)
       }
+
+      if (
+        !private$can_be_used_platt() &&
+        self$other_params$with_platt_scaling
+      ) {
+        self$other_params$with_platt_scaling <- FALSE
+        warning(
+          "Platt scaling is not going to be used because it is only ",
+          "available for univariate models with numeric or binary response ",
+          "variable."
+        )
+      }
     },
 
+    train = function(...) {
+      if (self$is_multivariate) {
+        private$train_multivariate(...)
+      } else {
+        if (self$other_params$with_platt_scaling) {
+          private$train_univariate_platt(...)
+        } else {
+          private$train_univariate(...)
+        }
+      }
+    },
+
+    train_univariate_platt = function(x,
+                                      y,
+                                      hyperparams,
+                                      other_params) {
+      platt_indices <- sample(
+        nrow(x),
+        ceiling(nrow(x) * other_params$platt_proportion)
+      )
+
+      model <- private$train_univariate(
+        x = get_records(x, -platt_indices),
+        y = get_records(y, -platt_indices),
+        hyperparams = hyperparams,
+        other_params = other_params
+      )
+
+      predictions <- private$predict_univariate(
+        model = model,
+        x = get_records(x, platt_indices),
+        responses = self$responses,
+        other_params = other_params,
+        hyperparams = hyperparams
+      )
+
+      if (is_binary_response(self$responses$y$type)) {
+        predictions <- predictions$probabilities[[self$responses$y$levels[2]]]
+      } else {
+        predictions <- predictions$predicted
+      }
+
+      platt_data <- data.frame(
+        observed = get_records(y, platt_indices),
+        predicted = predictions
+      )
+
+      family_name <- get_glmnet_family(
+        response_type = self$responses$y$type,
+        is_multivariate = FALSE
+      )
+      self$linear_model <- glm(
+        observed ~ predicted,
+        data = platt_data,
+        family = family_name
+      )
+
+      return(model)
+    },
+    # This function is the one used for tuning
     train_univariate = function(x,
                                 y,
                                 hyperparams,
@@ -212,6 +327,7 @@ DeepLearningModel <- R6Class(
 
       return(model)
     },
+    # This function is the one used for tuning
     predict_univariate = function(model,
                                   x,
                                   responses,
@@ -228,6 +344,39 @@ DeepLearningModel <- R6Class(
       } else {
         predictions <- predict_numeric(predict(model, x))
       }
+
+      return(predictions)
+    },
+    predict_platt_univariate = function(model,
+                                        x,
+                                        responses,
+                                        other_params,
+                                        hyperparams) {
+      predictions <- private$predict_univariate(
+        model = model,
+        x = x,
+        responses = responses,
+        other_params = other_params,
+        hyperparams = hyperparams
+      )
+
+      if (is_binary_response(self$responses$y$type)) {
+        second_level <- self$responses$y$levels[2]
+        predicted <- predictions$probabilities[[second_level]]
+      } else {
+        predicted <- predictions$predicted
+      }
+
+      data <- data.frame(predicted = predicted)
+      platt_predictions <- predict_univariate_glm(
+        model = self$linear_model,
+        data = data,
+        response = responses$y
+      )
+
+      names(platt_predictions) <- paste0(names(platt_predictions), "_platt")
+
+      predictions <- append(predictions, platt_predictions)
 
       return(predictions)
     },

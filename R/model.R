@@ -57,6 +57,10 @@ Model <- R6Class(
       self$hyperparams <- list()
 
       self$tuner_class <- Tuner
+
+      if (self$is_multivariate) {
+        self$name <- paste0("Multivariate ", self$name)
+      }
     },
 
     # Methods --------------------------------------------------

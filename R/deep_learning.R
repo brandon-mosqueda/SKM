@@ -1,4 +1,3 @@
-#' @importFrom reticulate py_suppress_warnings py_capture_output
 #' @importFrom tensorflow set_random_seed
 
 #' @include utils.R
@@ -30,6 +29,8 @@ deep_learning <- function(x, y,
                           tune_testing_proportion = 0.2,
                           tune_grid_proportion = 1,
 
+                          with_platt_scaling = FALSE,
+                          platt_proportion = 0.3,
                           shuffle = TRUE,
                           early_stop = FALSE,
                           early_stop_patience = 50,
@@ -58,6 +59,8 @@ deep_learning <- function(x, y,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
 
+      with_platt_scaling = with_platt_scaling,
+      platt_proportion = platt_proportion,
       shuffle = shuffle,
       early_stop = early_stop,
       early_stop_patience = early_stop_patience,
@@ -72,7 +75,7 @@ deep_learning <- function(x, y,
     old_random_state <- get_rand_state()
 
     # set_random_seed sets R seed too
-    py_suppress_warnings(py_capture_output(set_random_seed(seed)))
+    py_hush(set_random_seed(seed))
     warning(
       "When you use a seed GPU parallelism are disabled since it can result ",
       "in non-deterministic execution patterns, so if you have a GPU in your ",
@@ -99,6 +102,8 @@ deep_learning <- function(x, y,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
 
+    with_platt_scaling = with_platt_scaling,
+    platt_proportion = platt_proportion,
     shuffle = shuffle,
     early_stop = early_stop,
     early_stop_patience = early_stop_patience

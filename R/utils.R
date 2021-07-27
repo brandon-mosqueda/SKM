@@ -1,4 +1,5 @@
 #' @import dplyr
+#' @importFrom reticulate py_suppress_warnings py_capture_output
 
 #' @include globals.R
 #' @include validator.R
@@ -310,6 +311,12 @@ hush <- function(code, all = FALSE) {
   }
 
   return(invisible(temp))
+}
+
+py_hush <- function(code) {
+  py_capture_output(py_suppress_warnings(temp <- code))
+
+  return(temp)
 }
 
 get_verbose_function <- function(verbose) {
