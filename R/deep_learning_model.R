@@ -65,39 +65,26 @@ DeepLearningModel <- R6Class(
 
       self$other_params$hidden_layers_number <- length(layers)
     },
-    predict = function(...,
-                       x,
-                       hyperparams,
-                       other_params) {
+    predict = function(x) {
       x <- private$get_x_for_model(x, remove_cols = FALSE)
       if (!is.null(self$removed_x_cols)) {
         x <- x[, -self$removed_x_cols]
       }
 
+      predict_function <- private$predict_univariate
       if (self$is_multivariate) {
-        py_hush(private$predict_multivariate(
-          ...,
-          x = x,
-          hyperparams = hyperparams,
-          other_params = other_params
-        ))
-      } else {
-        if (self$other_params$with_platt_scaling) {
-          py_hush(private$predict_platt_univariate(
-            ...,
-            x = x,
-            hyperparams = hyperparams,
-            other_params = other_params
-          ))
-        } else {
-          py_hush(private$predict_univariate(
-            ...,
-            x = x,
-            hyperparams = hyperparams,
-            other_params = other_params
-          ))
-        }
+        predict_function <- private$predict_multivariate
+      } else if (self$other_params$with_platt_scaling) {
+        predict_function <- private$predict_platt_univariate
       }
+
+      py_hush(predict_function(
+        model = self$fitted_model,
+        x = x,
+        responses = self$responses,
+        other_params = self$other_params,
+        hyperparams = self$hyperparams
+      ))
     }
   ),
   private = list(

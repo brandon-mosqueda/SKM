@@ -66,6 +66,9 @@ Model <- R6Class(
     # Methods --------------------------------------------------
 
     fit = function() {
+      if (!is.null(self$fitted_model)) {
+        stop("The model is already fitted")
+      }
       private$prepare_x()
       private$prepare_y()
       private$handle_nas()
@@ -81,10 +84,7 @@ Model <- R6Class(
         other_params = self$other_params
       )
     },
-    predict = function(...,
-                       x,
-                       hyperparams,
-                       other_params) {
+    predict = function(x) {
       x <- private$get_x_for_model(x, remove_cols = FALSE)
       if (!is.null(self$removed_x_cols)) {
         x <- x[, -self$removed_x_cols]
@@ -92,17 +92,19 @@ Model <- R6Class(
 
       if (self$is_multivariate) {
         private$predict_multivariate(
-          ...,
+          model = self$fitted_model,
           x = x,
-          hyperparams = hyperparams,
-          other_params = other_params
+          responses = self$responses,
+          other_params = self$other_params,
+          hyperparams = self$hyperparams
         )
       } else {
         private$predict_univariate(
-          ...,
+          model = self$fitted_model,
           x = x,
-          hyperparams = hyperparams,
-          other_params = other_params
+          responses = self$responses,
+          other_params = self$other_params,
+          hyperparams = self$hyperparams
         )
       }
     },
@@ -236,13 +238,7 @@ Model <- R6Class(
 
 #' @export
 predict.Model <- function(model, x) {
-  return(model$predict(
-    model = model$fitted_model,
-    x = x,
-    responses = model$responses,
-    other_params = model$other_params,
-    hyperparams = model$best_hyperparams
-  ))
+  return(model$predict(x))
 }
 
 #' @export

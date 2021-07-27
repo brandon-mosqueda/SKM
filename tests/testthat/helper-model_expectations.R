@@ -134,6 +134,12 @@ expect_hyperparams <- function(model, hyperparams, tune_grid_proportion) {
     permutation.of = c("loss", names(hyperparams))
   )
 
+  expect_numeric(
+    model$hyperparams_grid$loss,
+    finite = TRUE,
+    sorted = TRUE
+  )
+
   expect_equal(model$best_hyperparams, as.list(head(model$hyperparams_grid, 1)))
 }
 

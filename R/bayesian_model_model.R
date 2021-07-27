@@ -302,11 +302,5 @@ BayesianModel <- R6Class(
 
 #' @export
 predict.BayesianModel <- function(model) {
-  return(model$predict(
-    model = model$fitted_model,
-    x = NULL,
-    responses = model$responses,
-    other_params = model$other_params,
-    hyperparams = model$best_hyperparams
-  ))
+  return(model$predict(NULL))
 }

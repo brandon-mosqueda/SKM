@@ -35,7 +35,7 @@ test_that("Univariate numeric (tuning)", {
     learning_rate = 0.001,
     epochs_number = c(5, 8),
     batch_size = 32,
-    neurons_number_1 = c(0.5, 12),
+    neurons_number_1 = c(5, 12),
     activation_1 = "relu",
     dropout_1 = 0,
     ridge_penalty_1 = 0,
@@ -54,6 +54,8 @@ test_that("Univariate numeric (tuning)", {
     layers = list(
       list(
         neurons_number = hyperparams$neurons_number_1,
+        # This have to be ignored
+        neurons_proportion = c(3, 1.5),
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,
@@ -111,7 +113,7 @@ test_that("Univariate binary (tuning)", {
     learning_rate = c(0.001, 0.1),
     epochs_number = c(5),
     batch_size = 32,
-    neurons_number_1 = c(0.5),
+    neurons_number_1 = c(10, 20),
     activation_1 = c("relu", "sigmoid"),
     dropout_1 = 0,
     ridge_penalty_1 = c(0.1, 0.2),
@@ -129,7 +131,8 @@ test_that("Univariate binary (tuning)", {
     batch_size = hyperparams$batch_size,
     layers = list(
       list(
-        neurons_number = hyperparams$neurons_number_1,
+        # This have to be replaced in neurons_number
+        neurons_proportion = c(2, 3),
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,
@@ -403,6 +406,8 @@ test_that("Multivariate numeric (tuning)", {
     layers = list(
       list(
         neurons_number = hyperparams$neurons_number_1,
+        # This have to be ignored
+        neurons_proportion = c(2, 3),
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,
@@ -479,7 +484,7 @@ test_that("Multivariate combined (tuning)", {
     learning_rate = c(0.1),
     epochs_number = c(5),
     batch_size = c(32, 50),
-    neurons_number_1 = c(0.5),
+    neurons_number_1 = c(5, 10),
     activation_1 = c("relu", "selu"),
     dropout_1 = c(0.2),
     ridge_penalty_1 = c(0.1, 0.2),
@@ -497,7 +502,8 @@ test_that("Multivariate combined (tuning)", {
     batch_size = hyperparams$batch_size,
     layers = list(
       list(
-        neurons_number = hyperparams$neurons_number_1,
+        # This have to be replaced in neurons_number
+        neurons_proportion = c(0.5, 1),
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,
