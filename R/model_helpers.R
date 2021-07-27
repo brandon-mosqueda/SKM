@@ -254,11 +254,10 @@ predict_univariate_glm <- function(model, data, response) {
 
     predictions <- ifelse(predictions > 0.5, 2, 1)
     predictions <- response$levels[predictions]
-    predictions <- factor(predictions, levels = response$levels)
 
     predictions <- list(
-      predicted = predictions,
-      probabilities = probabilities
+      predicted = factor(predictions, levels = response$levels),
+      probabilities = as.data.frame(probabilities)
     )
   } else {
     stop("Not implement for other types of response variables")

@@ -646,3 +646,183 @@ test_that("Multivariate numeric (NA tuning)", {
     removed_x_cols = c(1, 2)
   )
 })
+
+test_that("Numeric platt (no tuning)", {
+  model <- deep_learning(
+    x_num,
+    y_num,
+    epochs_number = 5,
+
+    with_platt_scaling = TRUE,
+
+    verbose = FALSE
+  )
+
+  expect_deep_learning(
+    model = model,
+    x = to_matrix(x_num),
+    y = y_num,
+    hyperparams = list(
+      learning_rate = 0.001,
+      epochs_number = 5,
+      batch_size = 32,
+      neurons_number_1 = 0.5,
+      activation_1 = "relu",
+      dropout_1 = 0,
+      ridge_penalty_1 = 0,
+      lasso_penalty_1 = 0,
+      output_ridge_penalty = 0,
+      output_lasso_penalty = 0
+    ),
+    responses = list(
+      y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    with_platt = TRUE
+  )
+})
+
+test_that("Numeric platt (tuning)", {
+  hyperparams <- list(
+    learning_rate = 0.001,
+    epochs_number = c(5, 8),
+    batch_size = 32,
+    neurons_number_1 = c(0.5, 12),
+    activation_1 = "relu",
+    dropout_1 = 0,
+    ridge_penalty_1 = 0,
+    lasso_penalty_1 = 0,
+    output_ridge_penalty = 0,
+    output_lasso_penalty = 0
+  )
+
+  model <- deep_learning(
+    to_matrix(x_num),
+    y_num,
+
+    learning_rate = hyperparams$learning_rate,
+    epochs_number = hyperparams$epochs_number,
+    batch_size = hyperparams$batch_size,
+    layers = list(
+      list(
+        neurons_number = hyperparams$neurons_number_1,
+        activation = hyperparams$activation_1,
+        dropout = hyperparams$dropout_1,
+        ridge_penalty = hyperparams$ridge_penalty_1,
+        lasso_penalty = hyperparams$lasso_penalty_1
+      )
+    ),
+    output_penalties = list(
+      ridge_penalty = hyperparams$output_ridge_penalty,
+      lasso_penalty = hyperparams$output_lasso_penalty
+    ),
+
+    tune_folds_number = 3,
+
+    with_platt_scaling = TRUE,
+    platt_proportion = 0.5,
+
+    verbose = FALSE
+  )
+
+  expect_deep_learning(
+    model = model,
+    x = to_matrix(x_num),
+    y = y_num,
+    hyperparams = hyperparams,
+    responses = list(
+      y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)
+    ),
+    with_platt = TRUE
+  )
+})
+
+test_that("Binary platt (no tuning)", {
+  model <- suppressWarnings(deep_learning(
+    x_bin,
+    y_bin,
+    epochs_number = 5,
+    with_platt_scaling = TRUE,
+    verbose = FALSE
+  ))
+
+  expect_deep_learning(
+    model = model,
+    x = to_matrix(x_bin),
+    y = as.numeric(y_bin) - 1,
+    hyperparams = list(
+      learning_rate = 0.001,
+      epochs_number = 5,
+      batch_size = 32,
+      neurons_number_1 = 0.5,
+      activation_1 = "relu",
+      dropout_1 = 0,
+      ridge_penalty_1 = 0,
+      lasso_penalty_1 = 0,
+      output_ridge_penalty = 0,
+      output_lasso_penalty = 0
+    ),
+    responses = list(
+      y = list(type = RESPONSE_TYPES$BINARY, levels = levels(y_bin))
+    ),
+    with_platt = TRUE
+  )
+})
+
+test_that("Binary platt (tuning)", {
+  hyperparams <- list(
+    learning_rate = c(0.001, 0.1),
+    epochs_number = c(5),
+    batch_size = 32,
+    neurons_number_1 = c(0.5),
+    activation_1 = c("relu", "sigmoid"),
+    dropout_1 = 0,
+    ridge_penalty_1 = c(0.1, 0.2),
+    lasso_penalty_1 = 0,
+    output_ridge_penalty = 0,
+    output_lasso_penalty = 0
+  )
+
+  model <- suppressWarnings(deep_learning(
+    x_bin,
+    y_bin,
+
+    learning_rate = hyperparams$learning_rate,
+    epochs_number = hyperparams$epochs_number,
+    batch_size = hyperparams$batch_size,
+    layers = list(
+      list(
+        neurons_number = hyperparams$neurons_number_1,
+        activation = hyperparams$activation_1,
+        dropout = hyperparams$dropout_1,
+        ridge_penalty = hyperparams$ridge_penalty_1,
+        lasso_penalty = hyperparams$lasso_penalty_1
+      )
+    ),
+    output_penalties = list(
+      ridge_penalty = hyperparams$output_ridge_penalty,
+      lasso_penalty = hyperparams$output_lasso_penalty
+    ),
+
+    tune_cv_type = "Random",
+    tune_folds_number = 2,
+    tune_testing_proportion = 0.3,
+    tune_grid_proportion = 0.8,
+
+    with_platt_scaling = TRUE,
+    platt_proportion = 0.4,
+
+    verbose = FALSE
+  ))
+
+  expect_deep_learning(
+    model = model,
+    x = to_matrix(x_bin),
+    y = as.numeric(y_bin) - 1,
+    hyperparams = hyperparams,
+    responses = list(
+      y = list(type = RESPONSE_TYPES$BINARY, levels = levels(y_bin))
+    ),
+    tune_grid_proportion = 0.8,
+    with_platt = TRUE
+  )
+})
