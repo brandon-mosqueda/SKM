@@ -278,6 +278,24 @@ assert_svm_kernel <- function(kernel) {
   )
 }
 
+assert_svm_class_weights <- function(class_weights) {
+  if (is.character(class_weights)) {
+    assert_subset_string(
+      class_weights,
+      SVM_CLASS_WEIGHTS,
+      ignore.case = TRUE
+    )
+  } else {
+    assert_numeric(
+      class_weights,
+      finite = TRUE,
+      any.missing = FALSE,
+      null.ok = TRUE
+    )
+  }
+}
+
+
 assert_random_forest_na_action <- function(na_action) {
   assert_string(na_action)
 
@@ -404,12 +422,7 @@ validate_support_vector_machine <- function(x,
   assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
   assert_numeric(cost, finite = TRUE, any.missing = FALSE)
 
-  assert_numeric(
-    class_weights,
-    finite = TRUE,
-    any.missing = FALSE,
-    null.ok = TRUE
-  )
+  assert_svm_class_weights(class_weights)
   assert_number(cache_size, finite = TRUE)
   assert_number(tolerance, finite = TRUE)
   assert_logical(shrinking, len = 1, any.missing = FALSE)

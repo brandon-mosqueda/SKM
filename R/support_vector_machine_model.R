@@ -49,6 +49,9 @@ SupportVectorMachineModel <- R6Class(
 
       self$other_params$scale <- scale
       self$other_params$kernel <- tolower(kernel)
+      if (is.character(class_weights)) {
+        class_weights <- tolower(class_weights)
+      }
       self$other_params$class_weights <- class_weights
       self$other_params$cache_size <- cache_size
       self$other_params$tolerance <- tolerance

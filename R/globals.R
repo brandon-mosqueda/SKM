@@ -35,6 +35,7 @@ KERNELS_WITH_COEF0 <- c(
 # For models --------------------------------------------------
 
 SVM_KERNELS <- c("linear", "polynomial", "radial", "sigmoid")
+SVM_CLASS_WEIGHTS <- c("inverse")
 
 RANDOM_FOREST_SPLIT_RULES <- c("mse", "gini", "auc", "entropy")
 

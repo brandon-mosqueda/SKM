@@ -9,7 +9,7 @@ prepare_univariate_y <- function() {
     self$y <- c(self$y)
   }
 
-  if (is.character(self$y)) {
+  if (is.character(self$y) || is.logical(y)) {
     self$y <- factor(self$y)
   }
 
@@ -25,8 +25,7 @@ prepare_multivariate_y <- function() {
   }
 
   self$y <- self$y %>%
-    mutate_if(is.character, factor) %>%
-    mutate_if(is.logical, factor)
+    mutate_if(function(x) is.character(x) || is.logical(x), factor)
 
   for (col_name in colnames(self$y)) {
     self$responses[[col_name]] <- list(

@@ -8,3 +8,4 @@ notes.tnotes
 manual_tests
 test.R
 vscode.code-workspace
+^man-roxygen
