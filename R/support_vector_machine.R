@@ -4,6 +4,10 @@
 
 #' @title Fit a support vector machine
 #'
+#' @templateVar ClassName SupportVectorMachineModel
+#' @templateVar XType matrix
+#' @templateVar refFunction e1071::svm()
+#'
 #' @description
 #' `support_vector_machine()` is a wrapper of the [e1071::svm()] function with
 #' the ability to tune the hyperparameters (grid search) in a simple way. It
@@ -16,7 +20,54 @@
 #'   column. If y is `character`, `logical` or `factor`, then a classification
 #'   machine is fitted, otherwise a regression machine.
 #' @param kernel (`character(1)`) (case not sensitive) The kernel used in the
-#' support vector machine.
+#' support vector machine. The options are `"linear"`, `"polynomial"`,
+#' `"radial"` and `"sigmoid"` (for more information, see Details section below).
+#' You can use `gamma`, `coef0` and `degree` parameters to adjust the kernel.
+#' `"linear"` by default.
+#' @param degree (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
+#'   kernel. 3 by default.
+#' @param gamma (`numeric`) (__tunable__) Parameter needed for all kernels
+#'   except `"linear"`. `if (is.vector(x)) 1 else 1 / ncol(x)` by default.
+#' @param coef0 (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
+#'   and `"sigmoid"` kernels. 0 by default.
+#' @param cost (`numeric`) (__tunable__) Cost of constraints violation. It is
+#' the 'C'-constant of the regularization term in the Lagrange formulation. 1 by
+#' default.
+#' @template cv-tune-params
+#' @param scale (`logical`) A logical vector indicating the variables in `x`
+#'   to be scaled. If `scale` is of length 1, the value is recycled as many
+#'   times as needed. `TRUE` by default.
+#' @param class_weights (`numeric` | `character`) For categorical responses
+#'   only. A named vector of weights for the different classes, used for
+#'   asymmetric class sizes. Not all factor levels have to be supplied (default
+#'   weight: 1). All components have to be named. Specifying "inverse" (case not
+#'   sensitive) will choose the weights inversely proportional to the class
+#'   distribution. `NULL` by default.
+#' @param cache_size (`numeric(1)`) Cache memory in MB. 40 by default.
+#' @param tolerance (`numeric(1)`) Tolerance of termination criterion. 0.001
+#'   by default.
+#' @param epsilon (`numeric(1)`) Epsilon in the insensitive-loss function. 0.1
+#'   by default.
+#' @param shrinking (`logical(1)`) Do you want to use the shrinking-heuristics?
+#'   `TRUE` by default.
+#' @param fitted (`logical(1)`) Should the fitted values be computed and
+#'   included in the model? `TRUE` by default.
+#' @template other-base-params
+#'
+#' @details
+#' You have to consider that before tuning and fitting x is converted to a
+#' matrix with a [to_matrix()] function and all columns without variance (where
+#' all the records has the same value) are removed. Such columns positions are
+#' returned in the `removed_x_cols` field of the returned object.
+#'
+#' All records with missing values (`NA`), either in `x` or in `y` will be
+#' removed. The positions of the removed records are returned in the
+#' `removed_rows` fielf of the returned object.
+#'
+#' ## kernel
+#'
+#' The 4 different kernel transformations are described in the following
+#' mathematical expressions:
 #'
 #' * linear:
 #'
@@ -34,34 +85,31 @@
 #'
 #'     ![](sigmoid_kernel.png "Sigmoid kernel")
 #'
-#' You can use `gamma`, `coef0` and `degree` parameters to adjust the kernel.
-#' `"linear"` by default.
-#' @param degree (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
-#'   kernel. 3 by default.
-#' @param gamma (`numeric`) (__tunable__) Parameter needed for all kernels
-#'   except `"linear"`. `if (is.vector(x)) 1 else 1 / ncol(x)` by default.
-#' @param coef0 (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
-#'   and `"sigmoid"` kernels. 0 by default.
-#' @template cv-tune-params
-#' @param scale (`logical`) A logical vector indicating the variables in `x`
-#'   to be scaled. If `scale` is of length 1, the value is recycled as many
-#'   times as needed. `TRUE` by default.
-#' @param class_weights (`numeric` | `character`) For categorical responses only.
-#'   A named vector of weights for the different classes, used for asymmetric
-#'   class sizes. Not all factor levels have to be supplied (default weight: 1).
-#'   All components have to be named. Specifying "inverse" (case not sensitive)
-#'   will choose the weights inversely proportional to the class distribution.
-#'   `NULL` by default.
-#' @param cache_size (`numeric(1)`) Cache memory in MB. 40 by default.
-#' @param tolerance (`numeric(1)`) Tolerance of termination criterion. 0.001
-#'   by default.
-#' @param epsilon (`numeric(1)`) Epsilon in the insensitive-loss function. 0.1
-#'   by default.
-#' @param shrinking (`logical(1)`) Do you want to use the shrinking-heuristics?
-#'   `TRUE` by default.
-#' @param fitted (`logical(1)`) Should the fitted values be computed and
-#'   included in the model? `TRUE` by default.
-#' @template other-base-params
+#' When you provide several values of `degree`, `gamma` and/or `coef0` for
+#' tuning with kernels that does not support them they are not taken in account.
+#' For example, for `"linear"` kernel all values in these parameters are ignored
+#' (no grid is generated with them) since `"linear"` kernel does not use any of
+#' them.
+#'
+#' @template return-model
+#'
+#' @seealso [predict.Model()]
+#'
+#' @examples
+#' \dontrun{
+#' # Fit with all default parameters
+#' support_vector_machine(iris[, -5], iris$Species)
+#'
+#' # Tune 3 hyperparameters
+#' support_vector_machine(
+#'   iris[, -1],
+#'   iris$Sepal.Length,
+#'   kernel = "polynomial",
+#'   degree = c(3, 4, 5),
+#'   gamma = c(1, 2),
+#'   coef0 = c(0, 1, -1)
+#' )
+#' }
 #'
 #' @export
 support_vector_machine <- function(x, y,
