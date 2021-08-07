@@ -140,48 +140,60 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+get_cols_names <- function(x) {
+  cols_names <- colnames(x)
+
+  if (is.null(cols_names)) {
+    cols_names <- paste0("x", seq(ncol(x)))
+  } else {
+    cols_no_name <- which(cols_names == "")
+
+    if (!is_empty(cols_no_name)) {
+      cols_names[cols_no_name] <- paste0("x", seq_along(cols_no_name))
+    }
+  }
+
+  return(cols_names)
+}
+
 #' @export
 to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
-  if (na.rm) {
+  if (is.null(x)) {
+    return(NULL)
+  } else if (na.rm) {
     x <- na.omit(x)
   }
 
   if (is.vector(x)) {
-    if (is.character(x)) {
-      x <- factor(x)
+    if (is.character(x) || is.logical(x)) {
+      x <- data.frame(x = factor(x))
     } else {
-      x <- data.matrix(x)
+      x <- matrix(x)
     }
-  }
-
-  if (is.factor(x)) {
-    x <- as.data.frame(x)
+  } else if (is.factor(x)) {
+    x <- data.frame(x)
+  } else if (is.matrix(x) && !is.numeric(x)) {
+    x <- data.frame(x)
+    x[] <- lapply(x, factor)
   }
 
   if (is.matrix(x)) {
-    if (!is.numeric(x)) {
-      prev_names <- colnames(x)
-      x <- matrix(as.numeric(x), ncol = ncol(x))
-      colnames(x) <- prev_names
-    }
-
-    if (is.null(colnames(x))) {
-      colnames(x) <- paste0("x", 1:ncol(x))
-    }
+    colnames(x) <- get_cols_names(x)
 
     if (with_intercept) {
       x <- cbind(1, x)
       colnames(x)[1] <- "(Intercept)"
     }
   } else if (is.data.frame(x)) {
-    if (is.null(colnames(x))) {
-      colnames(x) <- paste0("x", seq(ncol(x)))
-    }
+    colnames(x) <- get_cols_names(x)
+
     current_na_state <- options()$na.action
     if (!na.rm) {
       options(na.action = "na.pass")
     }
-    x <- model.matrix( ~ ., x)
+
+    x <- model.matrix(~., x)
+
     options(na.action = current_na_state)
 
     if (!with_intercept) {
@@ -194,10 +206,13 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 
 #' @export
 to_data_frame <- function(x) {
-  V1 <- x
-  x <- as.data.frame(V1, check.names = FALSE)
+  x <- as.data.frame(x, check.names = FALSE)
 
-  x <- mutate_if(x, function(x) is.character(x) || is.logical(x), factor)
+  x[] <- lapply(x, function(x) {
+    return(if (is.character(x) || is.logical(x)) factor(x) else x)
+  })
+
+  colnames(x) <- get_cols_names(x)
 
   return(x)
 }

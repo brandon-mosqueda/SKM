@@ -8,9 +8,6 @@ test_that("to_matrix", {
   expect_matrix(to_matrix(1), nrows = 1, ncols = 1, any.missing = FALSE)
   expect_matrix(to_matrix(1, TRUE), nrows = 1, ncols = 2, any.missing = FALSE)
 
-  expect_matrix(to_matrix(NA), nrows = 1, ncols = 1)
-  expect_matrix(to_matrix(NA, TRUE), nrows = 1, ncols = 2)
-
   expect_matrix(to_matrix(1:10), nrows = 10, ncols = 1)
   expect_matrix(to_matrix(1:10, TRUE), nrows = 10, ncols = 2)
 
@@ -97,11 +94,10 @@ test_that("to_matrix", {
   )
 
   temp <- matrix(as.character(1:12), 4, 3)
-  temp_numeric <- matrix(as.numeric(temp), 4, 3)
-  colnames(temp_numeric) <- paste0("x", 1:3)
-  expect_equal(
+  expect_matrix(
     to_matrix(temp),
-    temp_numeric
+    nrows = 4,
+    ncols = 9
   )
 
   diverse_data <- data.frame(
@@ -174,17 +170,17 @@ test_that("to_data_frame", {
   categories <- sample(c("A", "B", "C"), 10, replace = TRUE)
   binaries <- sample(c(TRUE, FALSE), 10, replace = TRUE)
 
-  expect_equal(to_data_frame(1), data.frame(V1 = 1))
+  expect_equal(to_data_frame(1), data.frame(x = 1))
 
-  expect_equal(to_data_frame(NA), data.frame(V1 = factor(NA)))
+  expect_equal(to_data_frame(NA), data.frame(x = factor(NA)))
 
-  expect_equal(to_data_frame(1:10), data.frame(V1 = 1:10))
-  expect_equal(to_data_frame(binaries), data.frame(V1 = factor(binaries)))
+  expect_equal(to_data_frame(1:10), data.frame(x = 1:10))
+  expect_equal(to_data_frame(binaries), data.frame(x = factor(binaries)))
 
-  expect_equal(to_data_frame(categories), data.frame(V1 = factor(categories)))
+  expect_equal(to_data_frame(categories), data.frame(x = factor(categories)))
   expect_equal(
     to_data_frame(factor(categories)),
-    data.frame(V1 = factor(categories))
+    data.frame(x = factor(categories))
   )
 
   expect_equal(
@@ -193,7 +189,7 @@ test_that("to_data_frame", {
   )
 
   temp <- matrix(1:15, 5, 3)
-  colnames(temp) <- c("V1", "V2", "V3")
+  colnames(temp) <- c("x1", "x2", "x3")
   temp[1, 2] <- NA
   temp[3, 2] <- NA
   expect_equal(
@@ -466,14 +462,12 @@ test_that("is_square", {
   expect_identical(is_square(iris[1:5, 1:5]), TRUE)
   expect_identical(is_square(data.matrix(iris[1:5, 1:5])), TRUE)
   expect_identical(is_square(to_matrix(1)), TRUE)
-  expect_identical(is_square(to_matrix(NA)), TRUE)
 })
 
 test_that("is_empty", {
   expect_identical(is_empty(iris), FALSE)
   expect_identical(is_empty(1:100), FALSE)
   expect_identical(is_empty(1), FALSE)
-  expect_identical(is_empty(NA), FALSE)
   expect_identical(is_empty(mean), FALSE)
 
   expect_identical(is_empty(NULL), TRUE)
