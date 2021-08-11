@@ -59,12 +59,8 @@
 #'   default.
 #' @template other-base-params
 #'
+#' @template details-data-frame
 #' @details
-#' You have to consider that before tuning and fitting `x` is converted to a
-#' `data.frame` with a [to_data_frame()] function which converts all `character`
-#' and `logical` columns to `factor` and therefore are treated as categorical
-#' independent variables.
-#'
 #' ## split_rule
 #'
 #' * `"mse"`: Implements weighted mean-squared error splitting for regression

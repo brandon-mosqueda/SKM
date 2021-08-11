@@ -2,7 +2,7 @@
 #' @include validator.R
 #' @include support_vector_machine_model.R
 
-#' @title Fit a support vector machine
+#' @title Fit a support vector machine (SVM)
 #'
 #' @templateVar ClassName SupportVectorMachineModel
 #' @templateVar XType matrix
@@ -55,16 +55,9 @@
 #'   included in the model? `TRUE` by default.
 #' @template other-base-params
 #'
+#' @template details-matrix
+#' @template details-remove-nas
 #' @details
-#' You have to consider that before tuning and fitting `x` is converted to a
-#' `matrix` with a [to_matrix()] function and all columns without variance
-#' (where all the records has the same value) are removed. Such columns
-#' positions are returned in the `removed_x_cols` field of the returned object.
-#'
-#' All records with missing values (`NA`), either in `x` or in `y` will be
-#' removed. The positions of the removed records are returned in the
-#' `removed_rows` fielf of the returned object.
-#'
 #' ## kernel
 #'
 #' The 4 different kernel transformations are described in the following
