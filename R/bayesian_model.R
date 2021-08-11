@@ -22,7 +22,7 @@ bayesian_model <- function(x, y,
                            verbose = TRUE) {
   assert_logical(validate_params, len = 1, any.missing = FALSE)
 
-  is_multivariate <- length(dim(y)) > 1
+  is_multivariate <- NCOL(y) > 1
 
   if (validate_params) {
     validate_bayesian_model(

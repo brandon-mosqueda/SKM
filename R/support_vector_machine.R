@@ -6,6 +6,7 @@
 #'
 #' @templateVar ClassName SupportVectorMachineModel
 #' @templateVar XType matrix
+#' @templateVar YType `vector`
 #' @templateVar refFunction e1071::svm()
 #'
 #' @description
@@ -17,7 +18,7 @@
 #' @template x-matrix-param
 #' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
 #'   variable. If it is a `data.frame` or a `matrix` it must have only one
-#'   column. If y is `character`, `logical` or `factor`, then a classification
+#'   column. If `y` is `character`, `logical` or `factor`, then a classification
 #'   machine is fitted, otherwise a regression machine.
 #' @param kernel (`character(1)`) (case not sensitive) The kernel used in the
 #' support vector machine. The options are `"linear"`, `"polynomial"`,
@@ -55,10 +56,10 @@
 #' @template other-base-params
 #'
 #' @details
-#' You have to consider that before tuning and fitting x is converted to a
-#' matrix with a [to_matrix()] function and all columns without variance (where
-#' all the records has the same value) are removed. Such columns positions are
-#' returned in the `removed_x_cols` field of the returned object.
+#' You have to consider that before tuning and fitting `x` is converted to a
+#' `matrix` with a [to_matrix()] function and all columns without variance
+#' (where all the records has the same value) are removed. Such columns
+#' positions are returned in the `removed_x_cols` field of the returned object.
 #'
 #' All records with missing values (`NA`), either in `x` or in `y` will be
 #' removed. The positions of the removed records are returned in the
@@ -101,7 +102,7 @@
 #' support_vector_machine(iris[, -5], iris$Species)
 #'
 #' # Tune 3 hyperparameters
-#' support_vector_machine(
+#' model <- support_vector_machine(
 #'   iris[, -1],
 #'   iris$Sepal.Length,
 #'   kernel = "polynomial",
@@ -109,6 +110,12 @@
 #'   gamma = c(1, 2),
 #'   coef0 = c(0, 1, -1)
 #' )
+#'
+#' predictions <- predict(model, iris)
+#' predictions$predicted
+#'
+#' # See the whole grid
+#' model$hyperparams_grid
 #' }
 #'
 #' @export
