@@ -2,7 +2,7 @@
 #' @include validator.R
 #' @include support_vector_machine_model.R
 
-#' @title Fit a support vector machine (SVM)
+#' @title Fit a Support Vector Machine (SVM)
 #'
 #' @templateVar ClassName SupportVectorMachineModel
 #' @templateVar XType matrix

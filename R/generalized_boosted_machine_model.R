@@ -19,8 +19,7 @@ GeneralizedBoostedMachineModel <- R6Class(
                           sampled_records_proportion,
 
                           records_weights,
-                          predictors_relationship,
-                          cores_number) {
+                          predictors_relationship) {
       super$initialize(
         ...,
         name = "Generalized Boosted Machine",
@@ -35,7 +34,6 @@ GeneralizedBoostedMachineModel <- R6Class(
 
       self$other_params$records_weights <- records_weights
       self$other_params$predictors_relationship <- predictors_relationship
-      self$other_params$cores_number <- cores_number
     }
   ),
   private = list(
@@ -92,7 +90,6 @@ GeneralizedBoostedMachineModel <- R6Class(
         distribution = other_params$distribution,
         weights = other_params$records_weights,
         var.monotone = other_params$predictors_relationship,
-        n.cores = other_params$cores_number,
 
         train.fraction = 1,
         verbose = FALSE,
@@ -106,14 +103,17 @@ GeneralizedBoostedMachineModel <- R6Class(
                                   responses,
                                   other_params,
                                   hyperparams) {
-      predictions <- suppressMessages(predict(
-        model,
-        newdata = x,
-        # type response returns the probabilites for categorical data and counts
-        # for poisson data, for continuous type link and response returns the
-        # same
-        type = "response"
-      ))
+      predictions <- hush(
+        predict(
+          model,
+          newdata = x,
+          # type response returns the probabilites for categorical data and counts
+          # for poisson data, for continuous type link and response returns the
+          # same
+          type = "response"
+        ),
+        all = TRUE
+      )
 
       if (is_binary_response(responses$y$type)) {
         # Predictions are only the probabilities of being 1 (response level 1)

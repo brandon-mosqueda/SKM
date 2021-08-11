@@ -2,7 +2,7 @@
 #' @include validator.R
 #' @include random_forest_model.R
 
-#' @title Fit a random forest model
+#' @title Fit a Random Forest Model
 #'
 #' @templateVar ClassName RandomForestModel
 #' @templateVar XType data.frame

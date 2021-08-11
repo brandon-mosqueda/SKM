@@ -564,7 +564,6 @@ validate_generalized_boosted_machine <- function(x,
 
                                                  records_weights,
                                                  predictors_relationship,
-                                                 cores_number,
 
                                                  seed,
                                                  verbose) {
@@ -614,8 +613,6 @@ validate_generalized_boosted_machine <- function(x,
     len = ncol(x),
     null.ok = TRUE
   )
-
-  assert_number(cores_number, lower = 1, finite = TRUE, null.ok = TRUE)
 }
 
 validate_deep_learning <- function(x,

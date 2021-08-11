@@ -2,7 +2,7 @@
 #' @include validator.R
 #' @include random_forest_model.R
 
-#' @title Fit a generalized boosted machine (GBM)
+#' @title Fit a Generalized Boosted Machine (GBM)
 #'
 #' @templateVar ClassName GeneralizedBoostedMachineModel
 #' @templateVar XType data.frame
@@ -98,7 +98,6 @@ generalized_boosted_machine <- function(x, y,
 
                                         records_weights = NULL,
                                         predictors_relationship = NULL,
-                                        cores_number = NULL,
 
                                         validate_params = TRUE,
                                         seed = NULL,
@@ -123,7 +122,6 @@ generalized_boosted_machine <- function(x, y,
 
       records_weights = records_weights,
       predictors_relationship = predictors_relationship,
-      cores_number = cores_number,
 
       seed = seed,
       verbose = verbose
@@ -156,8 +154,7 @@ generalized_boosted_machine <- function(x, y,
     tune_grid_proportion = tune_grid_proportion,
 
     records_weights = records_weights,
-    predictors_relationship = predictors_relationship,
-    cores_number = cores_number
+    predictors_relationship = predictors_relationship
   )
 
   wrapper_function <- get_verbose_function(verbose)

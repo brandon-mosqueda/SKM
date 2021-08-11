@@ -414,12 +414,6 @@ expect_generalized_boosted_machine <- function(model,
   )
 
   expect_list(model$other_params, any.missing = FALSE)
-  expect_number(
-    model$other_params$cores_number,
-    lower = 1,
-    finite = TRUE,
-    null.ok = TRUE
-  )
   expect_numeric(
     model$other_params$predictors_relationship,
     null.ok = TRUE,

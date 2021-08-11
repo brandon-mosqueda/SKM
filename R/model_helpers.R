@@ -9,7 +9,7 @@ prepare_univariate_y <- function() {
     self$y <- c(self$y)
   }
 
-  if (is.character(self$y) || is.logical(y)) {
+  if (is.character(self$y) || is.logical(self$y)) {
     self$y <- factor(self$y)
   }
 
