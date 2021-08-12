@@ -65,19 +65,19 @@
 #'
 #' * linear:
 #'
-#'     ![](linear_kernel.png "Linear kernel")
+#'     ![](linear_kernel.png "K(x, y) = x^T y")
 #'
 #' * polynomial:
 #'
-#'     ![](polynomial_kernel.png "Polynomial kernel")
+#'     ![](polynomial_kernel.png "K(x, y) = (gamma * x^T y + coef0)^degree")
 #'
 #' * radial:
 #'
-#'     ![](radial_kernel.png "Radial kernel")
+#'     ![](radial_kernel.png "K(x, y) = exp(-gamma * |x - y|^2)")
 #'
 #' * sigmoid:
 #'
-#'     ![](sigmoid_kernel.png "Sigmoid kernel")
+#'     ![](sigmoid_kernel.png "K(x, y) = tanh(gamma * x^T y + coef0)")
 #'
 #' When you provide several values of `degree`, `gamma` and/or `coef0` for
 #' tuning with kernels that does not support them they are not taken in account.

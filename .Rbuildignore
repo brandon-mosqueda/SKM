@@ -9,3 +9,4 @@ manual_tests
 test.R
 vscode.code-workspace
 ^man-roxygen
+^man/figures/SKM.drawio$

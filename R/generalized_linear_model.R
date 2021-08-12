@@ -2,6 +2,94 @@
 #' @include validator.R
 #' @include generalized_linear_model_model.R
 
+#' @title Fit a Penalized Generalized Linear Model
+#'
+#' @templateVar ClassName GeneralizedLinearModel
+#' @templateVar XType matrix
+#' @templateVar YType `vector` or `matrix`
+#' @templateVar refFunction glmnet::glmnet()
+#'
+#' @description
+#' `generalized_linear_model()` is a wrapper of the [glmnet::glmnet()] function
+#' with the ability to tune the hyperparameters (grid search) in a simple way.
+#' It fits univariate models for continuous, discrete, binary and categorical
+#' response variables and multivariate models for numeric responses only.
+#' @template tunable-description
+#'
+#' @template x-matrix-param
+#' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
+#'   variable(s). If it is a `data.frame` or a `matrix` with 2 or more columns,
+#'   a multivariate model is assumed, a univariate model otherwise. In
+#'   univariate models if `y` is `character`, `logical` or `factor` a
+#'   categorical response is assumed. When the response is categorical with only
+#'   two classes a logistic regression is assumed, with more than two classes a
+#'   multinomial regression. When the response variable is numeric with only
+#'   integers values greater or equals than zero a poisson regression is
+#'   assumed, multiple regression otherwise. In multivariate models all
+#'   responses are coerced to numeric and a multi-response gaussian regression
+#'   is assumed.
+#' @param alpha (`numeric`) (__tunable__) The elasticnet mixing parameter, with
+#'   0 <= alpha <= 1. The penalty is defined as:
+#'
+#'   ![](glmnet_penalty.png "(1 - \alpha)/2||\beta||_2^2 + \alpha ||\beta||_1")
+#'
+#'   alpha = 0 is the lasso penalty, alpha = 1 is the ridge penalty and 0 <
+#'   alpha < 1 is the elasticnet penalty. 1 by default.
+#' @param lambda (`numeric`) (__tunable__) The penalty value (coefficient
+#'   shrinkage). If provided `lambdas_number` parameter is ignored and the
+#'   provided values are used for tuning. `NULL` by default.
+#' @template cv-tune-params
+#' @param lambdas_number (`numeric(1)`) The number of lambda values to be
+#'   generated and evaluated in tuning. If `lambda` is provided, this parameter
+#'   is ignored. 100 by default.
+#' @param lambda_min_ratio (`numeric(1)`) Smallest value for lambda, as a
+#'   fraction of `lambda.max`, the (data derived) entry value (i.e. the smallest
+#'   value for which all coefficients are zero). `ifelse(nrow(x) < ncol(x),
+#'   0.01, 1e-04)` by default.
+#' @param records_weights (`numeric`) Observation weights. `NULL` by default (1
+#'   for each observation).
+#' @param standardize (`logical(1)`) Should the `x` variables be standardized?
+#'   The coefficients are always returned on the original scale. If variables
+#'   are in the same units already, you might not wish to standardize. `TRUE` by
+#'   default.
+#' @param fit_intercept (`logical(1)`) Should intercept be fitted? `TRUE` by
+#'   default.
+#' @template other-base-params
+#'
+#' @template details-matrix
+#' @template details-remove-nas
+#'
+#' @template return-model
+#'
+#' @seealso [predict.Model()], [coef.Model()]
+#'
+#' @examples
+#' \dontrun{
+#' # Fit with all default parameters
+#' generalized_linear_model(iris[, -5], iris$Species)
+#'
+#' # With tuning
+#' model <- generalized_linear_model(
+#'   iris[, -1],
+#'   iris$Sepal.Length,
+#'   alpha = c(0, 0.5, 1),
+#'   lambdas_number = 10
+#' )
+#'
+#' predictions <- predict(model, iris)
+#' predictions$predicted
+#'
+#' # See the whole grid
+#' model$hyperparams_grid
+#'
+#' # Multivariate analysis
+#' generalized_linear_model(
+#'   x = iris[, -c(1, 5)],
+#'   y = iris[, c(1, 5)],
+#'   lambdas = c(0.1, 0.2, 0.3, 0.4)
+#' )
+#' }
+#'
 #' @export
 generalized_linear_model <- function(x, y,
 
