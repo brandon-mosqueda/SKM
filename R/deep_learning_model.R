@@ -138,19 +138,19 @@ DeepLearningModel <- R6Class(
       for (i in 1:self$other_params$hidden_layers_number) {
         neurons_i <- sprintf("neurons_number_%s", i)
         proportion_i <- sprintf("neurons_proportion_%s", i)
+
         layer_neurons <- self$hyperparams[[neurons_i]]
-        if (is.null(layer_neurons)) {
-          layer_neurons <- sapply(
+        if (!is.null(self$hyperparams[[proportion_i]])) {
+          layer_proportions <- sapply(
             self$hyperparams[[proportion_i]],
             proportion_to,
             to = ncol(self$x),
             upper = Inf
           )
-
-          self$hyperparams[[proportion_i]] <- NULL
-        } else {
-          layer_neurons <- ceiling(layer_neurons)
+          layer_neurons <- c(layer_neurons, layer_proportions)
         }
+        self$hyperparams[[proportion_i]] <- NULL
+        layer_neurons <- ceiling(layer_neurons)
         self$hyperparams[[neurons_i]] <- layer_neurons
 
         activation_i <- sprintf("activation_%s", i)
@@ -316,7 +316,7 @@ DeepLearningModel <- R6Class(
           x = x,
           y = y,
           shuffle = other_params$shuffle,
-          epochs = hyperparams$epochs,
+          epochs = hyperparams$epochs_number,
           batch_size = hyperparams$batch_size,
           validation_data = validation_data,
           verbose = 0,
@@ -468,7 +468,7 @@ DeepLearningModel <- R6Class(
           x = x,
           y = output_layers$y,
           shuffle = other_params$shuffle,
-          epochs = hyperparams$epochs,
+          epochs = hyperparams$epochs_number,
           batch_size = hyperparams$batch_size,
           validation_data = validation_data,
           verbose = 0,
