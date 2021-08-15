@@ -12,7 +12,7 @@
 #' @description
 #' `generalized_linear_model()` is a wrapper of the [glmnet::glmnet()] function
 #' with the ability to tune the hyperparameters (grid search) in a simple way.
-#' It fits univariate models for continuous, discrete, binary and categorical
+#' It fits univariate models for continuous, count, binary and categorical
 #' response variables and multivariate models for numeric responses only.
 #' @template tunable-description
 #'
@@ -29,12 +29,12 @@
 #'   responses are coerced to numeric and a multi-response gaussian regression
 #'   is assumed.
 #' @param alpha (`numeric`) (__tunable__) The elasticnet mixing parameter, with
-#'   0 <= alpha <= 1. The penalty is defined as:
+#'   0 <= `alpha` <= 1. The penalty is defined as:
 #'
 #'   ![](glmnet_penalty.png "(1 - \alpha)/2||\beta||_2^2 + \alpha ||\beta||_1")
 #'
-#'   alpha = 0 is the lasso penalty, alpha = 1 is the ridge penalty and 0 <
-#'   alpha < 1 is the elasticnet penalty. 1 by default.
+#'   `alpha = 0` is the lasso penalty, `alpha = 1` is the ridge penalty and `0 <
+#'   alpha < 1` is the elasticnet penalty. 1 by default.
 #' @param lambda (`numeric`) (__tunable__) The penalty value (coefficient
 #'   shrinkage). If provided `lambdas_number` parameter is ignored and the
 #'   provided values are used for tuning. `NULL` by default.

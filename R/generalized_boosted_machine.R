@@ -12,7 +12,7 @@
 #' @description
 #' `generalized_boosted_machine()` is a wrapper of the [gbm::gbm()] function
 #' with the ability to tune the hyperparameters (grid search) in a simple way.
-#' It fits univariate models for continuous, discrete, binary and categorical
+#' It fits univariate models for continuous, count, binary and categorical
 #' response variables.
 #' @template tunable-description
 #'
