@@ -19,7 +19,7 @@ expect_model <- function(model,
                          has_all_row,
                          is_x_matrix = FALSE,
                          has_intercept = FALSE,
-                         with_platt = FALSE) {
+                         with_platt_scaling = FALSE) {
   expect_base_params(
     model = model,
     class_name = class_name,
@@ -54,7 +54,7 @@ expect_model <- function(model,
     x = x_testing,
     responses = responses,
     is_multivariate = is_multivariate,
-    with_platt = with_platt
+    with_platt_scaling = with_platt_scaling
   )
 
   if (allow_coefficients) {
@@ -143,9 +143,9 @@ expect_hyperparams <- function(model, hyperparams, tune_grid_proportion) {
   expect_equal(model$best_hyperparams, as.list(head(model$hyperparams_grid, 1)))
 }
 
-expect_numeric_predictions <- function(predictions, len, with_platt) {
+expect_numeric_predictions <- function(predictions, len, with_platt_scaling) {
   list_len <- 1
-  if (with_platt) {
+  if (with_platt_scaling) {
     list_len <- 2
   }
   expect_list(predictions, any.missing = FALSE, len = list_len)
@@ -157,7 +157,7 @@ expect_numeric_predictions <- function(predictions, len, with_platt) {
     len = len
   )
 
-  if (with_platt) {
+  if (with_platt_scaling) {
     expect_numeric(
       predictions$predicted_platt,
       any.missing = FALSE,
@@ -167,9 +167,12 @@ expect_numeric_predictions <- function(predictions, len, with_platt) {
   }
 }
 
-expect_class_predictions <- function(predictions, len, response, with_platt) {
+expect_class_predictions <- function(predictions,
+                                     len,
+                                     response,
+                                     with_platt_scaling) {
   list_len <- 2
-  if (with_platt) {
+  if (with_platt_scaling) {
     list_len <- 4
   }
   expect_list(predictions, any.missing = FALSE, len = list_len)
@@ -192,7 +195,7 @@ expect_class_predictions <- function(predictions, len, response, with_platt) {
     identical.to = response$levels
   )
 
-  if (with_platt) {
+  if (with_platt_scaling) {
     expect_factor(
       predictions$predicted_platt,
       levels = response$levels,
@@ -218,7 +221,7 @@ expect_predictions <- function(model,
                                x,
                                responses,
                                is_multivariate,
-                               with_platt) {
+                               with_platt_scaling) {
   if (is.null(x)) {
     predictions <- predict(model)
   } else {
@@ -239,14 +242,14 @@ expect_predictions <- function(model,
       expect_numeric_predictions(
         predictions[[name]],
         len = nrow(x),
-        with_platt = with_platt
+        with_platt_scaling = with_platt_scaling
       )
     } else {
       expect_class_predictions(
         predictions[[name]],
         len = nrow(x),
         response = response,
-        with_platt = with_platt
+        with_platt_scaling = with_platt_scaling
       )
     }
   }
@@ -556,7 +559,7 @@ expect_deep_learning <- function(model,
                                  removed_rows = NULL,
                                  removed_x_cols = NULL,
                                  is_multivariate = FALSE,
-                                 with_platt = FALSE) {
+                                 with_platt_scaling = FALSE) {
   expect_model(
     model = model,
     x = x,
@@ -573,7 +576,7 @@ expect_deep_learning <- function(model,
     by_category = FALSE,
     has_all_row = FALSE,
     is_x_matrix = TRUE,
-    with_platt = with_platt
+    with_platt_scaling = with_platt_scaling
   )
 
   expect_list(model$other_params, any.missing = FALSE)
@@ -581,8 +584,8 @@ expect_deep_learning <- function(model,
   expect_logical(model$other_params$early_stop, len = 1, any.missing = FALSE)
   expect_number(model$other_params$early_stop_patience, finite = TRUE)
 
-  if (with_platt) {
-    expect_identical(model$other_params$with_platt, TRUE)
+  if (with_platt_scaling) {
+    expect_identical(model$other_params$with_platt_scaling, TRUE)
     expect_number(model$other_params$platt_proportion, finite = TRUE)
   }
 }
@@ -646,7 +649,7 @@ expect_bayesian_model <- function(model,
     x = NULL,
     responses = responses,
     is_multivariate = is_multivariate,
-    with_platt = FALSE
+    with_platt_scaling = FALSE
   )
 
   expect_list(model$other_params, any.missing = FALSE)

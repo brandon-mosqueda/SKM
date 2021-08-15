@@ -83,7 +83,7 @@ DeepLearningModel <- R6Class(
         x = x,
         responses = self$responses,
         other_params = self$other_params,
-        hyperparams = self$hyperparams
+        hyperparams = self$best_hyperparams
       ))
     }
   ),
