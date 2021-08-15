@@ -309,29 +309,29 @@ test_that("remove_no_variance_cols", {
   )
 })
 
-test_that("mode", {
+test_that("class_mode", {
   x <- c(10, 1, 2, 2, 1, 3, 1, 5)
 
-  expect_identical(mode(x), 1)
+  expect_identical(class_mode(x), 1)
 
   temp <- x
   temp[c(2, 5, 1)] <- NA
-  expect_identical(mode(temp), 2)
-  expect_identical(mode(temp, na.rm = FALSE), as.numeric(NA))
+  expect_identical(class_mode(temp), 2)
+  expect_identical(class_mode(temp, na.rm = FALSE), as.numeric(NA))
 
   x <- c("A", "B", "C", "D", "B", "C", "A", "B", "C")
-  expect_identical(mode(x), "B")
+  expect_identical(class_mode(x), "B")
 
   temp <- x
   temp[c(2, 5, 8)] <- NA
-  expect_identical(mode(temp), "C")
-  expect_identical(mode(temp, na.rm = FALSE), "C")
+  expect_identical(class_mode(temp), "C")
+  expect_identical(class_mode(temp, na.rm = FALSE), "C")
 
   x <- factor(x)
-  expect_identical(mode(x), "B")
+  expect_identical(class_mode(x), "B")
 
   x <- c(TRUE, FALSE, TRUE, FALSE, NA, FALSE, TRUE)
-  expect_identical(mode(x), FALSE)
+  expect_identical(class_mode(x), FALSE)
 })
 
 test_that("mkdir and rmdir", {
