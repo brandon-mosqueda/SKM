@@ -185,7 +185,9 @@ Tuner <- R6Class(
         )
       }
 
-      self$all_combinations <- arrange(self$all_combinations, loss)
+      self$all_combinations <- self$all_combinations[
+        order(self$all_combinations$loss),
+      ]
       self$best_combination <- as.list(self$all_combinations[1, ])
 
       return(invisible(self$best_combination))

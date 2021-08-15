@@ -1,7 +1,5 @@
 set.seed(1)
 
-suppressWarnings(suppressMessages(library(dplyr)))
-
 test_that("to_matrix", {
   categories <- factor(sample(c("A", "B", "C"), 10, replace = TRUE))
 
@@ -199,7 +197,8 @@ test_that("to_data_frame", {
 
   expect_equal(to_data_frame(iris), iris)
 
-  temp <- iris %>% mutate(Species = as.character(Species))
+  temp <- iris
+  temp$Species <- as.character(temp$Species)
   expect_equal(to_data_frame(temp), iris)
 
   diverse_data <- data.frame(

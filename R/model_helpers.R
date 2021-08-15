@@ -1,5 +1,3 @@
-#' @import dplyr
-
 #' @include utils.R
 
 prepare_univariate_y <- function() {
@@ -24,8 +22,8 @@ prepare_multivariate_y <- function() {
     self$y <- as.data.frame(self$y)
   }
 
-  self$y <- self$y %>%
-    mutate_if(function(x) is.character(x) || is.logical(x), factor)
+  cols_to_factor <- sapply(self$y, function(x) is.character(x) || is.logical(x))
+  self$y[cols_to_factor] <- lapply(self$y[cols_to_factor], factor)
 
   for (col_name in colnames(self$y)) {
     self$responses[[col_name]] <- list(

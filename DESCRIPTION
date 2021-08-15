@@ -25,7 +25,6 @@ Suggests:
 Config/testthat/edition: 3
 Imports:
     R6,
-    dplyr,
     checkmate,
     reticulate,
     randomForestSRC,

@@ -1,4 +1,3 @@
-suppressMessages(library(dplyr))
 suppressMessages(library(glmnet))
 
 data(Iris)
