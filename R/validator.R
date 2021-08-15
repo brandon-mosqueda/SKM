@@ -650,7 +650,12 @@ validate_deep_learning <- function(x,
     verbose = verbose
   )
 
-  assert_numeric(learning_rate, finite = TRUE, any.missing = FALSE)
+  assert_numeric(
+    learning_rate,
+    lower = 1e-100,
+    finite = TRUE,
+    any.missing = FALSE
+  )
   assert_numeric(epochs_number, lower = 1, finite = TRUE, any.missing = FALSE)
   assert_numeric(batch_size, lower = 1, finite = TRUE, any.missing = FALSE)
 

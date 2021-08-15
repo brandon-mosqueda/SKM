@@ -292,7 +292,7 @@ DeepLearningModel <- R6Class(
       model %>%
         compile(
           loss = responses$y$loss_function,
-          optimizer = optimizer_adam(lr = hyperparams$learning_rate),
+          optimizer = optimizer_adam(learning_rate = hyperparams$learning_rate),
           metrics = responses$y$metric
         )
 
@@ -335,7 +335,7 @@ DeepLearningModel <- R6Class(
                                   other_params,
                                   hyperparams) {
       if (is_class_response(responses$y$type)) {
-        probabilities <- predict_proba(model, x)
+        probabilities <- predict(model, x, batch_size = hyperparams$batch_size)
 
         predictions <- predict_class(
           probabilities = as.data.frame(probabilities),
@@ -434,7 +434,7 @@ DeepLearningModel <- R6Class(
       model <- keras_model(input, output_layers$layers) %>%
         compile(
           optimizer = optimizer_adam(
-            lr = hyperparams$learning_rate
+            learning_rate = hyperparams$learning_rate
           ),
           loss = output_layers$losses,
           metrics = output_layers$metrics,
@@ -486,7 +486,11 @@ DeepLearningModel <- R6Class(
                                     other_params,
                                     hyperparams) {
       predictions <- list()
-      all_predictions <- data.frame(predict(model, x))
+      all_predictions <- data.frame(predict(
+        model,
+        x,
+        batch_size = hyperparams$batch_size
+      ))
       colnames(all_predictions) <- other_params$y_colnames
 
       for (name in names(responses)) {

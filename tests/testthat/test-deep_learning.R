@@ -36,6 +36,7 @@ test_that("Univariate numeric (tuning)", {
     epochs_number = c(5, 8),
     batch_size = 32,
     neurons_number_1 = c(5, 12),
+    neurons_proportion_1 = c(3, 1.5),
     activation_1 = "relu",
     dropout_1 = 0,
     ridge_penalty_1 = 0,
@@ -54,8 +55,7 @@ test_that("Univariate numeric (tuning)", {
     layers = list(
       list(
         neurons_number = hyperparams$neurons_number_1,
-        # This have to be ignored
-        neurons_proportion = c(3, 1.5),
+        neurons_proportion = hyperparams$neurons_proportion_1,
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,
@@ -388,6 +388,7 @@ test_that("Multivariate numeric (tuning)", {
     epochs_number = c(5),
     batch_size = c(32, 50),
     neurons_number_1 = c(0.5),
+    neurons_proportion_1 = c(2, 3),
     activation_1 = c("relu", "selu"),
     dropout_1 = c(0.2),
     ridge_penalty_1 = c(0.1, 0.2),
@@ -406,8 +407,7 @@ test_that("Multivariate numeric (tuning)", {
     layers = list(
       list(
         neurons_number = hyperparams$neurons_number_1,
-        # This have to be ignored
-        neurons_proportion = c(2, 3),
+        neurons_proportion = hyperparams$neurons_proportion_1,
         activation = hyperparams$activation_1,
         dropout = hyperparams$dropout_1,
         ridge_penalty = hyperparams$ridge_penalty_1,

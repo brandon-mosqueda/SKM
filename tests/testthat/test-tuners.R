@@ -304,12 +304,12 @@ test_that("Deep learning tuner (univariate)", {
     learning_rate= c(0.1, 0.001),
     output_lasso_penalty = 0,
     output_ridge_penalty = 0,
-    epochs = c(5, 8),
+    epochs_number = c(5, 8),
     batch_size = c(32)
   )
   single_hyperparams <- hyperparams
   single_hyperparams$learning_rate <- 0.1
-  single_hyperparams$epochs <- 5
+  single_hyperparams$epochs_number <- 5
 
   responses <- list(
     y = list(
@@ -411,12 +411,12 @@ test_that("Deep learning tuner (multivariate)", {
     learning_rate= c(0.1, 0.001),
     output_lasso_penalty = 0,
     output_ridge_penalty = 0,
-    epochs = c(5, 8),
+    epochs_number = c(5, 8),
     batch_size = c(32)
   )
   single_hyperparams <- hyperparams
   single_hyperparams$learning_rate <- 0.1
-  single_hyperparams$epochs <- 5
+  single_hyperparams$epochs_number <- 5
 
   responses <- list(
     y1 = list(
