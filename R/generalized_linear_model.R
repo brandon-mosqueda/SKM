@@ -58,6 +58,8 @@
 #'
 #' @template details-matrix
 #' @template details-remove-nas
+#' @template details-tuning
+#' @template details-uni-loss-functions
 #'
 #' @template return-model
 #'

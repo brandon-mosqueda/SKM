@@ -57,6 +57,8 @@
 #'
 #' @template details-matrix
 #' @template details-remove-nas
+#' @template details-tuning
+#' @template details-uni-loss-functions
 #' @details
 #' ## kernel
 #'
@@ -65,19 +67,19 @@
 #'
 #' * linear:
 #'
-#'     ![](linear_kernel.png "K(x, y) = x^T y")
+#'     ![](linear_kernel.png "K(X, Y) = X^T Y")
 #'
 #' * polynomial:
 #'
-#'     ![](polynomial_kernel.png "K(x, y) = (gamma * x^T y + coef0)^degree")
+#'     ![](polynomial_kernel.png "K(X, Y) = (gamma * X^T Y + coef0)^degree")
 #'
 #' * radial:
 #'
-#'     ![](radial_kernel.png "K(x, y) = exp(-gamma * |x - y|^2)")
+#'     ![](radial_kernel.png "K(X, Y) = eXp(-gamma * |X - Y|^2)")
 #'
 #' * sigmoid:
 #'
-#'     ![](sigmoid_kernel.png "K(x, y) = tanh(gamma * x^T y + coef0)")
+#'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T Y + coef0)")
 #'
 #' When you provide several values of `degree`, `gamma` and/or `coef0` for
 #' tuning with kernels that does not support them they are not taken in account.

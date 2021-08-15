@@ -60,6 +60,8 @@
 #' @template other-base-params
 #'
 #' @template details-data-frame
+#' @template details-tuning
+#' @template details-uni-loss-functions
 #' @details
 #' ## split_rule
 #'

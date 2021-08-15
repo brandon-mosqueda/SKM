@@ -120,7 +120,15 @@
 #'
 #' @template details-matrix
 #' @template details-remove-nas
+#' @template details-tuning
 #' @details
+#' __Important:__ Unlike the other models, when tuning deep learning models
+#' steps 6 and 7 are omit in the algorithm, instead `train` and `test` datasets
+#' are sent to `keras`, the first one to fit the model and the second one to
+#' compute the loss function at the end of each epoch, so at the end, the saved
+#' value in step 8 is the validation loss value returned by `keras` in the last
+#' epoch.
+#'
 #' ## Last (output) layer
 #'
 #' By default this function selects the activation function and the number of
