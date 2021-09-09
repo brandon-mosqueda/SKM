@@ -326,8 +326,8 @@ test_that("nrmse", {
   expect_identical(nrmse(1, 0, type = "maxmin"), NaN)
   expect_identical(nrmse(1, 1, type = "range"), NaN)
   expect_identical(nrmse(1, 0, type = "range"), NaN)
-  expect_identical(nrmse(1, 1, type = "iq"), NaN)
-  expect_identical(nrmse(1, 0, type = "iq"), NaN)
+  expect_identical(nrmse(1, 1, type = "iqr"), NaN)
+  expect_identical(nrmse(1, 0, type = "iqr"), NaN)
 
   expect_error(
     nrmse(1, 1, type = "maen"),
@@ -394,7 +394,7 @@ test_that("nrmse", {
 
   iq_diff <- as.numeric(quantile(observed, 0.75) - quantile(observed, 0.25))
   expect_identical(
-    round(nrmse(observed, predicted, type = "iq"), 4),
+    round(nrmse(observed, predicted, type = "iqr"), 4),
     round(rmse_value / iq_diff, 4)
   )
 })

@@ -46,7 +46,6 @@ Collate:
     'bayesian_model_model.R'
     'bayesian_model.R'
     'cross_validator.R'
-    'custom_cross_validator.R'
     'deep_learning_tuner.R'
     'deep_learning_model.R'
     'deep_learning.R'

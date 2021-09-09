@@ -57,14 +57,14 @@ cholesky_no_definite <- function(G, tolerance = 1e-10) {
 
 #' @title Compute Cholesky
 #'
-#' @description Compute the Choleski factorization of a real symmetric
-#'              positive-definite square matrix. If it fails, compute the
-#'              Cholesky factorization of a non-real symmetric
-#'              positive-definite square matrix
+#' @description
+#' Compute the Choleski factorization of a real symmetric positive-definite
+#' square matrix. If it fails, compute the Cholesky factorization of a non-real
+#' symmetric positive-definite square matrix
 #'
-#' @param x (\code{matrix}) The x
+#' @param x (`matrix`) The data to compute the cholesky.
 #'
-#' @return The cholesky matrix.
+#' @return The cholesky `matrix`.
 #'
 #' @export
 cholesky <- function(x) {
@@ -155,6 +155,44 @@ get_cols_names <- function(x) {
   return(cols_names)
 }
 
+#' @title Convert data to matrix
+#'
+#' @description
+#' Given an object creates a design matrix.
+#'
+#' @param x (`any`) The object to be converted to matrix.
+#' @param with_intercept (`logical(1)`) Should be the `"(Intercept)"` column
+#'   added at the beginning? `FALSE` by default.
+#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `FALSE` by
+#'   default.
+#'
+#' @details
+#' The following rules are applied when converting the object to matrix
+#' depending the object's type:
+#'
+#' * `numeric` vector: It is converted to a one column matrix.
+#' * `character`, `logical` or `factor` vectors: All of these are considered
+#'    to be categorical variables and therefore a dummy matrix is created with
+#'    all categories (or unique values) without the firts one, so a
+#'   `n x (categories_number - 1)` matrix is created.
+#' * `data.frame`: All columns are included but `character`, `logical` or
+#'   `factor` are included in the same way as described for vectors.
+#'
+#' For all the columns a name is assigned if they has no one.
+#' The intercept is always added at the first column with the name
+#' `"(Intercept)"`.
+#'
+#' @return
+#' A matrix.
+#'
+#' @examples
+#' \dontrun{
+#' to_matrix(iris)
+#' to_matrix(1:10)
+#' to_matrix(c("a", "b", "c"))
+#' to_matrix(data.frame(a = c("a", "b"), b = c("c", "d")))
+#' }
+#'
 #' @export
 to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
   if (is.null(x)) {
@@ -203,8 +241,42 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
   return(x)
 }
 
+#' @title Convert data to data.frame
+#'
+#' @description
+#' Given an object convert it to `data.frame`.
+#'
+#' @param x (`any`) The object to be converted to `data.frame`.
+#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `FALSE` by
+#'   default.
+#'
+#' @details
+#' The following rules are applied when converting the object to matrix
+#' depending the object's type:
+#'
+#' * `numeric` vector: It is converted to a one column `data.frame`.
+#' * `character`, `logical` and `factor` vectors: All of these are considered
+#'    to be categorical variables and therefore a coerced to `factor` in a one
+#'    column `data.frame`.
+#' * `matrix`: If it is `character`, `logical` or `factor` are included in the
+#'   same way as described for vectors and only coerced to `data.frame` for
+#'   `numeric` matrices.
+#'
+#' For all the columns a name is assigned if they has no one.
+#'
+#' @return
+#' A matrix.
+#'
+#' @examples
+#' \dontrun{
+#' to_data_frame(iris)
+#' to_data_frame(1:10)
+#' to_data_frame(c("a", "b", "c"))
+#' to_data_frame(data.frame(a = c("a", "b"), b = c("c", "d")))
+#' }
+#'
 #' @export
-to_data_frame <- function(x) {
+to_data_frame <- function(x, na.rm = FALSE) {
   x <- as.data.frame(x, check.names = FALSE)
 
   x[] <- lapply(x, function(x) {
@@ -212,6 +284,10 @@ to_data_frame <- function(x) {
   })
 
   colnames(x) <- get_cols_names(x)
+
+  if (na.rm) {
+    x <- na.omit(x)
+  }
 
   return(x)
 }
@@ -297,6 +373,13 @@ which_is_na <- function(x) {
   return(indices)
 }
 
+nas_indices <- function(x, y) {
+  x_nas <- which_is_na(x)
+  y_nas <- which_is_na(y)
+
+  return(union(x_nas, y_nas))
+}
+
 #' Hide code output
 #'
 #' @param code (\code{function}) The code to be evaluated
@@ -377,14 +460,20 @@ nonull <- function(...) {
 # Text manipulation --------------------------------------------------
 
 #' @export
-echo <- function(format, ..., end = "\n") {
+echo <- function(format, ..., end = "\n", file = "", append = TRUE) {
   if (is.null(format)) {
     format <- "NULL"
   } else if (is.na(format)) {
     format <- "NA"
   }
 
-  invisible(cat(sprintf(format, ...), end))
+  invisible(cat(
+    sprintf(format, ...),
+    end,
+    sep = "",
+    file = file,
+    append = append
+  ))
 }
 
 print_model_time_execution <- function(execution_time) {

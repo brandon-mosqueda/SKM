@@ -1,8 +1,9 @@
-data(Iris)
+data(IrisMatrix)
 
 test_that("Univariate numeric (no tuning)", {
   x <- x_num
-  x$temp <- 1
+  x <- cbind(x, 1)
+  colnames(x)[ncol(x)] <- "temp"
   model <- suppressWarnings(support_vector_machine(
     x,
     y_num,

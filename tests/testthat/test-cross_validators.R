@@ -82,26 +82,3 @@ test_that("RandomCV", {
     expected_folds_number = folds_number
   )
 })
-
-test_that("CustomCV", {
-  folds <- list(
-    list(
-      training = sample(records_number, records_number / 2),
-      testing = sample(records_number, records_number / 2)
-    ),
-    list(
-      training = sample(records_number, records_number / 2),
-      testing = sample(records_number, records_number / 2)
-    )
-  )
-  cross_validator <- CustomCV$new(
-    records_number = records_number,
-    folds = folds
-  )
-  new_folds <- cross_validator$get_folds()
-
-  for (i in 1:length(folds)) {
-    expect_set_equal(folds[[i]]$training, new_folds[[i]]$training)
-    expect_set_equal(folds[[i]]$testing, new_folds[[i]]$testing)
-  }
-})

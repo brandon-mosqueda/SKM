@@ -1,4 +1,4 @@
-data(Iris)
+data(IrisMatrix)
 
 test_that("Univariate numeric (no tuning)", {
   model <- deep_learning(
@@ -67,6 +67,7 @@ test_that("Univariate numeric (tuning)", {
     ),
 
     tune_folds_number = 3,
+    optimizer = "adamax",
 
     verbose = FALSE
   )
@@ -146,6 +147,8 @@ test_that("Univariate binary (tuning)", {
     tune_folds_number = 2,
     tune_testing_proportion = 0.3,
     tune_grid_proportion = 0.8,
+
+    optimizer = "nadam",
 
     verbose = FALSE
   )
@@ -228,6 +231,7 @@ test_that("Univariate categorical (tuning)", {
     tune_folds_number = 5,
     tune_grid_proportion = 0.5,
 
+    optimizer = "sgd",
     shuffle = FALSE,
     early_stop = TRUE,
     early_stop_patience = 2,
@@ -334,6 +338,8 @@ test_that("Univariate numeric (NA tuning)", {
     tune_folds_number = 3,
     tune_grid_proportion = 0.4,
 
+    optimizer = "adadelta",
+
     verbose = FALSE
   ))
 
@@ -418,6 +424,8 @@ test_that("Multivariate numeric (tuning)", {
 
     tune_cv_type = "random",
     tune_folds_number = 2,
+
+    optimizer = "adagrad",
 
     verbose = FALSE
   )
@@ -514,6 +522,8 @@ test_that("Multivariate combined (tuning)", {
     tune_cv_type = "random",
     tune_folds_number = 2,
     tune_grid_proportion = 0.3,
+
+    optimizer = "adagrad",
 
     verbose = FALSE
   )

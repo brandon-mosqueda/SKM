@@ -23,7 +23,8 @@ GeneralizedBoostedMachineModel <- R6Class(
       super$initialize(
         ...,
         name = "Generalized Boosted Machine",
-        is_multivariate = FALSE
+        is_multivariate = FALSE,
+        is_x_matrix = FALSE
       )
 
       self$hyperparams$trees_number <- trees_number

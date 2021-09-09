@@ -294,6 +294,7 @@ test_that("Tuner (Multivariate)", {
 
 test_that("Deep learning tuner (univariate)", {
   # All combinations --------------------------------------------------
+  roxygen2::roxygenise()
 
   hyperparams <- list(
     neurons_number_1 = 10,
@@ -336,7 +337,8 @@ test_that("Deep learning tuner (univariate)", {
       shuffle = TRUE,
       responses = responses,
       early_stop = FALSE,
-      early_stop_patience = 10
+      early_stop_patience = 10,
+      optimizer_function = get_keras_optimizer_function("adam")
     ),
     cv_type = "Random",
     folds_number = 2,
@@ -457,7 +459,8 @@ test_that("Deep learning tuner (multivariate)", {
       shuffle = TRUE,
       responses = responses,
       early_stop = FALSE,
-      early_stop_patience = 10
+      early_stop_patience = 10,
+      optimizer_function = get_keras_optimizer_function("adam")
     ),
     cv_type = "K_fold",
     folds_number = 3,

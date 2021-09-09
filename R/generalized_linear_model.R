@@ -31,7 +31,7 @@
 #' @param alpha (`numeric`) (__tunable__) The elasticnet mixing parameter, with
 #'   0 <= `alpha` <= 1. The penalty is defined as:
 #'
-#'   ![](glmnet_penalty.png "(1 - \alpha)/2||\beta||_2^2 + \alpha ||\beta||_1")
+#'   ![](glmnet_penalty.png "(1 - \alpha)/2 ||\beta||_2^2 + \alpha ||\beta||_1")
 #'
 #'   `alpha = 0` is the lasso penalty, `alpha = 1` is the ridge penalty and `0 <
 #'   alpha < 1` is the elasticnet penalty. 1 by default.
@@ -56,7 +56,7 @@
 #'   default.
 #' @template other-base-params
 #'
-#' @template details-matrix
+#' @template details-no-variance
 #' @template details-remove-nas
 #' @template details-tuning
 #' @template details-uni-loss-functions
@@ -64,6 +64,7 @@
 #' @template return-model
 #'
 #' @seealso [predict.Model()], [coef.Model()]
+#' @family models
 #'
 #' @examples
 #' \dontrun{

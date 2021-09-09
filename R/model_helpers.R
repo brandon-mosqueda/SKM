@@ -1,3 +1,5 @@
+#' @import keras
+
 #' @include utils.R
 
 prepare_univariate_y <- function() {
@@ -291,6 +293,22 @@ prepare_coef0 <- function(kernel, coef0) {
 
 # Deep learning --------------------------------------------------
 
+get_keras_optimizer_function <- function(optimizer) {
+  return(switch(
+    tolower(optimizer),
+
+    adadelta = optimizer_adadelta,
+    adagrad = optimizer_adagrad,
+    adamax = optimizer_adamax,
+    adam = optimizer_adam,
+    nadam = optimizer_nadam,
+    rmsprop = optimizer_rmsprop,
+    sgd = optimizer_sgd,
+
+    stop("Invalid optimizer")
+  ))
+}
+
 get_default_layer_params <- function(layer) {
   if (is.null(layer$neurons_number) && is.null(layer$neurons_proportion)) {
     layer$neurons_number <- DEFAULT_LAYER_NEURONS
@@ -424,10 +442,13 @@ get_bglr_response_type <- function(response_type) {
 }
 
 prepare_bayesian_model <- function(model) {
-  lower_model <- tolower(model)
+  if (is.null(model)) {
+    return("BRR")
+  }
 
   return(switch(
-    lower_model,
+    tolower(model),
+
     fixed = "FIXED",
     rkhs = "RKHS",
     bgblup = "BGBLUP",
@@ -436,6 +457,7 @@ prepare_bayesian_model <- function(model) {
     bayes_a = "BayesA",
     bayes_b = "BayesB",
     bayes_c = "BayesC",
+
     stop(sprintf("{%s} is not a valid bayesian model", model))
   ))
 }

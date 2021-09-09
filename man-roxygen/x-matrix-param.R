@@ -1,3 +1,3 @@
-#' @param x (`data.frame` | `matrix` | `vector`) The predictor (independet)
-#'   variable(s). Internally it is converted to `matrix` with [to_matrix()]
-#'   function.
+#' @param x (`matrix`) The predictor (independet) variable(s). It must be a
+#'   numeric matrix. You can use [to_matrix()] function to convert your data to
+#'   a design `matrix`.

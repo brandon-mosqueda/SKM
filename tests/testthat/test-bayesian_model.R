@@ -1,4 +1,4 @@
-data(Iris)
+data(IrisMatrix)
 
 test_that("Univariate numeric", {
   x <- list(list(x = x_num, model = "BRR"))

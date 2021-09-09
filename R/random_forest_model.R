@@ -27,7 +27,12 @@ RandomForestModel <- R6Class(
                           x_vars_weights,
                           records_weights,
                           na_action) {
-      super$initialize(..., name = "Random Forest", allow_coefficients = TRUE)
+      super$initialize(
+        ...,
+        name = "Random Forest",
+        allow_coefficients = TRUE,
+        is_x_matrix = FALSE
+      )
 
       self$hyperparams$trees_number <- trees_number
       self$hyperparams$node_size <- node_size

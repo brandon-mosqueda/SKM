@@ -39,7 +39,7 @@ checkSubsetString <- function(x, choices, empty.ok, ignore.case, len) {
   if (ignore.case) {
     if (!all(tolower(x) %in% tolower(choices))) {
       return(sprintf(
-        "Must be a subset of {%s}, but is {%s}. Note: Case not sensitive.",
+        "Must be a subset of {%s}, but is {%s}. Note: Case not sensitive",
         set_collapse(choices),
         set_collapse(x)
       ))
@@ -47,7 +47,7 @@ checkSubsetString <- function(x, choices, empty.ok, ignore.case, len) {
   } else {
     if (!all(x %in% choices)) {
       return(sprintf(
-        "Must be a subset of {%s}, but is {%s}. Note: Case sensitive.",
+        "Must be a subset of {%s}, but is {%s}. Note: Case sensitive",
         set_collapse(choices),
         set_collapse(x)
       ))
@@ -89,13 +89,19 @@ assert_tune_cv <- function(tune_cv_type,
 assert_base_params <- function(x,
                                y,
                                is_multivariate,
+                               expect_x_matrix,
                                tune_cv_type,
                                tune_folds_number,
                                tune_testing_proportion,
                                tune_grid_proportion,
                                seed,
                                verbose) {
-  assert_xy(x, y, is_multivariate = is_multivariate)
+  assert_xy(
+    x,
+    y,
+    is_multivariate = is_multivariate,
+    expect_x_matrix = expect_x_matrix
+  )
 
   assert_tune_cv(
     tune_cv_type = tune_cv_type,
@@ -116,11 +122,12 @@ assert_verbose <- function(verbose) {
   assert_logical(verbose, any.missing = FALSE, len = 1)
 }
 
-assert_x <- function(x) {
-  if (!is.vector(x) && !is.data.frame(x) && !is.matrix(x)) {
-    stop("x must be data.frame, a matrix or a vector")
-  } else if (is_empty(x)) {
-    stop("x must not be empty")
+assert_x <- function(x, expected_matrix = TRUE) {
+  if (expected_matrix) {
+    assert_matrix(x, min.cols = 1, min.rows = 1, all.missing = FALSE)
+    assert_numeric(x)
+  } else {
+    assert_data_frame(x, min.cols = 1, min.rows = 1, all.missing = FALSE)
   }
 }
 
@@ -153,13 +160,13 @@ assert_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
       x_label,
       " and ",
       y_label,
-      " must have the same number of observations"
+      " must have the same length"
     )
   }
 }
 
-assert_xy <- function(x, y, is_multivariate) {
-  assert_x(x)
+assert_xy <- function(x, y, is_multivariate, expect_x_matrix) {
+  assert_x(x, expect_x_matrix)
   assert_y(y, is_multivariate)
 
   assert_same_length(x, y)
@@ -186,7 +193,7 @@ assert_bayesian_x <- function(x, y, is_multivariate) {
   for (x_list in x) {
     assert_list(x_list, any.missing = FALSE, min.len = 1)
 
-    assert_x(x_list$x)
+    assert_x(x_list$x, expected_matrix = TRUE)
     assert_same_length(x_list$x, y)
     assert_bayesian_model(
       model = x_list$model,
@@ -278,6 +285,20 @@ assert_svm_kernel <- function(kernel) {
   )
 }
 
+assert_svm_scale <- function(scale, x_n_cols) {
+  assert_logical(scale, any.missing = FALSE)
+  scale_length <- length(scale)
+
+  if (scale_length != 1 && scale_length != x_n_cols) {
+    stop(
+      "scale must have the same length as x columns (",
+      x_n_cols,
+      ") or 1 but have length ",
+      scale_length
+    )
+  }
+}
+
 assert_svm_class_weights <- function(class_weights) {
   if (is.character(class_weights)) {
     assert_subset_string(
@@ -355,6 +376,18 @@ assert_layers <- function(layers) {
   }
 }
 
+assert_optimizer <- function(optimizer) {
+  assert_string(optimizer)
+
+  assert_subset_string(
+    optimizer,
+    VALID_OPTIMIZERS,
+    empty.ok = FALSE,
+    ignore.case = TRUE,
+    len = 1
+  )
+}
+
 assert_output_penalties <- function(output_penalties) {
   assert_list(output_penalties, len = 2, any.missing = FALSE)
 
@@ -406,6 +439,7 @@ validate_support_vector_machine <- function(x,
     x = x,
     y = y,
     is_multivariate = FALSE,
+    expect_x_matrix = TRUE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -414,7 +448,7 @@ validate_support_vector_machine <- function(x,
     verbose = verbose
   )
 
-  assert_logical(scale, any.missing = FALSE, max.len = ncol(x))
+  assert_svm_scale(scale, ncol(x))
 
   assert_svm_kernel(kernel)
   assert_numeric(degree, finite = TRUE, any.missing = FALSE)
@@ -456,6 +490,7 @@ validate_random_forest <- function(x,
     x = x,
     y = y,
     is_multivariate = is_multivariate,
+    expect_x_matrix = FALSE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -528,6 +563,7 @@ validate_generalized_linear_model <- function(x,
     x = x,
     y = y,
     is_multivariate = is_multivariate,
+    expect_x_matrix = TRUE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -571,6 +607,7 @@ validate_generalized_boosted_machine <- function(x,
     x = x,
     y = y,
     is_multivariate = FALSE,
+    expect_x_matrix = FALSE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -630,6 +667,7 @@ validate_deep_learning <- function(x,
                                    tune_testing_proportion,
                                    tune_grid_proportion,
 
+                                   optimizer,
                                    with_platt_scaling,
                                    platt_proportion,
                                    shuffle,
@@ -642,6 +680,7 @@ validate_deep_learning <- function(x,
     x = x,
     y = y,
     is_multivariate = is_multivariate,
+    expect_x_matrix = TRUE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -662,6 +701,7 @@ validate_deep_learning <- function(x,
   assert_layers(layers)
   assert_output_penalties(output_penalties)
 
+  assert_optimizer(optimizer)
   assert_logical(with_platt_scaling, len = 1, any.missing = FALSE)
   assert_number(platt_proportion, lower = 1e-3, upper = 1 - 1e-3)
 

@@ -25,6 +25,7 @@ DeepLearningModel <- R6Class(
                           layers,
                           output_penalties,
 
+                          optimizer,
                           with_platt_scaling,
                           platt_proportion,
                           shuffle,
@@ -57,6 +58,7 @@ DeepLearningModel <- R6Class(
         i <- i + 1
       }
 
+      self$other_params$optimizer <- tolower(optimizer)
       self$other_params$with_platt_scaling <- with_platt_scaling
       self$other_params$platt_proportion <- platt_proportion
       self$other_params$shuffle <- shuffle
@@ -188,10 +190,15 @@ DeepLearningModel <- R6Class(
         self$other_params$with_platt_scaling <- FALSE
         warning(
           "Platt scaling is not going to be used because it is only ",
-          "available for univariate models with numeric or binary response ",
+          "available for univariate models with a numeric or binary response ",
           "variable."
         )
       }
+
+      self$other_params$optimizer_function <- get_keras_optimizer_function(
+        self$other_params$optimizer
+      )
+      browser()
     },
 
     train = function(...) {
@@ -289,10 +296,13 @@ DeepLearningModel <- R6Class(
           name = "output_layer"
         )
 
+
       model %>%
         compile(
           loss = responses$y$loss_function,
-          optimizer = optimizer_adam(learning_rate = hyperparams$learning_rate),
+          optimizer = other_params$optimizer_function(
+            learning_rate = hyperparams$learning_rate
+          ),
           metrics = responses$y$metric
         )
 
@@ -433,7 +443,7 @@ DeepLearningModel <- R6Class(
 
       model <- keras_model(input, output_layers$layers) %>%
         compile(
-          optimizer = optimizer_adam(
+          optimizer = other_params$optimizer_function(
             learning_rate = hyperparams$learning_rate
           ),
           loss = output_layers$losses,

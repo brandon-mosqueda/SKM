@@ -51,11 +51,11 @@
 #'   neurons as columns in `x`", 0.5 means use as neurons number the half of
 #'   number of columns in `x`. This is combined with the values of
 #'   `"neurons_number"` for tuning. `NULL` by default.
-#' * `"activation"`: (`character`) (__tunable__) The name of the activation
-#'   function to apply in this layer. The available activation functions are
-#'   `"linear"`, `"relu"`, `"elu"`, `"selu"`, `"hard_sigmoid"`, `"sigmoid"`,
-#'   `"softmax"`, `"softplus"`, `"softsign"`, `"tanh"`, `"exponential"`.
-#'   `"relu"` by default.
+#' * `"activation"`: (`character`) (__tunable__) (case not sensitive) The name
+#'   of the activation function to apply in this layer. The available activation
+#'   functions are `"linear"`, `"relu"`, `"elu"`, `"selu"`, `"hard_sigmoid"`,
+#'   `"sigmoid"`, `"softmax"`, `"softplus"`, `"softsign"`, `"tanh"`,
+#'   `"exponential"`. `"relu"` by default.
 #' * `"dropout"`: (`numeric`) (__tunable__) The proportion of neurons randomly
 #'   selected and set to 0 at each step during training process, which helps
 #'   prevent overfitting. 0 by default.
@@ -103,9 +103,14 @@
 #'   lasso_penalty = 0
 #' )`
 #' @template cv-tune-params
+#' @param optimizer (`character(1)`) (case not sensitive) Algorithm used to
+#'   reduce the loss function and update the weights in backpropagation. The
+#'   available options are `"adadelta"`, `"adagrad"`, `"adamax"`, `"adam"`,
+#'   `"nadam"`, `"rmsprop"` and `"sgd"`. `"adam"` by default.
 #' @param with_platt_scaling (`logical(1)`) Should Platt scaling be used to fit
-#'   the model and adjust the predictions? For more information, see Details
-#'   section below. `FALSE` by default.
+#'   the model and adjust the predictions? Only available for univariate models
+#'   with a numeric or binary response variable. For more information, see
+#'   Details section below. `FALSE` by default.
 #' @param platt_proportion (`ǹumeric(1)`) The proportion of individuals used to
 #'   fit the linear model required for Platt scaling. Note that this parameter
 #'   is used only when `with_platt_scaling` is `TRUE`. 0.3 by default.
@@ -118,7 +123,7 @@
 #'   is used only when `early_stop` is `TRUE`. 50 by default.
 #' @template other-base-params
 #'
-#' @template details-matrix
+#' @template details-no-variance
 #' @template details-remove-nas
 #' @template details-tuning
 #' @details
@@ -139,9 +144,14 @@
 #' categorical responses `"softmax"` with as many neurons as number of
 #' categories.
 #'
+#' ## Platt scaling
+#'
+#' TODO
+#'
 #' @template return-model
 #'
 #' @seealso [predict.Model()]
+#' @family models
 #'
 #' @examples
 #' \dontrun{
@@ -197,6 +207,7 @@ deep_learning <- function(x, y,
                           tune_testing_proportion = 0.2,
                           tune_grid_proportion = 1,
 
+                          optimizer = "adam",
                           with_platt_scaling = FALSE,
                           platt_proportion = 0.3,
                           shuffle = TRUE,
@@ -227,6 +238,7 @@ deep_learning <- function(x, y,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
 
+      optimizer = optimizer,
       with_platt_scaling = with_platt_scaling,
       platt_proportion = platt_proportion,
       shuffle = shuffle,
@@ -270,6 +282,7 @@ deep_learning <- function(x, y,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
 
+    optimizer = optimizer,
     with_platt_scaling = with_platt_scaling,
     platt_proportion = platt_proportion,
     shuffle = shuffle,

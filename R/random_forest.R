@@ -59,7 +59,6 @@
 #'   default.
 #' @template other-base-params
 #'
-#' @template details-data-frame
 #' @template details-tuning
 #' @template details-uni-loss-functions
 #' @details
@@ -78,6 +77,7 @@
 #' @template return-model
 #'
 #' @seealso [predict.Model()], [coef.Model()]
+#' @family models
 #'
 #' @examples
 #' \dontrun{

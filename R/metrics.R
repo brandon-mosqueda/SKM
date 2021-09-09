@@ -1,40 +1,45 @@
 #' @import checkmate
 
+#' @include validator.R
+
 # For categorical data --------------------------------------------------
 
-#' @title Class agreement
-#' Taken from e1071 original source code
+#' @title Confusion matrix
+#'
+#' @templateVar coercibleTo factor
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the confusion matrix.
+#'
+#' @template base-metrics-params
+#' @param all_levels (`character`) The levels that have to be included in the
+#'   confusion matrix. Useful when `observed` and `predicted` are not factors or
+#'   they both have no all levels. If it is `NULL` the union of `observed`
+#'   levels and `predicted` levels is used (after being coerced to `factor`).
+#'  `NULL` by default.
+#'
+#' @return
+#' An object of class `table` with the confusion matrix for all levels.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' confusion_matrix("a", "a")
+#' confusion_matrix("a", "b")
+#' confusion_matrix(c("a", "b"), c("c", "d"))
+#' confusion_matrix(c("a", "a"), c("a", "a"), all_levels = c("a", "b"))
+#' confusion_matrix(iris$Species, iris$Species)
+#' }
+#'
 #' @export
-classAgreement <- function(tab, match.names = FALSE) {
-  n <- sum(tab)
-  ni <- apply(tab, 1, sum)
-  nj <- apply(tab, 2, sum)
-  if (match.names && !is.null(dimnames(tab))) {
-    lev <- intersect(colnames(tab), rownames(tab))
-    p0 <- sum(diag(tab[lev, lev])) / n
-    pc <- sum(ni[lev] * nj[lev]) / n^2
-  } else {
-    m <- min(length(ni), length(nj))
-    p0 <- sum(diag(tab[1:m, 1:m])) / n
-    pc <- sum((ni[1:m] / n) * (nj[1:m] / n))
-  }
-  n2 <- choose(n, 2)
-  rand <- 1 + (sum(tab^2) - (sum(ni^2) + sum(nj^2)) / 2) / n2
-  nis2 <- sum(choose(ni[ni > 1], 2))
-  njs2 <- sum(choose(nj[nj > 1], 2))
-  crand <- (sum(choose(tab[tab > 1], 2)) - (nis2 * njs2) / n2) / ((nis2 +
-    njs2) / 2 - (nis2 * njs2) / n2)
+confusion_matrix <- function(observed,
+                             predicted,
+                             all_levels = NULL,
+                             na.rm = TRUE) {
+  assert_same_length(observed, predicted)
 
-  return(list(
-    diag = p0,
-    kappa = (p0 - pc) / (1 - pc),
-    rand = rand,
-    crand = crand
-  ))
-}
-
-#' @export
-confusion_matrix <- function(observed, predicted, all_levels = NULL) {
   observed <- as.factor(observed)
   predicted <- as.factor(predicted)
 
@@ -45,43 +50,154 @@ confusion_matrix <- function(observed, predicted, all_levels = NULL) {
   levels(observed) <- all_levels
   levels(predicted) <- all_levels
 
-  return(table(observed, predicted))
+  useNA <- if (na.rm) "no" else "always"
+  return(table(observed, predicted, useNA = useNA))
 }
 
-#' @title Kappa coefficient
+#' @title Cohen's Kappa coefficient
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the Cohen's Kappa coefficient.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the Cohen's Kappa coefficient.
+#'
+#' @examples
+#' \dontrun{
+#' kappa_coeff(c("a", "b"), c("a", "b"))
+#' kappa_coeff(c("a", "b"), c("b", "a"))
+#' kappa_coeff(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @family categorical_metrics
+#'
 #' @export
-kappa_coeff <- function(observed, predicted, all_levels = NULL) {
-  return(classAgreement(confusion_matrix(
+kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  conf_matrix <- confusion_matrix(
     observed,
     predicted,
-    all_levels
-  ))$kappa)
+    all_levels = all_levels,
+    na.rm = na.rm
+  )
+
+  diagonal_counts <- diag(conf_matrix)
+  N <- sum(conf_matrix)
+  row_marginal_props <- rowSums(conf_matrix) / N
+  col_marginal_props <- colSums(conf_matrix) / N
+
+  Po <- sum(diagonal_counts) / N
+  Pe <- sum(row_marginal_props * col_marginal_props)
+
+  return((Po - Pe) / (1 - Pe))
 }
 
-#' @title Proportion of correctly classified cases
+#' @title Proportion of Correctly Classified Cases (accuracy)
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the Proportion of Correctly Classified Cases (also known as
+#' accuracy).
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the Proportion of Correctly Classified Cases.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' pccc(c("a", "b"), c("a", "b"))
+#' pccc(c("a", "b"), c("b", "a"))
+#' pccc(c("a", "b"), c("b", "b"))
+#' pccc(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
 #' @export
 pccc <- function(observed, predicted, na.rm = TRUE) {
-  if (length(observed) != length(predicted)) {
-    stop("observed and predicted must have the same length")
-  }
+    assert_same_length(observed, predicted)
 
   return(mean(as.character(observed) == as.character(predicted), na.rm = na.rm))
 }
 
-#' @title Proportion of cases incorrectly classified
+#' @title Proportion of Incorrectly Classified Cases
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the Proportion of Incorrectly Classified Cases (1 -
+#' [pccc()], the same as: 1 - accuracy).
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the Proportion of Incorrectly Classified Cases.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' pccc(c("a", "b"), c("a", "b"))
+#' pccc(c("a", "b"), c("b", "a"))
+#' pccc(c("a", "b"), c("b", "b"))
+#' pccc(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
 #' @export
 pcic <- function(observed, predicted, na.rm = TRUE) {
-  if (length(observed) != length(predicted)) {
-    stop("observed and predicted must have the same length")
-  }
+  assert_same_length(observed, predicted)
 
   return(mean(as.character(observed) != as.character(predicted), na.rm = na.rm))
 }
 
-#' @title Brier score
+#' @title Brier Score
+#'
+#' @description
+#' Given the observed values and the predicted probabilites of categorical data
+#' (of at least two classes) computes the Brier Score.
+#'
+#' @inheritParams confusion_matrix
+#' @param observed (`vector`) The observed values. It has to be coercible to
+#'   `<%= coercibleTo %>` and with as many records as rows in `probabilities`.
+#' @param probabilities (`matrix` | `data.frame`) The probability of each class
+#'   for each individual. It is required the columns names of `probabilities`
+#'   corresponds to all levels (or classes) in `observed` and that
+#'   `probabilities` has as many rows as records `observed`.
+#'
+#' @return
+#' A single numeric value with the Brier Score.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' probs <- matrix(c(0.7, 0.3, 0.2, 0.8), 2, 2, byrow = TRUE)
+#' colnames(probs) <- c("0", "1")
+#' brier_score(c(0, 1), probs)
+#'
+#' probs <- matrix(
+#'   c(0.2, 0.3, 0.5, 0.8, 0.1, 0.1, 0.3, 0.3, 0.4),
+#'   3,
+#'   3,
+#'   byrow = TRUE
+#' )
+#' colnames(probs) <- c("a", "b", "c")
+#'
+#' brier_score(c("a", "a", "c"), probs)
+#'
+#'
+#' probs <- matrix(c(0, 1), 1, 2)
+#' colnames(probs) <- c("a", "b")
+#' brier_score("a", probs)
+#' }
+#'
 #' @export
-brier_score <- function(observed, probabilities) {
-  if (length(observed) != nrow(probabilities)) {
+brier_score <- function(observed, probabilities, na.rm = TRUE) {
+  if (!na.rm && (anyNA(observed) || anyNA(probabilities))) {
+    return(NaN)
+  } else if (length(observed) != nrow(probabilities)) {
     stop("observed and probabilities must have the same number of records")
   } else if (is.null(ncol(probabilities)) || ncol(probabilities) < 2) {
     stop("probabilities must have at least two columns (classes)")
@@ -89,18 +205,25 @@ brier_score <- function(observed, probabilities) {
     stop("probabilities must have the classes' names as columns names")
   }
 
+  if (na.rm) {
+    remove_indices <- nas_indices(observed, probabilities)
+
+    if (!is_empty(remove_indices)) {
+      observed <- get_records(observed, -remove_indices)
+      probabilities <- get_records(probabilities, -remove_indices)
+    }
+  }
+
   assert_subset(
-    as.character(unique(na.omit(observed))),
+    as.character(unique(observed)),
     colnames(probabilities),
     empty.ok = FALSE,
     .var.name = "observed"
   )
 
   observed <- factor(observed, levels = colnames(probabilities))
-  if (all(is.na(observed))) {
-    return(NaN)
-  }
-  observed_dummy <- model.matrix(~ 0 + observed)
+  observed_dummy <- model.matrix(~0 + observed)
+  probabilities <- data.matrix(probabilities)
 
   return(mean(rowSums((probabilities - observed_dummy)^2)))
 }
@@ -108,22 +231,107 @@ brier_score <- function(observed, probabilities) {
 # For continuous data --------------------------------------------------
 
 #' @title Mean Squared Error
+#'
+#' @templateVar coercibleTo numeric
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the Mean
+#' Squared Error.
+#'
+#' @template base-metrics-params
+#'
+#' @return
+#' A single numeric value with the Mean Squared Error.
+#'
+#' @examples
+#' \dontrun{
+#' mse(1, 1)
+#' mse(1, 0)
+#' mse(c(1, 2, NA, 4), c(1, NA, 3, 4))
+#'
+#' set.seed(1)
+#' x <- rnorm(100)
+#' mse(x, x)
+#' mse(x, x - 1)
+#' mse(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
 #' @export
 mse <- function(observed, predicted, na.rm = TRUE) {
-  if (length(observed) != length(predicted)) {
-    stop("observed and predicted must have the same length")
-  }
+  assert_same_length(observed, predicted)
 
   return(mean((as.numeric(observed) - as.numeric(predicted))^2, na.rm = na.rm))
 }
 
 #' @title Root Mean Squared Error
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the Root
+#' Mean Squared Error.
+#'
+#' @inheritParams mse
+#'
+#' @return
+#' A single numeric value with the Root Mean Squared Error.
+#'
+#' @examples
+#' \dontrun{
+#' rmse(1, 1)
+#' rmse(1, 0)
+#' rmse(c(1, 2, NA, 4), c(1, NA, 3, 4))
+#'
+#' set.seed(1)
+#' x <- rnorm(100)
+#' rmse(x, x)
+#' rmse(x, x - 1)
+#' rmse(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
 #' @export
 rmse <- function(observed, predicted, na.rm = TRUE) {
   return(sqrt(mse(observed, predicted, na.rm = na.rm)))
 }
 
-#' @title Normalize Root Mean Squared Error
+#' @title Normalized Root Mean Squared Error
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the
+#' Normalized Root Mean Squared Error.
+#'
+#' @inheritParams mse
+#' @param type (`character(1)`) (case not sensitive) The normalization type to
+#'   use. The options are `"sd"`, `"mean"`, `"maxmin"` (or `"range"`) and `"iqr"`
+#'   (for more information, see Details section below). `"sd"` by default.
+#'
+#' @details
+#' The formula is the same as [rmse()] (Root Mean Square Error) but divided by a
+#' normalization term specified in `type`:
+#'
+#' * `"sd"`: Standard deviatione.
+#' * `"mean"`: Mean.
+#' * `"maxmin"` or `"range"`: The range, maximun minus minimum.
+#' * `"iqr"`: Interquantile range (Q3 - Q1).
+#'
+#' @return
+#' A single numeric value with the Normalized Root Mean Squared Error.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' nrmse(x, x)
+#' nrmse(x, x - 1, type = "mean")
+#' nrmse(x, x + 10, type = "iqr")
+#' nrmse(x, x + 10, type = "range")
+#' nrmse(x, x + 10, type = "maxmin")
+#' }
+#'
+#' @family numeric_metrics
+#'
 #' @export
 nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
   rmse_value <- rmse(observed, predicted)
@@ -131,17 +339,17 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
     return(rmse_value)
   }
 
-  type <- tolower(type)
+  lower_type <- tolower(type)
 
   divisor <- NULL
 
-  if (type == "sd") {
+  if (lower_type == "sd") {
     divisor <- sd(observed, na.rm = na.rm)
-  } else if (type == "mean") {
+  } else if (lower_type == "mean") {
     divisor <- mean(observed, na.rm = na.rm)
-  } else if (type == "maxmin" || type == "range") {
+  } else if (lower_type == "maxmin" || lower_type == "range") {
     divisor <- diff(range(observed, na.rm = na.rm))
-  } else if (type == "iq") {
+  } else if (lower_type == "iqr") {
     divisor <- diff(quantile(observed, c(0.25, 0.75), na.rm = na.rm))
   } else {
     stop(sprintf(
@@ -160,46 +368,160 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
   return(result)
 }
 
-#' @title Mean Absolute Error
+#' @title Mean Abosolute Error
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the
+#' Mean Abosolute Error.
+#'
+#' @inheritParams mse
+#'
+#' @return
+#' A single numeric value with the Mean Abosolute Error.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' mae(x, x)
+#' mae(x, x - 1)
+#' mae(x, x + 10)
+#' mae(x, x + 10)
+#' mae(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
 #' @export
 mae <- function(observed, predicted, na.rm = TRUE) {
-  if (length(observed) != length(predicted)) {
-    stop("observed and predicted must have the same length")
-  }
+  assert_same_length(observed, predicted)
 
   return(mean(abs(observed - predicted), na.rm = na.rm))
 }
 
 #' @title Mean Arctangent Absolute Percentage Error
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the
+#' Mean Arctangent Absolute Percentage Error.
+#'
+#' @inheritParams mse
+#'
+#' @return
+#' A single numeric value with the Mean Arctangent Absolute Percentage Error.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' maape(x, x)
+#' maape(x, x - 1)
+#' maape(x, x + 10)
+#' maape(x, x + 10)
+#' maape(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
 #' @export
 maape <- function(observed, predicted, na.rm = TRUE) {
-  if (length(observed) != length(predicted)) {
-    stop("observed and predicted must have the same length")
-  } else if (is.null(observed) && is.null(predicted)) {
+  assert_same_length(observed, predicted)
+
+  if (is.null(observed) && is.null(predicted)) {
     return(NaN)
   }
 
   return(mean(atan(abs(observed - predicted) / abs(observed)), na.rm = na.rm))
 }
 
-spearman <- function(x, y) {
-  if (length(x) != length(y)) {
-    stop("x and y must have the same length")
-  } else if (is.null(x) && is.null(y)) {
+#' @title Spearman's correlation
+#'
+#' @description
+#' Computes the Spearman's correlation.
+#'
+#' @param x (`numeric` | `matrix`) The values to calculate the correlation.
+#' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
+#'   the same values as `x` by default.
+#' @inheritParams mse
+#'
+#' @return
+#' A single numeric value with the Spearman's correlation.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' spearman(x, x)
+#' spearman(x, x + rnorm(100, 2))
+#' spearman(x, x - 1)
+#' spearman(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
+#' @export
+spearman <- function(x, y = x, na.rm = TRUE) {
+  if (na.rm) {
+    remove_indices <- nas_indices(x, y)
+
+    if (!is_empty(remove_indices)) {
+      x <- get_records(x, -remove_indices)
+      y <- get_records(y, -remove_indices)
+    }
+  }
+
+  assert_same_length(x, y)
+
+  if (is.null(x) && is.null(y)) {
     return(NaN)
   }
 
-  return(cor(x, y, method = "spearman", use = "na.or.complete"))
+  return(cor(x, y, method = "spearman", use = "everything"))
 }
 
-pearson <- function(x, y) {
-  if (length(x) != length(y)) {
-    stop("x and y must have the same length")
-  } else if (is.null(x) && is.null(y)) {
+#' @title Pearson's correlation
+#'
+#' @description
+#' Computes the Pearson's correlation.
+#'
+#' @param x (`numeric` | `matrix`) The values to calculate the correlation.
+#' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
+#'   the same values as `x` by default.
+#' @inheritParams mse
+#'
+#' @return
+#' A single numeric value with the Pearson's correlation.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' pearson(x, x)
+#' pearson(x, x + rnorm(100, 2))
+#' pearson(x, x - 1)
+#' pearson(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
+#' @export
+pearson <- function(x, y = x, na.rm = TRUE) {
+  if (na.rm) {
+    remove_indices <- nas_indices(x, y)
+
+    if (!is_empty(remove_indices)) {
+      x <- get_records(x, -remove_indices)
+      y <- get_records(y, -remove_indices)
+    }
+  }
+
+  assert_same_length(x, y)
+
+  if (is.null(x) && is.null(y)) {
     return(NaN)
   }
 
-  return(cor(x, y, method = "pearson", use = "na.or.complete"))
+  return(cor(x, y, method = "pearson", use = "everything"))
 }
 
 # Helpers --------------------------------------------------

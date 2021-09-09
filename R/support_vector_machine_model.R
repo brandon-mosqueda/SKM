@@ -64,6 +64,7 @@ SupportVectorMachineModel <- R6Class(
     # Methods --------------------------------------------------
 
     prepare_others = function() {
+      # Remove the scale values if there was records deleted
       self$other_params$scale <- remove_if_has_more(
         self$other_params$scale,
         ncol(self$x),

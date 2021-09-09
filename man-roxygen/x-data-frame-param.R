@@ -1,3 +1,3 @@
-#' @param x (`data.frame` | `matrix` | `vector`) The predictor (independet)
-#'   variable(s). Internally it is converted to `data.frame` with
-#'   [to_data_frame()] function.
+#' @param x (`data.frame`) The predictor (independet) variable(s). Internally
+#'   all `character` and `logical` columns are coerced to `factor` and therefore
+#'   are treated as categorical independent variables.

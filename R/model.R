@@ -3,6 +3,7 @@
 #' @include utils.R
 #' @include tuner.R
 #' @include model_helpers.R
+#' @include validator.R
 
 Model <- R6Class(
   classname = "Model",
@@ -12,6 +13,7 @@ Model <- R6Class(
     name = NULL,
     is_multivariate = NULL,
     allow_coefficients = NULL,
+    is_x_matrix = NULL,
     responses = list(),
 
     fitted_model = NULL,
@@ -42,7 +44,8 @@ Model <- R6Class(
                           tune_testing_proportion = NULL,
                           tune_grid_proportion = NULL,
                           is_multivariate = FALSE,
-                          allow_coefficients = FALSE) {
+                          allow_coefficients = FALSE,
+                          is_x_matrix = TRUE) {
       self$x <- x
       self$y <- y
       self$name <- name
@@ -52,6 +55,7 @@ Model <- R6Class(
       self$tune_grid_proportion <- tune_grid_proportion
       self$is_multivariate <- is_multivariate
       self$allow_coefficients <- allow_coefficients
+      self$is_x_matrix <- is_x_matrix
 
       self$other_params <- list()
       self$hyperparams <- list()
@@ -85,28 +89,28 @@ Model <- R6Class(
       )
     },
     predict = function(x) {
+      if (!is.null(x)) {
+        assert_x(x, expected_matrix = self$is_x_matrix)
+      }
+
       x <- private$get_x_for_model(x, remove_cols = FALSE)
       if (!is.null(self$removed_x_cols)) {
         x <- x[, -self$removed_x_cols]
       }
 
-      if (self$is_multivariate) {
-        private$predict_multivariate(
-          model = self$fitted_model,
-          x = x,
-          responses = self$responses,
-          other_params = self$other_params,
-          hyperparams = self$best_hyperparams
-        )
-      } else {
-        private$predict_univariate(
-          model = self$fitted_model,
-          x = x,
-          responses = self$responses,
-          other_params = self$other_params,
-          hyperparams = self$best_hyperparams
-        )
-      }
+      predict_function <- ifelse(
+        self$is_multivariate,
+        private$predict_multivariate,
+        private$predict_univariate
+      )
+
+      predict_function(
+        model = self$fitted_model,
+        x = x,
+        responses = self$responses,
+        other_params = self$other_params,
+        hyperparams = self$best_hyperparams
+      )
     },
     coefficients = function() {
       if (self$allow_coefficients) {
@@ -131,12 +135,12 @@ Model <- R6Class(
         warning(
           length(self$removed_x_cols),
           " columns were removed from x because they has no variance ",
-          "See model$removed_x_cols to see what columns were removed."
+          "See $removed_x_cols field to see what columns were removed."
         )
       }
     },
     get_x_for_model = function(x, remove_cols = TRUE) {
-      x <- to_matrix(x)
+      colnames(x) <- get_cols_names(x)
 
       if (remove_cols) {
         x <- remove_no_variance_cols(x)
@@ -164,7 +168,7 @@ Model <- R6Class(
         warning(
           length(self$removed_rows),
           " rows were removed because it has NA values in x and/or y. ",
-          "See model$removed_rows to see what rows were removed."
+          "See $removed_rows field to see what rows were removed."
         )
       }
     },

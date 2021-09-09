@@ -19,7 +19,12 @@ BayesianModel <- R6Class(
                           records_weights,
                           response_groups,
                           testing_indices) {
-      super$initialize(..., name = "Bayesian Model", allow_coefficients = TRUE)
+      super$initialize(
+        ...,
+        name = "Bayesian Model",
+        allow_coefficients = TRUE,
+        is_x_matrix = FALSE
+      )
 
       self$other_params$iterations_number <- iterations_number
       self$other_params$burn_in <- burn_in
@@ -62,6 +67,9 @@ BayesianModel <- R6Class(
       }
 
       names(self$x) <- x_names
+    },
+    get_x_for_model = function(x, ...) {
+      return(x)
     },
     handle_nas = function() {
       na_indices <- c()

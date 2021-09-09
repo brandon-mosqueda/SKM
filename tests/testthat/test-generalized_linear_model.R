@@ -1,4 +1,4 @@
-data(Iris)
+data(IrisMatrix)
 
 test_that("Univariate numeric (no tuning)", {
   model <- generalized_linear_model(x_num, y_num, seed = 1, verbose = FALSE)

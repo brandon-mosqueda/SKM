@@ -47,13 +47,12 @@
 #' @param records_weights (`numeric`) Weights of the records to be used in the
 #'   fitting process. Must be positive but do not need to be normalized. `NULL`
 #'   by default.
-#' @param predictors_relationship (`numeric(1)`) Also known as `var.monotone`.
+#' @param predictors_relationship (`numeric`) Also known as `var.monotone`.
 #'   A vector with the same length as the number of predictors, indicating which
 #'   variables have a monotone increasing (+1), decreasing (-1), or arbitrary
 #'   (0) relationship with the outcome. `NULL` by default.
 #' @template other-base-params
 #'
-#' @template details-data-frame
 #' @template details-remove-nas
 #' @template details-tuning
 #' @template details-uni-loss-functions
@@ -61,6 +60,7 @@
 #' @template return-model
 #'
 #' @seealso [predict.Model()]
+#' @family models
 #'
 #' @examples
 #' \dontrun{

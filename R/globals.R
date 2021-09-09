@@ -56,6 +56,16 @@ VALID_ACTIVATION_FUNCTIONS <- c(
   "exponential"
 )
 
+VALID_OPTIMIZERS <- c(
+  "adadelta",
+  "adagrad",
+  "adamax",
+  "adam",
+  "nadam",
+  "rmsprop",
+  "sgd"
+)
+
 DEFAULT_LAYER_NEURONS <- 50
 DEFAULT_LAYER_ACTIVATION <- "relu"
 DEFAULT_LAYER_DROPOUT <- 0

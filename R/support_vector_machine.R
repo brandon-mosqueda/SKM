@@ -21,19 +21,19 @@
 #'   column. If `y` is `character`, `logical` or `factor`, then a classification
 #'   machine is fitted, otherwise a regression machine.
 #' @param kernel (`character(1)`) (case not sensitive) The kernel used in the
-#' support vector machine. The options are `"linear"`, `"polynomial"`,
-#' `"radial"` and `"sigmoid"` (for more information, see Details section below).
-#' You can use `gamma`, `coef0` and `degree` parameters to adjust the kernel.
-#' `"linear"` by default.
+#'   support vector machine. The options are `"linear"`, `"polynomial"`,
+#'   `"radial"` and `"sigmoid"` (for more information, see Details section
+#'   below). You can use `gamma`, `coef0` and `degree` parameters to adjust the
+#'   kernel. `"linear"` by default.
 #' @param degree (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
 #'   kernel. 3 by default.
 #' @param gamma (`numeric`) (__tunable__) Parameter needed for all kernels
-#'   except `"linear"`. `if (is.vector(x)) 1 else 1 / ncol(x)` by default.
+#'   except `"linear"`. `1 / NCOL(x)` by default.
 #' @param coef0 (`numeric`) (__tunable__) Parameter needed for `"polynomial"`
 #'   and `"sigmoid"` kernels. 0 by default.
 #' @param cost (`numeric`) (__tunable__) Cost of constraints violation. It is
-#' the 'C'-constant of the regularization term in the Lagrange formulation. 1 by
-#' default.
+#'   the 'C'-constant of the regularization term in the Lagrange formulation.
+#'   1 by default.
 #' @template cv-tune-params
 #' @param scale (`logical`) A logical vector indicating the variables in `x`
 #'   to be scaled. If `scale` is of length 1, the value is recycled as many
@@ -55,7 +55,7 @@
 #'   included in the model? `TRUE` by default.
 #' @template other-base-params
 #'
-#' @template details-matrix
+#' @template details-no-variance
 #' @template details-remove-nas
 #' @template details-tuning
 #' @template details-uni-loss-functions
@@ -67,11 +67,11 @@
 #'
 #' * linear:
 #'
-#'     ![](linear_kernel.png "K(X, Y) = X^T Y")
+#'     ![](linear_kernel.png "K(X, Y) = X^T %*% Y")
 #'
 #' * polynomial:
 #'
-#'     ![](polynomial_kernel.png "K(X, Y) = (gamma * X^T Y + coef0)^degree")
+#'     ![](polynomial_kernel.png "K(X, Y) = (gamma * X^T %*% Y + coef0)^degree")
 #'
 #' * radial:
 #'
@@ -79,7 +79,7 @@
 #'
 #' * sigmoid:
 #'
-#'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T Y + coef0)")
+#'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T %*% Y + coef0)")
 #'
 #' When you provide several values of `degree`, `gamma` and/or `coef0` for
 #' tuning with kernels that does not support them they are not taken in account.
@@ -90,6 +90,7 @@
 #' @template return-model
 #'
 #' @seealso [predict.Model()]
+#' @family models
 #'
 #' @examples
 #' \dontrun{
@@ -119,7 +120,7 @@ support_vector_machine <- function(x, y,
                                    kernel = "linear",
 
                                    degree = 3,
-                                   gamma = if (is.vector(x)) 1 else 1 / ncol(x),
+                                   gamma = 1 / NCOL(x),
                                    coef0 = 0,
                                    cost = 1,
 
