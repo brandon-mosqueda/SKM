@@ -269,11 +269,11 @@ sparse_kernel <- function(x,
 #'
 #' * Linear:
 #'
-#'     ![](linear_kernel.png "K(X, Y) = X^T %*% Y")
+#'     ![](linear_kernel.png "K(X, Y) = X^T \%*\% Y")
 #'
 #' * Polynomial:
 #'
-#'     ![](polynomial_kernel.png "K(X, Y) = (gamma * X^T %*% Y + coef0)^degree")
+#'     ![](polynomial_kernel.png "K(X, Y) = (gamma * X^T \%*\% Y + coef0)^degree")
 #'
 #' * Radial:
 #'
@@ -281,7 +281,7 @@ sparse_kernel <- function(x,
 #'
 #' * Sigmoid:
 #'
-#'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T %*% Y + coef0)")
+#'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T \%*\% Y + coef0)")
 #'
 #' @return
 #' A `matrix` with the data after applied kernel.
