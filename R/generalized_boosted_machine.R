@@ -27,7 +27,7 @@
 #'   gaussian distribution otherwise.
 #' @param trees_number (`numeric`) (__tunable__) Number of trees. This is
 #'   equivalent to the number of iterations and the number of basis functions in
-#'   the additive expansion. 100 by default.
+#'   the additive expansion. 500 by default.
 #' @param max_depth (`numeric`) (__tunable__) Maximum depth of each tree
 #'   (the highest level of variable interactions allowed). A value of 1 implies
 #'   an additive model, a value of 2 implies a model with up to 2-way
@@ -87,7 +87,7 @@
 #' @export
 generalized_boosted_machine <- function(x, y,
 
-                                        trees_number = 100,
+                                        trees_number = 500,
                                         max_depth = 1,
                                         node_size = 10,
                                         shrinkage = 0.1,

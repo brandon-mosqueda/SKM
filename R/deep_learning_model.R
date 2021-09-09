@@ -198,7 +198,6 @@ DeepLearningModel <- R6Class(
       self$other_params$optimizer_function <- get_keras_optimizer_function(
         self$other_params$optimizer
       )
-      browser()
     },
 
     train = function(...) {
