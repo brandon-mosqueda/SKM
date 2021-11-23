@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-#' @importFrom gbm gbm
+#' @importFrom gbm gbm.fit
 
 #' @include utils.R
 #' @include model.R
@@ -18,13 +18,11 @@ GeneralizedBoostedMachineModel <- R6Class(
                           shrinkage,
                           sampled_records_proportion,
 
-                          records_weights,
                           predictors_relationship) {
       super$initialize(
         ...,
         name = "Generalized Boosted Machine",
-        is_multivariate = FALSE,
-        is_x_matrix = FALSE
+        is_multivariate = FALSE
       )
 
       self$hyperparams$trees_number <- trees_number
@@ -33,7 +31,6 @@ GeneralizedBoostedMachineModel <- R6Class(
       self$hyperparams$shrinkage <- shrinkage
       self$hyperparams$sampled_records_proportion <- sampled_records_proportion
 
-      self$other_params$records_weights <- records_weights
       self$other_params$predictors_relationship <- predictors_relationship
     }
   ),
@@ -54,20 +51,10 @@ GeneralizedBoostedMachineModel <- R6Class(
         ncol(self$x),
         self$removed_x_cols
       )
-
-      self$other_params$records_weights <- remove_if_has_more(
-        self$other_params$records_weights,
-        nrow(self$x),
-        self$removed_rows
-      )
-    },
-    get_x_for_model = function(x, remove_cols = FALSE) {
-      return(to_data_frame(x))
     },
 
     tune = function() {
       true_other_params <- self$other_params
-      self$other_params$records_weights <- NULL
 
       super$tune()
 
@@ -75,12 +62,9 @@ GeneralizedBoostedMachineModel <- R6Class(
     },
 
     train_univariate = function(x, y, hyperparams, other_params) {
-      data <- data.frame(y, x)
-
-      model <- suppressMessages(gbm(
-        formula = y ~ .,
-
-        data = data,
+      model <- suppressMessages(gbm::gbm.fit(
+        x = x,
+        y = y,
 
         n.trees = hyperparams$trees_number,
         interaction.depth = hyperparams$max_depth,
@@ -89,10 +73,8 @@ GeneralizedBoostedMachineModel <- R6Class(
         bag.fraction = hyperparams$sampled_records_proportion,
 
         distribution = other_params$distribution,
-        weights = other_params$records_weights,
         var.monotone = other_params$predictors_relationship,
 
-        train.fraction = 1,
         verbose = FALSE,
         keep.data = FALSE
       ))
@@ -108,9 +90,9 @@ GeneralizedBoostedMachineModel <- R6Class(
         predict(
           model,
           newdata = x,
-          # type response returns the probabilites for categorical data and counts
-          # for poisson data, for continuous type link and response returns the
-          # same
+          # type response returns the probabilites for categorical data and
+          # counts for poisson data, for continuous type link and response
+          # returns the same
           type = "response"
         ),
         all = TRUE

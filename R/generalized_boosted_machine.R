@@ -5,9 +5,9 @@
 #' @title Fit a Generalized Boosted Machine (GBM)
 #'
 #' @templateVar ClassName GeneralizedBoostedMachineModel
-#' @templateVar XType data.frame
+#' @templateVar XType matrix
 #' @templateVar YType `vector`
-#' @templateVar refFunction gbm::gbm()
+#' @templateVar refFunction gbm::gbm.fit()
 #'
 #' @description
 #' `generalized_boosted_machine()` is a wrapper of the [gbm::gbm()] function
@@ -44,9 +44,6 @@
 #'   selected to propose the next tree in the expansion. This introduces
 #'   randomnesses into the model fit. 0.5 by default.
 #' @template cv-tune-params
-#' @param records_weights (`numeric`) Weights of the records to be used in the
-#'   fitting process. Must be positive but do not need to be normalized. `NULL`
-#'   by default.
 #' @param predictors_relationship (`numeric`) Also known as `var.monotone`.
 #'   A vector with the same length as the number of predictors, indicating which
 #'   variables have a monotone increasing (+1), decreasing (-1), or arbitrary
@@ -98,7 +95,6 @@ generalized_boosted_machine <- function(x, y,
                                         tune_testing_proportion = 0.2,
                                         tune_grid_proportion = 1,
 
-                                        records_weights = NULL,
                                         predictors_relationship = NULL,
 
                                         validate_params = TRUE,
@@ -122,7 +118,6 @@ generalized_boosted_machine <- function(x, y,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
 
-      records_weights = records_weights,
       predictors_relationship = predictors_relationship,
 
       seed = seed,
@@ -155,7 +150,6 @@ generalized_boosted_machine <- function(x, y,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
 
-    records_weights = records_weights,
     predictors_relationship = predictors_relationship
   )
 

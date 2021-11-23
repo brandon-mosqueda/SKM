@@ -598,7 +598,6 @@ validate_generalized_boosted_machine <- function(x,
                                                  tune_testing_proportion,
                                                  tune_grid_proportion,
 
-                                                 records_weights,
                                                  predictors_relationship,
 
                                                  seed,
@@ -607,7 +606,7 @@ validate_generalized_boosted_machine <- function(x,
     x = x,
     y = y,
     is_multivariate = FALSE,
-    expect_x_matrix = FALSE,
+    expect_x_matrix = TRUE,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -633,14 +632,6 @@ validate_generalized_boosted_machine <- function(x,
     any.missing = FALSE
   )
   assert_numeric(shrinkage, finite = TRUE, any.missing = FALSE)
-
-  assert_numeric(
-    records_weights,
-    finite = TRUE,
-    any.missing = FALSE,
-    len = nrow(x),
-    null.ok = TRUE
-  )
 
   assert_numeric(
     predictors_relationship,
