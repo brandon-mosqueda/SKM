@@ -95,11 +95,11 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' support_vector_machine(iris[, -5], iris$Species)
+#' model <- support_vector_machine(to_matrix(iris[, -5]), iris$Species)
 #'
 #' # Tune 3 hyperparameters
 #' model <- support_vector_machine(
-#'   iris[, -1],
+#'   to_matrix(iris[, -1]),
 #'   iris$Sepal.Length,
 #'   kernel = "polynomial",
 #'   degree = c(3, 4, 5),
@@ -107,7 +107,7 @@
 #'   coef0 = c(0, 1, -1)
 #' )
 #'
-#' predictions <- predict(model, iris)
+#' predictions <- predict(model, to_matrix(iris))
 #' predictions$predicted
 #'
 #' # See the whole grid

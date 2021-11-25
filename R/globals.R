@@ -76,7 +76,6 @@ NEURONS_PROPORTION_MAX_VALUE <- 10
 
 BAYESIAN_MODELS <- c(
   "FIXED",
-  "RKHS",
   "BGBLUP",
   "BRR",
   "Bayes_Lasso",
@@ -85,7 +84,7 @@ BAYESIAN_MODELS <- c(
   "Bayes_C"
 )
 
-MULTIVARIATE_BAYESIAN_MODELS <- c("FIXED", "RKHS", "BGBLUP", "BRR")
+MULTIVARIATE_BAYESIAN_MODELS <- c("FIXED", "BGBLUP", "BRR")
 
 BAYESIAN_TRASH_DIR <- ".skm_bayesian_temporal_files"
 

@@ -62,15 +62,15 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' generalized_boosted_machine(iris[, -5], iris$Species)
+#' model <- generalized_boosted_machine(to_matrix(iris[, -5]), iris$Species)
 #'
 #' # Tune 3 hyperparameters
 #' model <- generalized_boosted_machine(
-#'   iris[, -1],
+#'   to_matrix(iris[, -1]),
 #'   iris$Sepal.Length,
 #'   trees_number = c(100, 200, 300),
 #'   node_size = c(5, 10),
-#'   shrinkage = c(0.001, 0.01, 0.1)
+#'   shrinkage = c(0.001, 0.01, 0.1),
 #'   sampled_records_proportion = c(0.5, 0.75)
 #' )
 #'

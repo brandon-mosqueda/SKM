@@ -244,6 +244,8 @@ sparse_kernel <- function(x,
 #'   `"Sigmoid"`, `"Gaussian"` and `"Arc_cosine"`. Also the _sparse_ version of
 #'   each kernel can be used as `"Sparse_KERNEL"`, where KERNEL is one the
 #'   kernels.
+#' @param standardize (`logical(1)`) Should the data be standardized before
+#'   applying the kernel? `TRUE` by default.
 #' @param rows_proportion (`numeric(1)`) The proportion of rows to be sampled to
 #'   compute the kernel. It has to be a value > 0 and <= 1. This parameter is
 #'   only  used with `"Sparse_"` kernels. 0.8 by default.
@@ -300,6 +302,7 @@ sparse_kernel <- function(x,
 #' @export
 kernelize <- function(x,
                       kernel,
+                      standardize = TRUE,
                       rows_proportion = 0.8,
                       arc_cosine_deep = 1,
                       gamma = 1 / NCOL(x),
@@ -316,6 +319,9 @@ kernelize <- function(x,
   )
 
   x <- remove_no_variance_cols(to_matrix(x))
+  if (standardize) {
+    x <- scale(x)
+  }
 
   if (is_sparse_kernel(kernel)) {
     x <- sparse_kernel(

@@ -450,8 +450,7 @@ prepare_bayesian_model <- function(model) {
     tolower(model),
 
     fixed = "FIXED",
-    rkhs = "RKHS",
-    bgblup = "BGBLUP",
+    bgblup = "RKHS",
     brr = "BRR",
     bayes_lasso = "BL",
     bayes_a = "BayesA",

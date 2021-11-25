@@ -82,7 +82,7 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' random_forest(iris[, -5], iris$Species)
+#' model <- random_forest(iris[, -5], iris$Species)
 #'
 #' # With tuning
 #' model <- random_forest(
@@ -100,7 +100,7 @@
 #' model$hyperparams_grid
 #'
 #' # Multivariate analysis
-#' random_forest(
+#' model <- random_forest(
 #'   x = iris[, -c(1, 5)],
 #'   y = iris[, c(1, 5)],
 #'   sampled_x_vars_number = c(0.25, 0.75)

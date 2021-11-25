@@ -69,25 +69,25 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' generalized_linear_model(iris[, -5], iris$Species)
+#' model <- generalized_linear_model(to_matrix(iris[, -5]), iris$Species)
 #'
 #' # With tuning
 #' model <- generalized_linear_model(
-#'   iris[, -1],
+#'   to_matrix(iris[, -1]),
 #'   iris$Sepal.Length,
 #'   alpha = c(0, 0.5, 1),
 #'   lambdas_number = 10
 #' )
 #'
-#' predictions <- predict(model, iris)
+#' predictions <- predict(model, to_matrix(iris[, -1]))
 #' predictions$predicted
 #'
 #' # See the whole grid
 #' model$hyperparams_grid
 #'
 #' # Multivariate analysis
-#' generalized_linear_model(
-#'   x = iris[, -c(1, 5)],
+#' model <- generalized_linear_model(
+#'   x = to_matrix(iris[, -c(1, 5)]),
 #'   y = iris[, c(1, 5)],
 #'   lambdas = c(0.1, 0.2, 0.3, 0.4)
 #' )

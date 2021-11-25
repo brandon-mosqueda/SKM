@@ -156,28 +156,32 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' deep_learning(iris[, -5], iris$Species)
+#' model <- deep_learning(to_matrix(iris[, -5]), iris$Species)
 #'
 #' # With tuning
 #' model <- deep_learning(
-#'   iris[, -1],
+#'   to_matrix(iris[, -1]),
 #'   iris$Sepal.Length,
-#'   trees_number = c(100, 200, 300),
-#'   node_size = c(1, 2),
-#'   node_depth = c(10, 15)
+#'   epochs_number = 10,
+#'   learning_rate = c(0.1, 0.05),
+#'   layers = list(list(neurons_number = 10, activation = "relu"))
 #' )
 #'
-#' predictions <- predict(model, iris)
+#' predictions <- predict(model, to_matrix(iris[, -1]))
 #' predictions$predicted
 #'
 #' # See the whole grid
 #' model$hyperparams_grid
 #'
 #' # Multivariate analysis
-#' deep_learning(
-#'   x = iris[, -c(1, 5)],
+#' model <- deep_learning(
+#'   x = to_matrix(iris[, -c(1, 5)]),
 #'   y = iris[, c(1, 5)],
-#'   sampled_x_vars_number = c(0.25, 0.75)
+#'   epochs_number = 10,
+#'   layers = list(
+#'     list(neurons_number = 10, activation = "relu"),
+#'     list(neurons_number = 5, activation = "sigmoid")
+#'   )
 #' )
 #' }
 #'

@@ -21,9 +21,9 @@
 #'   `x` (`matrix`) with the predictor variable that is going to be converted to
 #'   `numeric` and `model` (`character(1)`) (case not sensitive) with the type
 #'   of model to apply to this predictor term, the available models are
-#'   `"FIXED"`, `"RKHS"`, `"BGBLUP"`, `"BRR"`, `"Bayes_Lasso"`, `"Bayes_A"`,
-#'   `"Bayes_B"` and `"Bayes_C"`. In multivariate models you can only use
-#'   `"FIXED"`, `"RKHS"`, `"BGBLUP"` and `"BRR"`. `"BRR"` by default.
+#'   `"FIXED"`, `"BGBLUP"`, `"BRR"`, `"Bayes_Lasso"`, `"Bayes_A"`, `"Bayes_B"`
+#'   and `"Bayes_C"`. In multivariate models you can only use `"FIXED"`,
+#'   `"BGBLUP"` and `"BRR"`. `"BRR"` by default.
 #' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
 #'   variable(s). If it is a `data.frame` or a `matrix` with 2 or more columns,
 #'   a multivariate model is assumed, a univariate model otherwise. In
@@ -76,14 +76,18 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' bayesian_model(iris[, -5], iris$Species)
+#' x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
+#' model <- bayesian_model(x, iris$Species, testing_indices = 1:50)
+#' predictions <- predict(model)
 #'
 #' # Multivariate analysis
-#' bayesian_model(
-#'   x = iris[, -c(1, 5)],
-#'   y = iris[, c(1, 5)],
-#'   iterations_number = 10000,
-#'   burn_in = 5000
+#' x <- list(list(x = to_matrix(iris[, -c(1, 5)]), model = "BRR"))
+#' y <- iris[, c(1, 5)]
+#' model <- bayesian_model(
+#'   x = x,
+#'   y = y,
+#'   iterations_number = 100,
+#'   burn_in = 50
 #' )
 #' }
 #'
