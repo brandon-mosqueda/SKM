@@ -5,3 +5,4 @@ man/
 manual_tests/
 .skm_*
 install.sh
+paper/

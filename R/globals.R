@@ -95,11 +95,11 @@ BAYESIAN_COVARIANCE_STRUCTURE_TYPES <- c(
   "Recursive"
 )
 
-# Cross validation --------------------------------------------------
-
-CV_TYPES <- c("K_fold", "Random")
+# Tuning --------------------------------------------------
 
 TUNE_CV_TYPES <- c("K_fold", "Random")
+
+TUNE_TYPES <- c("Grid_search", "Bayesian_optimization")
 
 # Others --------------------------------------------------
 

@@ -206,6 +206,7 @@ deep_learning <- function(x, y,
                             lasso_penalty = 0
                           ),
 
+                          tune_type = "Grid_search",
                           tune_cv_type = "K_fold",
                           tune_folds_number = 5,
                           tune_testing_proportion = 0.2,
@@ -237,6 +238,7 @@ deep_learning <- function(x, y,
       layers = layers,
       output_penalties = output_penalties,
 
+      tune_type = tune_type,
       tune_cv_type = tune_cv_type,
       tune_folds_number = tune_folds_number,
       tune_testing_proportion = tune_testing_proportion,
@@ -281,6 +283,7 @@ deep_learning <- function(x, y,
     layers = layers,
     output_penalties = output_penalties,
 
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,

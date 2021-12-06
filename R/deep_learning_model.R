@@ -19,6 +19,7 @@ DeepLearningModel <- R6Class(
     # Constructor --------------------------------------------------
 
     initialize = function(...,
+                          tune_type,
                           learning_rate,
                           epochs_number,
                           batch_size,
@@ -31,9 +32,10 @@ DeepLearningModel <- R6Class(
                           shuffle,
                           early_stop,
                           early_stop_patience) {
-      super$initialize(..., name = "Deep Learning")
+      super$initialize(..., tune_type = tune_type, name = "Deep Learning")
 
-      self$tuner_class <- DeepLearningTuner
+      tune_type <- paste0("deep_", tune_type)
+      self$tuner_class <- get_tuner(tune_type)
 
       self$hyperparams$learning_rate <- learning_rate
       self$hyperparams$epochs_number <- epochs_number

@@ -19,7 +19,7 @@ License: LGPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1.9001
+RoxygenNote: 7.1.2.9000
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
@@ -54,6 +54,7 @@ Collate:
     'generalized_boosted_machine_model.R'
     'generalized_linear_model_model.R'
     'generalized_linear_model.R'
+    'grid_tuner.R'
     'k_fold_cross_validator.R'
     'random_cross_validator.R'
     'random_forest.R'

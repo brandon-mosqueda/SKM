@@ -88,6 +88,27 @@ get_cross_validator <- function(type,
   return(instance)
 }
 
+get_tuner <- function(type) {
+  type <- tolower(type)
+
+  if (type == "grid_search") {
+    tuner <- GridTuner
+  } else if (type == "bayesian_optimization") {
+    tuner <- BayesianTuner
+  } else if (type == "deep_grid_search") {
+    tuner <- DeepLearningGridTuner
+  } else if (type == "deep_bayesian_optimization") {
+    tuner <- DeepLearningBayesianTuner
+  } else {
+    stop(sprintf(
+      "{%s} is not a valid type of tuning",
+      set_collapse(type)
+    ))
+  }
+
+  return(tuner)
+}
+
 proportion_to <- function(proportion, to, lower = 0, upper = 1) {
   if (is.null(proportion)) {
     return(NULL)

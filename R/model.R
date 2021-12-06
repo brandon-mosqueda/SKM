@@ -39,6 +39,7 @@ Model <- R6Class(
     initialize = function(x,
                           y,
                           name,
+                          tune_type = NULL,
                           tune_cv_type = NULL,
                           tune_folds_number = NULL,
                           tune_testing_proportion = NULL,
@@ -60,7 +61,7 @@ Model <- R6Class(
       self$other_params <- list()
       self$hyperparams <- list()
 
-      self$tuner_class <- Tuner
+      self$tuner_class <- get_tuner(tune_type)
 
       if (self$is_multivariate) {
         self$name <- paste0("Multivariate ", self$name)

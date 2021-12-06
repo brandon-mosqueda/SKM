@@ -76,8 +76,8 @@ assert_tune_cv <- function(tune_cv_type,
                            tune_folds_number,
                            tune_testing_proportion,
                            tune_grid_proportion) {
-  tune_cv_type <- tolower(tune_cv_type)
   assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
+  tune_cv_type <- tolower(tune_cv_type)
 
   min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
   assert_number(tune_folds_number, finite = TRUE, lower = min_folds_number)
@@ -86,10 +86,15 @@ assert_tune_cv <- function(tune_cv_type,
   assert_number(tune_grid_proportion, lower = 1e-3, upper = 1)
 }
 
+assert_tune_type <- function(tune_type) {
+  assert_subset_string(tune_type, TUNE_TYPES, ignore.case = TRUE, len = 1)
+}
+
 assert_base_params <- function(x,
                                y,
                                is_multivariate,
                                expect_x_matrix,
+                               tune_type,
                                tune_cv_type,
                                tune_folds_number,
                                tune_testing_proportion,
@@ -102,6 +107,8 @@ assert_base_params <- function(x,
     is_multivariate = is_multivariate,
     expect_x_matrix = expect_x_matrix
   )
+
+  assert_tune_type(tune_type)
 
   assert_tune_cv(
     tune_cv_type = tune_cv_type,
@@ -417,6 +424,7 @@ validate_support_vector_machine <- function(x,
                                             coef0,
                                             cost,
 
+                                            tune_type,
                                             tune_cv_type,
                                             tune_folds_number,
                                             tune_testing_proportion,
@@ -440,6 +448,7 @@ validate_support_vector_machine <- function(x,
     y = y,
     is_multivariate = FALSE,
     expect_x_matrix = TRUE,
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -472,6 +481,7 @@ validate_random_forest <- function(x,
                                    node_depth,
                                    sampled_x_vars_number,
 
+                                   tune_type,
                                    tune_cv_type,
                                    tune_folds_number,
                                    tune_testing_proportion,
@@ -491,6 +501,7 @@ validate_random_forest <- function(x,
     y = y,
     is_multivariate = is_multivariate,
     expect_x_matrix = FALSE,
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -546,6 +557,7 @@ validate_generalized_linear_model <- function(x,
                                               alpha,
                                               lambda,
 
+                                              tune_type,
                                               tune_cv_type,
                                               tune_folds_number,
                                               tune_testing_proportion,
@@ -564,6 +576,7 @@ validate_generalized_linear_model <- function(x,
     y = y,
     is_multivariate = is_multivariate,
     expect_x_matrix = TRUE,
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -593,6 +606,7 @@ validate_generalized_boosted_machine <- function(x,
                                                  shrinkage,
                                                  sampled_records_proportion,
 
+                                                 tune_type,
                                                  tune_cv_type,
                                                  tune_folds_number,
                                                  tune_testing_proportion,
@@ -607,6 +621,7 @@ validate_generalized_boosted_machine <- function(x,
     y = y,
     is_multivariate = FALSE,
     expect_x_matrix = TRUE,
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
@@ -653,6 +668,7 @@ validate_deep_learning <- function(x,
                                    layers,
                                    output_penalties,
 
+                                   tune_type,
                                    tune_cv_type,
                                    tune_folds_number,
                                    tune_testing_proportion,
@@ -672,6 +688,7 @@ validate_deep_learning <- function(x,
     y = y,
     is_multivariate = is_multivariate,
     expect_x_matrix = TRUE,
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,

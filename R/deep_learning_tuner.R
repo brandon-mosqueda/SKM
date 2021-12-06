@@ -5,9 +5,9 @@
 #' @include metrics.R
 #' @include tuner.R
 
-DeepLearningTuner <- R6Class(
-  classname = "DeepLearningTuner",
-  inherit = Tuner,
+DeepLearningGridTuner <- R6Class(
+  classname = "DeepLearningGridTuner",
+  inherit = GridTuner,
   public = list(
     # Methods --------------------------------------------------
 
