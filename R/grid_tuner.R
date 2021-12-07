@@ -10,9 +10,6 @@ GridTuner <- R6Class(
     # Properties --------------------------------------------------
 
     grid_proportion = NULL,
-    all_combinations = NULL,
-    combinations_number = NULL,
-    best_combination = NULL,
 
     # Constructor --------------------------------------------------
 
@@ -43,41 +40,6 @@ GridTuner <- R6Class(
 
     # Methods --------------------------------------------------
 
-    eval_one_fold = function(fold, combination) {
-      x_training <- get_records(self$x, fold$training)
-      y_training <- get_records(self$y, fold$training)
-      x_testing <- get_records(self$x, fold$testing)
-      y_testing <- get_records(self$y, fold$testing)
-
-      model <- self$training_function(
-        x = x_training,
-        y = y_training,
-        hyperparams = combination,
-        other_params = self$other_params
-      )
-      predictions <- self$predict_function(
-        model = model,
-        x = x_testing,
-        responses = self$responses,
-        hyperparams = combination,
-        other_params = self$other_params
-      )
-
-      if (self$is_multivariate) {
-        loss <- self$loss_function(
-          observed = y_testing,
-          predicted = predictions,
-          responses = self$responses
-        )
-      } else {
-        loss <- self$loss_function(
-          observed = y_testing,
-          predicted = predictions$predicted
-        )
-      }
-
-      return(loss)
-    },
     tune = function() {
       if (self$combinations_number == 1) {
         self$best_combination <- as.list(self$all_combinations)

@@ -109,6 +109,13 @@ get_tuner <- function(type) {
   return(tuner)
 }
 
+is_bayesian_tuner <- function(tuner) {
+  return(
+    tuner$classname == "BayesianTuner" ||
+    tuner$classname == "DeepLearningBayesianTuner"
+  )
+}
+
 proportion_to <- function(proportion, to, lower = 0, upper = 1) {
   if (is.null(proportion)) {
     return(NULL)

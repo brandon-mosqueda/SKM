@@ -25,6 +25,10 @@ Tuner <- R6Class(
     folds_number = NULL,
     testing_proportion = NULL,
 
+    all_combinations = NULL,
+    combinations_number = NULL,
+    best_combination = NULL,
+
     tabs_number = NULL,
 
     # Constructor --------------------------------------------------
@@ -73,6 +77,41 @@ Tuner <- R6Class(
         folds_number = self$folds_number,
         testing_proportion = self$testing_proportion
       )
+    },
+    eval_one_fold = function(fold, combination) {
+      x_training <- get_records(self$x, fold$training)
+      y_training <- get_records(self$y, fold$training)
+      x_testing <- get_records(self$x, fold$testing)
+      y_testing <- get_records(self$y, fold$testing)
+
+      model <- self$training_function(
+        x = x_training,
+        y = y_training,
+        hyperparams = combination,
+        other_params = self$other_params
+      )
+      predictions <- self$predict_function(
+        model = model,
+        x = x_testing,
+        responses = self$responses,
+        hyperparams = combination,
+        other_params = self$other_params
+      )
+
+      if (self$is_multivariate) {
+        loss <- self$loss_function(
+          observed = y_testing,
+          predicted = predictions,
+          responses = self$responses
+        )
+      } else {
+        loss <- self$loss_function(
+          observed = y_testing,
+          predicted = predictions$predicted
+        )
+      }
+
+      return(loss)
     },
     tune = function() stop("Tuner::tune error: Not implemented function")
   )
