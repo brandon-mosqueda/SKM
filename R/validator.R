@@ -70,22 +70,35 @@ assert_subset_string <- function(x,
   makeAssertion(x, res, label, NULL)
 }
 
-checkBoundsList <- function(x,
-                            only_ints = FALSE,
-                            lower = -Inf,
-                            upper = Inf,
-                            null.ok = FALSE,
-                            na.ok = FALSE) {
-  result <- checkList(x, any.missing = FALSE)
-  if (!identical(result, TRUE)) return(result)
-
-  result <- checkNames(names(x), must.include = c("min", "max"))
-  if (!identical(result, TRUE)) return(result)
+checkBounds <- function(x,
+                        only_ints = FALSE,
+                        lower = -Inf,
+                        upper = Inf,
+                        null.ok = FALSE,
+                        na.ok = FALSE) {
+  if (null.ok && is.null(x)) return(TRUE)
 
   check_function <- checkNumber
   if (only_ints) {
     check_function <- checkInt
   }
+
+  if (is.numeric(x)) {
+    result <- check_function(
+      x,
+      lower = lower,
+      upper = upper,
+      na.ok = na.ok
+    )
+
+    return(result)
+  }
+
+  result <- checkList(x, any.missing = FALSE)
+  if (!identical(result, TRUE)) return(result)
+
+  result <- checkNames(names(x), must.include = c("min", "max"))
+  if (!identical(result, TRUE)) return(result)
 
   min <- x$min
   max <- x$max
@@ -93,7 +106,6 @@ checkBoundsList <- function(x,
     min,
     lower = lower,
     upper = upper,
-    null.ok = null.ok,
     na.ok = na.ok
   )
   if (!identical(result, TRUE)) return(result)
@@ -102,7 +114,6 @@ checkBoundsList <- function(x,
     max,
     lower = lower,
     upper = upper,
-    null.ok = null.ok,
     na.ok = na.ok
   )
   if (!identical(result, TRUE)) return(result)
@@ -114,17 +125,21 @@ checkBoundsList <- function(x,
   return(TRUE)
 }
 
-assert_bounds_list <- function(x,
-                               only_ints = FALSE,
-                               lower = -Inf,
-                               upper = Inf,
-                               null.ok = FALSE,
-                               na.ok = FALSE,
-                               label = vname(x)) {
+assert_bounds <- function(x,
+                          only_ints = FALSE,
+                          lower = -Inf,
+                          upper = Inf,
+                          null.ok = FALSE,
+                          na.ok = FALSE,
+                          label = vname(x)) {
   if (missing(x)) {
     stop(sprintf("Argument '%s' is missing", label))
   }
-  res <- checkBoundsList(x, only_ints, lower, upper, null.ok, na.ok)
+  res <- checkBounds(x, only_ints, lower, upper, null.ok, na.ok)
+  if (is.character(res)) {
+    res <- paste0("Using Bayesian_optimization tune type: ", res)
+  }
+
   makeAssertion(x, res, label, NULL)
 }
 
@@ -585,22 +600,34 @@ validate_random_forest <- function(x,
     verbose = verbose
   )
 
-  assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
-  assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
-  assert_numeric(
-    node_depth,
-    lower = 1,
-    finite = TRUE,
-    any.missing = FALSE,
-    null.ok = TRUE
-  )
-  assert_numeric(
-    sampled_x_vars_number,
-    lower = 1e-3,
-    finite = TRUE,
-    any.missing = FALSE,
-    null.ok = TRUE
-  )
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(trees_number, lower = 1, only_ints = TRUE)
+    assert_bounds(node_size, lower = 1, only_ints = TRUE)
+    assert_bounds(node_depth, lower = 1, only_ints = TRUE, null.ok = TRUE)
+    assert_bounds(
+      sampled_x_vars_number,
+      lower = 1e-3,
+      only_ints = FALSE,
+      null.ok = TRUE
+    )
+  } else {
+    assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(
+      node_depth,
+      lower = 1,
+      finite = TRUE,
+      any.missing = FALSE,
+      null.ok = TRUE
+    )
+    assert_numeric(
+      sampled_x_vars_number,
+      lower = 1e-3,
+      finite = TRUE,
+      any.missing = FALSE,
+      null.ok = TRUE
+    )
+  }
 
   assert_forest_split_rule(split_rule)
 

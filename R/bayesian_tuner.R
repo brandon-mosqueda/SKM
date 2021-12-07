@@ -17,7 +17,7 @@ BayesianTuner <- R6Class(
 
     # Constructor --------------------------------------------------
 
-    initialize = function(...) {
+    initialize = function(..., samples_number = 10, iterations_number = 10) {
       super$initialize(...)
       self$samples_number <- samples_number
       self$iterations_number <- iterations_number
@@ -69,11 +69,16 @@ BayesianTuner <- R6Class(
       self$all_combinations <- as.data.frame(optimizer$History)
       self$all_combinations$Round <- NULL
       colnames(self$all_combinations)[ncol(self$all_combinations)] <- "loss"
+      self$all_combinations$loss <- self$all_combinations$loss * -1
+      self$all_combinations <- self$all_combinations[
+        order(self$all_combinations$loss), ,
+        drop = FALSE
+      ]
 
       self$combinations_number <- nrow(self$all_combinations)
 
       self$best_combination <- as.list(optimizer$Best_Par)
-      self$best_combination$loss <- optimizer$Best_Value
+      self$best_combination$loss <- optimizer$Best_Value * -1
 
       return(invisible(self$best_combination))
     }

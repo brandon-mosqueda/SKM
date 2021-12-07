@@ -55,10 +55,45 @@ RandomForestModel <- R6Class(
     # Methods --------------------------------------------------
 
     prepare_others = function() {
-      self$fit_params$sampled_x_vars_number <- proportion_to(
-        self$fit_params$sampled_x_vars_number,
-        ncol(self$x)
-      )
+      if (is_bayesian_tuner(self$tuner_class)) {
+        self$fit_params$trees_number <- format_bayes_hyperparam(
+          self$fit_params$trees_number,
+          is_int = TRUE
+        )
+        self$fit_params$node_size <- format_bayes_hyperparam(
+          self$fit_params$node_size,
+          is_int = TRUE
+        )
+        self$fit_params$node_depth <- format_bayes_hyperparam(
+          self$fit_params$node_depth,
+          is_int = TRUE
+        )
+
+        if (is.list(self$fit_params$sampled_x_vars_number)) {
+          self$fit_params$sampled_x_vars_number$min <- proportion_to(
+            self$fit_params$sampled_x_vars_number$min,
+            ncol(self$x)
+          )
+          self$fit_params$sampled_x_vars_number$max <- proportion_to(
+            self$fit_params$sampled_x_vars_number$max,
+            ncol(self$x)
+          )
+        } else {
+          self$fit_params$sampled_x_vars_number <- proportion_to(
+            self$fit_params$sampled_x_vars_number,
+            ncol(self$x)
+          )
+        }
+
+        self$fit_params$sampled_x_vars_number <- format_bayes_hyperparam(
+          self$fit_params$sampled_x_vars_number
+        )
+      } else {
+        self$fit_params$sampled_x_vars_number <- proportion_to(
+          self$fit_params$sampled_x_vars_number,
+          ncol(self$x)
+        )
+      }
 
       if (self$is_multivariate) {
         self$is_regression_model <- all(sapply(

@@ -110,10 +110,22 @@ get_tuner <- function(type) {
 }
 
 is_bayesian_tuner <- function(tuner) {
+  if (is.character(tuner)) {
+    return(tolower(tuner) == "bayesian_optimization")
+  }
+
   return(
     tuner$classname == "BayesianTuner" ||
     tuner$classname == "DeepLearningBayesianTuner"
   )
+}
+
+format_bayes_hyperparam <- function(hyperparam, is_int = FALSE) {
+  if (!is.list(hyperparam)) return(hyperparam)
+
+  hyperparam <- c(hyperparam$min, hyperparam$max)
+
+  return(if (is_int) as.integer(hyperparam) else hyperparam)
 }
 
 proportion_to <- function(proportion, to, lower = 0, upper = 1) {
