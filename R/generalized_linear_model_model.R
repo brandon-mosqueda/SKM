@@ -26,14 +26,14 @@ GeneralizedLinearModel <- R6Class(
         allow_coefficients = TRUE
       )
 
-      self$hyperparams$alpha <- alpha
-      self$hyperparams$lambda <- lambda
+      self$fit_params$alpha <- alpha
+      self$fit_params$lambda <- lambda
 
-      self$other_params$lambdas_number <- lambdas_number
-      self$other_params$lambda_min_ratio <- lambda_min_ratio
-      self$other_params$records_weights <- records_weights
-      self$other_params$standardize <- standardize
-      self$other_params$fit_intercept <- fit_intercept
+      self$fit_params$lambdas_number <- lambdas_number
+      self$fit_params$lambda_min_ratio <- lambda_min_ratio
+      self$fit_params$records_weights <- records_weights
+      self$fit_params$standardize <- standardize
+      self$fit_params$fit_intercept <- fit_intercept
     }
   ),
   private = list(
@@ -41,51 +41,49 @@ GeneralizedLinearModel <- R6Class(
 
     prepare_multivariate_y = prepare_multivariate_y_only_numeric,
     prepare_others = function() {
-      self$other_params$response_family <- get_glmnet_family(
+      self$fit_params$response_family <- get_glmnet_family(
         response_type = self$responses$y$type,
         is_multivariate = self$is_multivariate
       )
 
-      self$other_params$records_weights <- remove_if_has_more(
-        x = self$other_params$records_weights,
+      self$fit_params$records_weights <- remove_if_has_more(
+        x = self$fit_params$records_weights,
         compare_value = nrow(self$x),
         indices_to_remove = self$removed_rows
       )
 
       # Evaluate one model first to obtain the lambdas sequence and the perform
       # cross validation by our own
-      if (is.null(self$hyperparams$lambda)) {
-        hyperparams <- list(alpha = self$hyperparams$alpha[1], lambda = NULL)
+      if (is.null(self$fit_params$lambda)) {
+        fit_params <- list(alpha = self$fit_params$alpha[1], lambda = NULL)
 
-        other_params <- self$other_params
-        other_params$records_weights <- NULL
+        fit_params <- self$fit_params
+        fit_params$records_weights <- NULL
 
         model <- private$train(
           x = self$x,
           y = self$y,
-          hyperparams = hyperparams,
-          other_params = other_params
+          fit_params = fit_params
         )
-        self$hyperparams$lambda <- model$lambda
+        self$fit_params$lambda <- model$lambda
       }
     },
 
     tune = function() {
-      true_other_params <- self$other_params
+      true_other_params <- self$fit_params
 
-      self$other_params$records_weights <- NULL
+      self$fit_params$records_weights <- NULL
 
       super$tune()
 
-      self$other_params <- true_other_params
+      self$fit_params <- true_other_params
     },
 
     train_univariate = train_glm,
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
+                                  fit_params) {
       if (is_class_response(responses$y$type)) {
         predictions <- predict(model, x, type = "class")
         probabilities <- predict(model, x, type = "response")
@@ -111,7 +109,7 @@ GeneralizedLinearModel <- R6Class(
     coefficients_univariate = function() {
       if (is_categorical_response(self$responses$y$type)) {
         coefs_cols_num <- ncol(self$x)
-        if (self$other_params$fit_intercept) {
+        if (self$fit_params$fit_intercept) {
           coefs_cols_num <- coefs_cols_num + 1
         }
         coefs <- matrix(, 0, coefs_cols_num)
@@ -123,7 +121,7 @@ GeneralizedLinearModel <- R6Class(
         }
 
         colnames(coefs) <- rownames(all_coefs[[1]])
-        if (self$other_params$fit_intercept) {
+        if (self$fit_params$fit_intercept) {
           colnames(coefs)[1] <- "(Intercept)"
         }
         rownames(coefs) <- classes
@@ -140,8 +138,7 @@ GeneralizedLinearModel <- R6Class(
     predict_multivariate = function(model,
                                     x,
                                     responses,
-                                    other_params,
-                                    hyperparams) {
+                                    fit_params) {
       all_predictions <- predict(model, x)
       all_predictions <- all_predictions[, , 1]
       predictions <- list()
@@ -162,7 +159,7 @@ GeneralizedLinearModel <- R6Class(
         temp <- as.numeric(all_coefs[[name]])
         names(temp) <- rownames(all_coefs[[name]])
 
-        if (self$other_params$fit_intercept) {
+        if (self$fit_params$fit_intercept) {
           names(temp)[1] <- "(Intercept)"
         }
 

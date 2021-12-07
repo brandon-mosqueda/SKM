@@ -20,8 +20,7 @@ Model <- R6Class(
     tuner_class = NULL,
     best_hyperparams = NULL,
     hyperparams_grid = NULL,
-    hyperparams = list(),
-    other_params = list(),
+    fit_params = list(),
 
     tune_cv_type = NULL,
     tune_folds_number = NULL,
@@ -64,8 +63,7 @@ Model <- R6Class(
       self$allow_coefficients <- allow_coefficients
       self$is_x_matrix <- is_x_matrix
 
-      self$other_params <- list()
-      self$hyperparams <- list()
+      self$fit_params <- list()
 
       self$tuner_class <- get_tuner(tune_type)
 
@@ -87,12 +85,13 @@ Model <- R6Class(
 
       private$tune()
 
+      self$fit_params <- replace_at_list(self$fit_params, self$best_hyperparams)
+
       echo("*** Fitting %s model ***", self$name)
       self$fitted_model <- private$train(
         x = self$x,
         y = self$y,
-        hyperparams = self$best_hyperparams,
-        other_params = self$other_params
+        fit_params = self$fit_params
       )
     },
     predict = function(x) {
@@ -115,8 +114,7 @@ Model <- R6Class(
         model = self$fitted_model,
         x = x,
         responses = self$responses,
-        other_params = self$other_params,
-        hyperparams = self$best_hyperparams
+        fit_params = self$fit_params
       )
     },
     coefficients = function() {
@@ -180,13 +178,26 @@ Model <- R6Class(
       }
     },
     has_to_tune = function() {
-      for (hyperparam in self$hyperparams) {
-        if (length(hyperparam) > 1) {
+      for (hyperparam in self$fit_params) {
+        if (is_hyperparam(hyperparam)) {
           return(TRUE)
         }
       }
 
       return(FALSE)
+    },
+    get_hyperparams = function() {
+      hyperparams <- list()
+
+      for (param_name in names(self$fit_params)) {
+        param <- self$fit_params[[param_name]]
+
+        if (is_hyperparam(param)) {
+          hyperparams[[param_name]] <- param
+        }
+      }
+
+      return(hyperparams)
     },
     tune = function() {
       if (private$has_to_tune()) {
@@ -197,6 +208,8 @@ Model <- R6Class(
           predict_function <- private$predict_multivariate
         }
 
+        hyperparams <- private$get_hyperparams()
+
         tuner_params <- list(
           x = self$x,
           y = self$y,
@@ -204,8 +217,8 @@ Model <- R6Class(
           is_multivariate = self$is_multivariate,
           training_function = training_function,
           predict_function = predict_function,
-          hyperparams = self$hyperparams,
-          other_params = self$other_params,
+          hyperparams = hyperparams,
+          fit_params = self$fit_params,
           cv_type = self$tune_cv_type,
           folds_number = self$tune_folds_number,
           testing_proportion = self$tune_testing_proportion
@@ -222,11 +235,8 @@ Model <- R6Class(
         self$best_hyperparams <- tuner$best_combination
         self$hyperparams_grid <- tuner$all_combinations
       } else {
-        self$hyperparams_grid <- self$hyperparams
-        self$hyperparams_grid$loss <- as.numeric(NA)
-        self$best_hyperparams <- self$hyperparams_grid
-
-        self$hyperparams_grid <- as.data.frame(self$hyperparams_grid)
+        self$hyperparams_grid <- data.frame()
+        self$best_hyperparams <- list()
       }
     },
     train = function(...) {

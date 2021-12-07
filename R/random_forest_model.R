@@ -34,29 +34,29 @@ RandomForestModel <- R6Class(
         is_x_matrix = FALSE
       )
 
-      self$hyperparams$trees_number <- trees_number
-      self$hyperparams$node_size <- node_size
-      self$hyperparams$node_depth <- node_depth
-      self$hyperparams$sampled_x_vars_number <- sampled_x_vars_number
+      self$fit_params$trees_number <- trees_number
+      self$fit_params$node_size <- node_size
+      self$fit_params$node_depth <- node_depth
+      self$fit_params$sampled_x_vars_number <- sampled_x_vars_number
 
       if (is.null(split_rule)) {
-        self$other_params$split_rule <- NULL
+        self$fit_params$split_rule <- NULL
       } else {
-        self$other_params$split_rule <- tolower(split_rule)
+        self$fit_params$split_rule <- tolower(split_rule)
       }
-      self$other_params$splits_number <- splits_number
-      self$other_params$importance <- importance
-      self$other_params$x_vars_weights <- x_vars_weights
-      self$other_params$records_weights <- records_weights
-      self$other_params$na_action <- prepare_random_forest_na_action(na_action)
+      self$fit_params$splits_number <- splits_number
+      self$fit_params$importance <- importance
+      self$fit_params$x_vars_weights <- x_vars_weights
+      self$fit_params$records_weights <- records_weights
+      self$fit_params$na_action <- prepare_random_forest_na_action(na_action)
     }
   ),
   private = list(
     # Methods --------------------------------------------------
 
     prepare_others = function() {
-      self$hyperparams$sampled_x_vars_number <- proportion_to(
-        self$hyperparams$sampled_x_vars_number,
+      self$fit_params$sampled_x_vars_number <- proportion_to(
+        self$fit_params$sampled_x_vars_number,
         ncol(self$x)
       )
 
@@ -67,20 +67,20 @@ RandomForestModel <- R6Class(
         ))
       }
 
-      self$other_params$model_formula <- get_random_forest_formula(
+      self$fit_params$model_formula <- get_random_forest_formula(
         self$responses,
         self$is_multivariate,
         self$is_regression_model
       )
 
-      self$other_params$x_vars_weights <- remove_if_has_more(
-        self$other_params$x_vars_weights,
+      self$fit_params$x_vars_weights <- remove_if_has_more(
+        self$fit_params$x_vars_weights,
         ncol(self$x),
         self$removed_x_cols
       )
 
-      self$other_params$records_weights <- remove_if_has_more(
-        self$other_params$records_weights,
+      self$fit_params$records_weights <- remove_if_has_more(
+        self$fit_params$records_weights,
         nrow(self$x),
         self$removed_rows
       )
@@ -89,28 +89,27 @@ RandomForestModel <- R6Class(
       return(to_data_frame(x))
     },
     handle_nas = function() {
-      if (has_str(self$other_params$na_action, "omit")) {
+      if (has_str(self$fit_params$na_action, "omit")) {
         super$handle_nas()
       }
     },
 
     tune = function() {
-      true_other_params <- self$other_params
+      true_other_params <- self$fit_params
       # When tuning use importance FALSE for quicker evalution
-      self$other_params$importance <- FALSE
-      self$other_params$records_weights <- NULL
+      self$fit_params$importance <- FALSE
+      self$fit_params$records_weights <- NULL
 
       super$tune()
 
-      self$other_params <- true_other_params
+      self$fit_params <- true_other_params
     },
 
     train_univariate = train_random_forest,
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
+                                  fit_params) {
       # Required to generates the same names as in training
       x <- data.frame(x)
       predictions <- predict(model, newdata = x)
@@ -127,7 +126,7 @@ RandomForestModel <- R6Class(
       return(predictions)
     },
     coefficients_univariate = function() {
-      if (self$other_params$importance) {
+      if (self$fit_params$importance) {
         coefs <- self$fitted_model$importance
       } else {
         coefs <- vimp(self$fitted_model)$importance
@@ -144,8 +143,7 @@ RandomForestModel <- R6Class(
     predict_multivariate = function(model,
                                     x,
                                     responses,
-                                    other_params,
-                                    hyperparams) {
+                                    fit_params) {
       # Required to generates the same names as in training
       x <- data.frame(x)
       all_predictions <- predict(model, newdata = x)

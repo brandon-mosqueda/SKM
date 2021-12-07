@@ -12,6 +12,8 @@ DeepLearningGridTuner <- R6Class(
     # Methods --------------------------------------------------
 
     eval_one_fold = function(fold, combination) {
+      hyperparams <- replace_at_list(self$fit_params, combination)
+
       x_training <- get_records(self$x, fold$training)
       y_training <- get_records(self$y, fold$training)
       x_testing <- get_records(self$x, fold$testing)
@@ -20,8 +22,7 @@ DeepLearningGridTuner <- R6Class(
       model <- self$training_function(
         x = x_training,
         y = y_training,
-        hyperparams = combination,
-        other_params = self$other_params,
+        fit_params = hyperparams,
         x_testing = x_testing,
         y_testing = y_testing
       )

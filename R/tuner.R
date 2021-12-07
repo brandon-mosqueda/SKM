@@ -14,7 +14,7 @@ Tuner <- R6Class(
     responses = NULL,
     is_multivariate = NULL,
     hyperparams = NULL,
-    other_params = NULL,
+    fit_params = NULL,
 
     training_function = NULL,
     predict_function = NULL,
@@ -41,7 +41,7 @@ Tuner <- R6Class(
                           training_function,
                           predict_function,
                           hyperparams,
-                          other_params,
+                          fit_params,
                           cv_type,
                           folds_number,
                           testing_proportion,
@@ -69,7 +69,7 @@ Tuner <- R6Class(
         get_loss_function(self$responses, self$is_multivariate)
       )
       self$tabs_number <- tabs_number
-      self$other_params <- other_params
+      self$fit_params <- fit_params
 
       self$cross_validator <- get_cross_validator(
         type = self$cv_type,
@@ -79,6 +79,8 @@ Tuner <- R6Class(
       )
     },
     eval_one_fold = function(fold, combination) {
+      hyperparams <- replace_at_list(self$fit_params, combination)
+
       x_training <- get_records(self$x, fold$training)
       y_training <- get_records(self$y, fold$training)
       x_testing <- get_records(self$x, fold$testing)
@@ -87,15 +89,13 @@ Tuner <- R6Class(
       model <- self$training_function(
         x = x_training,
         y = y_training,
-        hyperparams = combination,
-        other_params = self$other_params
+        fit_params = hyperparams
       )
       predictions <- self$predict_function(
         model = model,
         x = x_testing,
         responses = self$responses,
-        hyperparams = combination,
-        other_params = self$other_params
+        fit_params = hyperparams
       )
 
       if (self$is_multivariate) {

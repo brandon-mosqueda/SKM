@@ -25,13 +25,13 @@ GeneralizedBoostedMachineModel <- R6Class(
         is_multivariate = FALSE
       )
 
-      self$hyperparams$trees_number <- trees_number
-      self$hyperparams$max_depth <- max_depth
-      self$hyperparams$node_size <- node_size
-      self$hyperparams$shrinkage <- shrinkage
-      self$hyperparams$sampled_records_proportion <- sampled_records_proportion
+      self$fit_params$trees_number <- trees_number
+      self$fit_params$max_depth <- max_depth
+      self$fit_params$node_size <- node_size
+      self$fit_params$shrinkage <- shrinkage
+      self$fit_params$sampled_records_proportion <- sampled_records_proportion
 
-      self$other_params$predictors_relationship <- predictors_relationship
+      self$fit_params$predictors_relationship <- predictors_relationship
     }
   ),
   private = list(
@@ -42,38 +42,38 @@ GeneralizedBoostedMachineModel <- R6Class(
         self$y <- ifelse(self$y == self$responses$y$levels[1], 1, 0)
       }
 
-      self$other_params$distribution <- get_gbm_distribution(
+      self$fit_params$distribution <- get_gbm_distribution(
         self$responses$y$type
       )
 
-      self$other_params$predictors_relationship <- remove_if_has_more(
-        self$other_params$predictors_relationship,
+      self$fit_params$predictors_relationship <- remove_if_has_more(
+        self$fit_params$predictors_relationship,
         ncol(self$x),
         self$removed_x_cols
       )
     },
 
     tune = function() {
-      true_other_params <- self$other_params
+      true_other_params <- self$fit_params
 
       super$tune()
 
-      self$other_params <- true_other_params
+      self$fit_params <- true_other_params
     },
 
-    train_univariate = function(x, y, hyperparams, other_params) {
+    train_univariate = function(x, y, fit_params) {
       model <- suppressMessages(gbm::gbm.fit(
         x = x,
         y = y,
 
-        n.trees = hyperparams$trees_number,
-        interaction.depth = hyperparams$max_depth,
-        n.minobsinnode = hyperparams$node_size,
-        shrinkage = hyperparams$shrinkage,
-        bag.fraction = hyperparams$sampled_records_proportion,
+        n.trees = fit_params$trees_number,
+        interaction.depth = fit_params$max_depth,
+        n.minobsinnode = fit_params$node_size,
+        shrinkage = fit_params$shrinkage,
+        bag.fraction = fit_params$sampled_records_proportion,
 
-        distribution = other_params$distribution,
-        var.monotone = other_params$predictors_relationship,
+        distribution = fit_params$distribution,
+        var.monotone = fit_params$predictors_relationship,
 
         verbose = FALSE,
         keep.data = FALSE
@@ -84,8 +84,7 @@ GeneralizedBoostedMachineModel <- R6Class(
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
+                                  fit_params) {
       predictions <- hush(
         predict(
           model,

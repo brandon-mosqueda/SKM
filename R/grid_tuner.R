@@ -30,7 +30,7 @@ GridTuner <- R6Class(
         combinations_number,
         ceiling(combinations_number * self$grid_proportion)
       )
-      all_combinations <- all_combinations[combinations_indices, ]
+      all_combinations <- all_combinations[combinations_indices, , drop = FALSE]
       combinations_number <- nrow(all_combinations)
       all_combinations$loss <- as.numeric(NA)
 
@@ -64,7 +64,10 @@ GridTuner <- R6Class(
           self$combinations_number
         )
 
-        combination <- self$all_combinations[combination_i, ]
+        combination <- as.list(self$all_combinations[
+          combination_i, ,
+          drop = FALSE
+        ])
 
         loss_values <- c()
 
@@ -89,9 +92,10 @@ GridTuner <- R6Class(
       }
 
       self$all_combinations <- self$all_combinations[
-        order(self$all_combinations$loss),
+        order(self$all_combinations$loss), ,
+        drop = FALSE
       ]
-      self$best_combination <- as.list(self$all_combinations[1, ])
+      self$best_combination <- as.list(self$all_combinations[1, , drop = FALSE])
 
       return(invisible(self$best_combination))
     }

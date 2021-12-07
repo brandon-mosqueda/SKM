@@ -140,6 +140,10 @@ remove_if_has_more <- function(x, compare_value, indices_to_remove) {
   return(x)
 }
 
+is_hyperparam <- function(x) {
+  return((is.list(x) || length(x) > 1) && !inherits(x, "formula"))
+}
+
 # GBM --------------------------------------------------
 
 get_gbm_distribution <- function(response_type) {
@@ -209,23 +213,23 @@ get_random_forest_formula <- function(responses,
   return(formula(model_formula))
 }
 
-train_random_forest <- function(x, y, hyperparams, other_params) {
+train_random_forest <- function(x, y, fit_params) {
   data <- data.frame(y, x)
 
   model <- rfsrc(
-    formula = other_params$model_formula,
+    formula = fit_params$model_formula,
     data = data,
-    ntree = hyperparams$trees_number,
-    mtry = hyperparams$sampled_x_vars_number,
-    nodesize = hyperparams$node_size,
-    nodedepth = hyperparams$node_depth,
+    ntree = fit_params$trees_number,
+    mtry = fit_params$sampled_x_vars_number,
+    nodesize = fit_params$node_size,
+    nodedepth = fit_params$node_depth,
 
-    importance = other_params$importance,
-    splitrule = other_params$split_rule,
-    nsplit = other_params$splits_number,
-    xvar.wt = other_params$x_vars_weights,
-    case.wt = other_params$records_weights,
-    na.action = other_params$na_action
+    importance = fit_params$importance,
+    splitrule = fit_params$split_rule,
+    nsplit = fit_params$splits_number,
+    xvar.wt = fit_params$x_vars_weights,
+    case.wt = fit_params$records_weights,
+    na.action = fit_params$na_action
   )
 
   return(model)
@@ -249,21 +253,21 @@ get_glmnet_family <- function(response_type, is_multivariate) {
   return(family)
 }
 
-train_glm <- function(x, y, hyperparams, other_params) {
+train_glm <- function(x, y, fit_params) {
   model <- glmnet(
     x = x,
     y = y,
 
-    family = other_params$response_family,
+    family = fit_params$response_family,
 
-    alpha = hyperparams$alpha,
-    lambda = hyperparams$lambda,
+    alpha = fit_params$alpha,
+    lambda = fit_params$lambda,
 
-    nlambda = other_params$lambdas_number,
-    lambda.min.ratio = other_params$lambda_min_ratio,
-    weights = other_params$records_weights,
-    standardize = other_params$standardize,
-    intercept = other_params$fit_intercept
+    nlambda = fit_params$lambdas_number,
+    lambda.min.ratio = fit_params$lambda_min_ratio,
+    weights = fit_params$records_weights,
+    standardize = fit_params$standardize,
+    intercept = fit_params$fit_intercept
   )
 
   return(model)

@@ -37,14 +37,14 @@ DeepLearningModel <- R6Class(
       tune_type <- paste0("deep_", tune_type)
       self$tuner_class <- get_tuner(tune_type)
 
-      self$hyperparams$learning_rate <- learning_rate
-      self$hyperparams$epochs_number <- epochs_number
-      self$hyperparams$batch_size <- batch_size
-      self$hyperparams$output_ridge_penalty <- nonull(
+      self$fit_params$learning_rate <- learning_rate
+      self$fit_params$epochs_number <- epochs_number
+      self$fit_params$batch_size <- batch_size
+      self$fit_params$output_ridge_penalty <- nonull(
         output_penalties$ridge_penalty,
         DEFAULT_RIDGE_PENALTY
       )
-      self$hyperparams$output_lasso_penalty <- nonull(
+      self$fit_params$output_lasso_penalty <- nonull(
         output_penalties$lasso_penalty,
         DEFAULT_LASSO_PENALTY
       )
@@ -55,19 +55,19 @@ DeepLearningModel <- R6Class(
         layer_fields <- names(layer)
 
         for (field in layer_fields) {
-          self$hyperparams[[sprintf("%s_%s", field, i)]] <- layer[[field]]
+          self$fit_params[[sprintf("%s_%s", field, i)]] <- layer[[field]]
         }
         i <- i + 1
       }
 
-      self$other_params$optimizer <- tolower(optimizer)
-      self$other_params$with_platt_scaling <- with_platt_scaling
-      self$other_params$platt_proportion <- platt_proportion
-      self$other_params$shuffle <- shuffle
-      self$other_params$early_stop <- early_stop
-      self$other_params$early_stop_patience <- early_stop_patience
+      self$fit_params$optimizer <- tolower(optimizer)
+      self$fit_params$with_platt_scaling <- with_platt_scaling
+      self$fit_params$platt_proportion <- platt_proportion
+      self$fit_params$shuffle <- shuffle
+      self$fit_params$early_stop <- early_stop
+      self$fit_params$early_stop_patience <- early_stop_patience
 
-      self$other_params$hidden_layers_number <- length(layers)
+      self$fit_params$hidden_layers_number <- length(layers)
     },
     predict = function(x) {
       x <- private$get_x_for_model(x, remove_cols = FALSE)
@@ -78,7 +78,7 @@ DeepLearningModel <- R6Class(
       predict_function <- private$predict_univariate
       if (self$is_multivariate) {
         predict_function <- private$predict_multivariate
-      } else if (self$other_params$with_platt_scaling) {
+      } else if (self$fit_params$with_platt_scaling) {
         predict_function <- private$predict_platt_univariate
       }
 
@@ -86,13 +86,26 @@ DeepLearningModel <- R6Class(
         model = self$fitted_model,
         x = x,
         responses = self$responses,
-        other_params = self$other_params,
-        hyperparams = self$best_hyperparams
+        fit_params = self$fit_params
       ))
     }
   ),
   private = list(
     # Methods --------------------------------------------------
+
+    get_hyperparams = function() {
+      hyperparams <- list()
+
+      for (param_name in names(self$fit_params)) {
+        param <- self$fit_params[[param_name]]
+
+        if (param_name != "responses" && is_hyperparam(param)) {
+          hyperparams[[param_name]] <- param
+        }
+      }
+
+      return(hyperparams)
+    },
 
     can_be_used_platt = function() {
       return(
@@ -139,27 +152,27 @@ DeepLearningModel <- R6Class(
     },
     prepare_others = function() {
       # Convert all the neurons proportion to integer values
-      for (i in 1:self$other_params$hidden_layers_number) {
+      for (i in 1:self$fit_params$hidden_layers_number) {
         neurons_i <- sprintf("neurons_number_%s", i)
         proportion_i <- sprintf("neurons_proportion_%s", i)
 
-        layer_neurons <- self$hyperparams[[neurons_i]]
-        if (!is.null(self$hyperparams[[proportion_i]])) {
+        layer_neurons <- self$fit_params[[neurons_i]]
+        if (!is.null(self$fit_params[[proportion_i]])) {
           layer_proportions <- sapply(
-            self$hyperparams[[proportion_i]],
+            self$fit_params[[proportion_i]],
             proportion_to,
             to = ncol(self$x),
             upper = Inf
           )
           layer_neurons <- c(layer_neurons, layer_proportions)
         }
-        self$hyperparams[[proportion_i]] <- NULL
+        self$fit_params[[proportion_i]] <- NULL
         layer_neurons <- ceiling(layer_neurons)
-        self$hyperparams[[neurons_i]] <- layer_neurons
+        self$fit_params[[neurons_i]] <- layer_neurons
 
         activation_i <- sprintf("activation_%s", i)
-        self$hyperparams[[activation_i]] <- tolower(
-          self$hyperparams[[activation_i]]
+        self$fit_params[[activation_i]] <- tolower(
+          self$fit_params[[activation_i]]
         )
       }
 
@@ -180,16 +193,16 @@ DeepLearningModel <- R6Class(
         self$responses[[name]]$metric <- get_metric(self$responses[[name]]$type)
       }
 
-      self$other_params$responses <- self$responses
+      self$fit_params$responses <- self$responses
       if (self$is_multivariate) {
-        self$other_params$y_colnames <- colnames(self$y)
+        self$fit_params$y_colnames <- colnames(self$y)
       }
 
       if (
         !private$can_be_used_platt() &&
-        self$other_params$with_platt_scaling
+        self$fit_params$with_platt_scaling
       ) {
-        self$other_params$with_platt_scaling <- FALSE
+        self$fit_params$with_platt_scaling <- FALSE
         warning(
           "Platt scaling is not going to be used because it is only ",
           "available for univariate models with a numeric or binary response ",
@@ -197,8 +210,8 @@ DeepLearningModel <- R6Class(
         )
       }
 
-      self$other_params$optimizer_function <- get_keras_optimizer_function(
-        self$other_params$optimizer
+      self$fit_params$optimizer_function <- get_keras_optimizer_function(
+        self$fit_params$optimizer
       )
     },
 
@@ -206,7 +219,7 @@ DeepLearningModel <- R6Class(
       if (self$is_multivariate) {
         private$train_multivariate(...)
       } else {
-        if (self$other_params$with_platt_scaling) {
+        if (self$fit_params$with_platt_scaling) {
           private$train_univariate_platt(...)
         } else {
           private$train_univariate(...)
@@ -216,26 +229,23 @@ DeepLearningModel <- R6Class(
 
     train_univariate_platt = function(x,
                                       y,
-                                      hyperparams,
-                                      other_params) {
+                                      fit_params) {
       platt_indices <- sample(
         nrow(x),
-        ceiling(nrow(x) * other_params$platt_proportion)
+        ceiling(nrow(x) * fit_params$platt_proportion)
       )
 
       model <- private$train_univariate(
         x = get_records(x, -platt_indices),
         y = get_records(y, -platt_indices),
-        hyperparams = hyperparams,
-        other_params = other_params
+        fit_params = fit_params
       )
 
       predictions <- private$predict_univariate(
         model = model,
         x = get_records(x, platt_indices),
         responses = self$responses,
-        other_params = other_params,
-        hyperparams = hyperparams
+        fit_params = fit_params
       )
 
       if (is_binary_response(self$responses$y$type)) {
@@ -264,26 +274,25 @@ DeepLearningModel <- R6Class(
     # This function is the one used for tuning
     train_univariate = function(x,
                                 y,
-                                hyperparams,
-                                other_params,
+                                fit_params,
                                 x_testing = NULL,
                                 y_testing = NULL) {
-      responses <- other_params$responses
+      responses <- fit_params$responses
       model <- keras_model_sequential()
 
-      for (i in 1:other_params$hidden_layers_number) {
+      for (i in 1:fit_params$hidden_layers_number) {
         model <- model %>%
           layer_dense(
-            units = hyperparams[[sprintf("neurons_number_%s", i)]],
-            activation = hyperparams[[sprintf("activation_%s", i)]],
+            units = fit_params[[sprintf("neurons_number_%s", i)]],
+            activation = fit_params[[sprintf("activation_%s", i)]],
             kernel_regularizer = regularizer_l1_l2(
-              l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
-              l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
+              l1 = fit_params[[sprintf("lasso_penalty_%s", i)]],
+              l2 = fit_params[[sprintf("ridge_penalty_%s", i)]]
             ),
             input_shape = if (i == 1) ncol(x) else NULL,
             name = sprintf("hidden_layer_%s", i)
           ) %>%
-          layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
+          layer_dropout(rate = fit_params[[sprintf("dropout_%s", i)]])
       }
 
       model %>%
@@ -291,8 +300,8 @@ DeepLearningModel <- R6Class(
           units = responses$y$last_layer_neurons,
           activation = responses$y$last_layer_activation,
           kernel_regularizer = regularizer_l1_l2(
-            l1 = hyperparams$output_lasso_penalty,
-            l2 = hyperparams$output_ridge_penalty
+            l1 = fit_params$output_lasso_penalty,
+            l2 = fit_params$output_ridge_penalty
           ),
           name = "output_layer"
         )
@@ -301,18 +310,18 @@ DeepLearningModel <- R6Class(
       model %>%
         compile(
           loss = responses$y$loss_function,
-          optimizer = other_params$optimizer_function(
-            learning_rate = hyperparams$learning_rate
+          optimizer = fit_params$optimizer_function(
+            learning_rate = fit_params$learning_rate
           ),
           metrics = responses$y$metric
         )
 
       callbacks <- NULL
-      if (other_params$early_stop) {
+      if (fit_params$early_stop) {
         callbacks <- callback_early_stopping(
           monitor = "val_loss",
           mode = "min",
-          patience = other_params$early_stop_patience,
+          patience = fit_params$early_stop_patience,
           verbose = 0
         )
       }
@@ -326,9 +335,9 @@ DeepLearningModel <- R6Class(
         fit(
           x = x,
           y = y,
-          shuffle = other_params$shuffle,
-          epochs = hyperparams$epochs_number,
-          batch_size = hyperparams$batch_size,
+          shuffle = fit_params$shuffle,
+          epochs = fit_params$epochs_number,
+          batch_size = fit_params$batch_size,
           validation_data = validation_data,
           verbose = 0,
           callbacks = callbacks
@@ -343,10 +352,9 @@ DeepLearningModel <- R6Class(
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
+                                  fit_params) {
       if (is_class_response(responses$y$type)) {
-        probabilities <- predict(model, x, batch_size = hyperparams$batch_size)
+        probabilities <- predict(model, x, batch_size = fit_params$batch_size)
 
         predictions <- predict_class(
           probabilities = as.data.frame(probabilities),
@@ -362,14 +370,12 @@ DeepLearningModel <- R6Class(
     predict_platt_univariate = function(model,
                                         x,
                                         responses,
-                                        other_params,
-                                        hyperparams) {
+                                        fit_params) {
       predictions <- private$predict_univariate(
         model = model,
         x = x,
         responses = responses,
-        other_params = other_params,
-        hyperparams = hyperparams
+        fit_params = fit_params
       )
 
       if (is_binary_response(self$responses$y$type)) {
@@ -395,26 +401,25 @@ DeepLearningModel <- R6Class(
 
     train_multivariate = function(x,
                                   y,
-                                  hyperparams,
-                                  other_params,
+                                  fit_params,
                                   x_testing = NULL,
                                   y_testing = NULL) {
-      responses <- other_params$responses
+      responses <- fit_params$responses
       input <- layer_input(shape = ncol(x), name = "input_layer")
       base_model <- input
 
-      for (i in 1:other_params$hidden_layers_number) {
+      for (i in 1:fit_params$hidden_layers_number) {
         base_model <- base_model %>%
           layer_dense(
-            units = hyperparams[[sprintf("neurons_number_%s", i)]],
-            activation = hyperparams[[sprintf("activation_%s", i)]],
+            units = fit_params[[sprintf("neurons_number_%s", i)]],
+            activation = fit_params[[sprintf("activation_%s", i)]],
             kernel_regularizer = regularizer_l1_l2(
-              l1 = hyperparams[[sprintf("lasso_penalty_%s", i)]],
-              l2 = hyperparams[[sprintf("ridge_penalty_%s", i)]]
+              l1 = fit_params[[sprintf("lasso_penalty_%s", i)]],
+              l2 = fit_params[[sprintf("ridge_penalty_%s", i)]]
             ),
             name = sprintf("hidden_layer_%s", i)
           ) %>%
-          layer_dropout(rate = hyperparams[[sprintf("dropout_%s", i)]])
+          layer_dropout(rate = fit_params[[sprintf("dropout_%s", i)]])
       }
 
       output_layers <- list(
@@ -430,8 +435,8 @@ DeepLearningModel <- R6Class(
             units = responses[[name]]$last_layer_neurons,
             activation = responses[[name]]$last_layer_activation,
             kernel_regularizer = regularizer_l1_l2(
-              l1 = hyperparams$output_lasso_penalty,
-              l2 = hyperparams$output_ridge_penalty
+              l1 = fit_params$output_lasso_penalty,
+              l2 = fit_params$output_ridge_penalty
             ),
             name = name
           )
@@ -444,8 +449,8 @@ DeepLearningModel <- R6Class(
 
       model <- keras_model(input, output_layers$layers) %>%
         compile(
-          optimizer = other_params$optimizer_function(
-            learning_rate = hyperparams$learning_rate
+          optimizer = fit_params$optimizer_function(
+            learning_rate = fit_params$learning_rate
           ),
           loss = output_layers$losses,
           metrics = output_layers$metrics,
@@ -453,11 +458,11 @@ DeepLearningModel <- R6Class(
         )
 
       callbacks <- NULL
-      if (other_params$early_stop) {
+      if (fit_params$early_stop) {
         callbacks <- callback_early_stopping(
           monitor = "val_loss",
           mode = "min",
-          patience = other_params$early_stop_patience,
+          patience = fit_params$early_stop_patience,
           verbose = 0
         )
       }
@@ -478,9 +483,9 @@ DeepLearningModel <- R6Class(
         fit(
           x = x,
           y = output_layers$y,
-          shuffle = other_params$shuffle,
-          epochs = hyperparams$epochs_number,
-          batch_size = hyperparams$batch_size,
+          shuffle = fit_params$shuffle,
+          epochs = fit_params$epochs_number,
+          batch_size = fit_params$batch_size,
           validation_data = validation_data,
           verbose = 0,
           callbacks = callbacks
@@ -494,15 +499,14 @@ DeepLearningModel <- R6Class(
     predict_multivariate = function(model,
                                     x,
                                     responses,
-                                    other_params,
-                                    hyperparams) {
+                                    fit_params) {
       predictions <- list()
       all_predictions <- data.frame(predict(
         model,
         x,
-        batch_size = hyperparams$batch_size
+        batch_size = fit_params$batch_size
       ))
-      colnames(all_predictions) <- other_params$y_colnames
+      colnames(all_predictions) <- fit_params$y_colnames
 
       for (name in names(responses)) {
         cols_names <- responses[[name]]$colnames

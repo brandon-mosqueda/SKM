@@ -33,31 +33,31 @@ SupportVectorMachineModel <- R6Class(
         is_multivariate = FALSE
       )
 
-      self$hyperparams$degree <- nonull(
+      self$fit_params$degree <- nonull(
         prepare_degree(kernel, degree),
         degree[1]
       )
-      self$hyperparams$gamma <- nonull(
+      self$fit_params$gamma <- nonull(
         prepare_gamma(kernel, gamma),
         gamma[1]
       )
-      self$hyperparams$coef0 <- nonull(
+      self$fit_params$coef0 <- nonull(
         prepare_coef0(kernel, coef0),
         coef0[1]
       )
-      self$hyperparams$cost <- cost
+      self$fit_params$cost <- cost
 
-      self$other_params$scale <- scale
-      self$other_params$kernel <- tolower(kernel)
+      self$fit_params$scale <- scale
+      self$fit_params$kernel <- tolower(kernel)
       if (is.character(class_weights)) {
         class_weights <- tolower(class_weights)
       }
-      self$other_params$class_weights <- class_weights
-      self$other_params$cache_size <- cache_size
-      self$other_params$tolerance <- tolerance
-      self$other_params$epsilon <- epsilon
-      self$other_params$shrinking <- shrinking
-      self$other_params$fitted <- fitted
+      self$fit_params$class_weights <- class_weights
+      self$fit_params$cache_size <- cache_size
+      self$fit_params$tolerance <- tolerance
+      self$fit_params$epsilon <- epsilon
+      self$fit_params$shrinking <- shrinking
+      self$fit_params$fitted <- fitted
     }
   ),
   private = list(
@@ -65,31 +65,31 @@ SupportVectorMachineModel <- R6Class(
 
     prepare_others = function() {
       # Remove the scale values if there was records deleted
-      self$other_params$scale <- remove_if_has_more(
-        self$other_params$scale,
+      self$fit_params$scale <- remove_if_has_more(
+        self$fit_params$scale,
         ncol(self$x),
         self$removed_x_cols
       )
     },
 
-    train_univariate = function(x, y, hyperparams, other_params) {
+    train_univariate = function(x, y, fit_params) {
       model <- svm(
         x = x,
         y = y,
 
-        degree = hyperparams$degree,
-        gamma = hyperparams$gamma,
-        coef0 = hyperparams$coef0,
-        cost = hyperparams$cost,
+        degree = fit_params$degree,
+        gamma = fit_params$gamma,
+        coef0 = fit_params$coef0,
+        cost = fit_params$cost,
 
-        scale = other_params$scale,
-        kernel = other_params$kernel,
-        class_weights = other_params$class_weights,
-        cache_size = other_params$cache_size,
-        tolerance = other_params$tolerance,
-        epsilon = other_params$epsilon,
-        shrinking = other_params$shrinking,
-        fitted = other_params$fitted,
+        scale = fit_params$scale,
+        kernel = fit_params$kernel,
+        class_weights = fit_params$class_weights,
+        cache_size = fit_params$cache_size,
+        tolerance = fit_params$tolerance,
+        epsilon = fit_params$epsilon,
+        shrinking = fit_params$shrinking,
+        fitted = fit_params$fitted,
 
         probability = TRUE
       )
@@ -99,8 +99,7 @@ SupportVectorMachineModel <- R6Class(
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
+                                  fit_params) {
       predictions <- predict(model, x, probability = TRUE)
 
       if (is_class_response(responses$y$type)) {

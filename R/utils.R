@@ -139,6 +139,14 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+replace_at_list <- function(original, new_values) {
+  for (field in names(new_values)) {
+    original[[field]] <- new_values[[field]]
+  }
+
+  return(original)
+}
+
 get_cols_names <- function(x) {
   cols_names <- colnames(x)
 

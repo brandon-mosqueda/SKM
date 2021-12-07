@@ -26,14 +26,14 @@ BayesianModel <- R6Class(
         is_x_matrix = FALSE
       )
 
-      self$other_params$iterations_number <- iterations_number
-      self$other_params$burn_in <- burn_in
-      self$other_params$thinning <- thinning
-      self$other_params$covariance_structure <- covariance_structure
-      self$other_params$records_weights <- records_weights
-      self$other_params$response_groups <- response_groups
-      self$other_params$testing_indices <- testing_indices
-      self$other_params$trash_dir <- sprintf(
+      self$fit_params$iterations_number <- iterations_number
+      self$fit_params$burn_in <- burn_in
+      self$fit_params$thinning <- thinning
+      self$fit_params$covariance_structure <- covariance_structure
+      self$fit_params$records_weights <- records_weights
+      self$fit_params$response_groups <- response_groups
+      self$fit_params$testing_indices <- testing_indices
+      self$fit_params$trash_dir <- sprintf(
         "%s_%s",
         BAYESIAN_TRASH_DIR,
         as.numeric(Sys.time())
@@ -78,8 +78,8 @@ BayesianModel <- R6Class(
         na_indices <- c(na_indices, which_is_na(self$x[[i]]$x))
       }
 
-      self$other_params$testing_indices <- c(
-        self$other_params$testing_indices,
+      self$fit_params$testing_indices <- c(
+        self$fit_params$testing_indices,
         which_is_na(self$y)
       )
 
@@ -92,15 +92,15 @@ BayesianModel <- R6Class(
 
         self$y <- get_records(self$y, -self$removed_rows)
 
-        if (!is.null(self$other_params$testing_indices)) {
+        if (!is.null(self$fit_params$testing_indices)) {
           # Change the index to the new positions
-          temp <- rep(FALSE, max(self$other_params$testing_indices))
-          temp[self$other_params$testing_indices] <- TRUE
+          temp <- rep(FALSE, max(self$fit_params$testing_indices))
+          temp[self$fit_params$testing_indices] <- TRUE
           temp <- temp[-self$removed_rows]
-          self$other_params$testing_indices <- which(temp)
+          self$fit_params$testing_indices <- which(temp)
 
-          if (is_empty(self$other_params$testing_indices)) {
-            self$other_params$testing_indices <- NULL
+          if (is_empty(self$fit_params$testing_indices)) {
+            self$fit_params$testing_indices <- NULL
             warning(
               "All testing indices were removed due to there are records in X ",
               "that contains NA values"
@@ -116,46 +116,46 @@ BayesianModel <- R6Class(
       }
     },
     prepare_others = function() {
-      if (is.null(self$other_params$testing_indices)) {
-        self$other_params$testing_indices <- which_is_na(self$y)
+      if (is.null(self$fit_params$testing_indices)) {
+        self$fit_params$testing_indices <- which_is_na(self$y)
       } else {
-        self$other_params$testing_indices <- setdiff(
-          self$other_params$testing_indices,
+        self$fit_params$testing_indices <- setdiff(
+          self$fit_params$testing_indices,
           self$removed_rows
         )
 
-        if (is_empty(self$other_params$testing_indices)) {
-          self$other_params$testing_indices <- NULL
+        if (is_empty(self$fit_params$testing_indices)) {
+          self$fit_params$testing_indices <- NULL
         }
       }
 
       if (self$is_multivariate) {
-        if (!is.null(self$other_params$testing_indices)) {
-          self$y[self$other_params$testing_indices, ] <- NA
+        if (!is.null(self$fit_params$testing_indices)) {
+          self$y[self$fit_params$testing_indices, ] <- NA
         }
 
-        self$other_params$covariance_structure$type <- prepare_covariance_type(
-          self$other_params$covariance_structure$type
+        self$fit_params$covariance_structure$type <- prepare_covariance_type(
+          self$fit_params$covariance_structure$type
         )
       } else {
-        self$other_params$records_weights <- remove_if_has_more(
-          self$other_params$records_weights,
+        self$fit_params$records_weights <- remove_if_has_more(
+          self$fit_params$records_weights,
           ncol(self$x[[1]]$x),
           self$removed_x_cols
         )
 
-        self$other_params$response_groups <- remove_if_has_more(
-          self$other_params$response_groups,
+        self$fit_params$response_groups <- remove_if_has_more(
+          self$fit_params$response_groups,
           ncol(self$x[[1]]$x),
           self$removed_x_cols
         )
 
-        self$other_params$bglr_response_type <- get_bglr_response_type(
+        self$fit_params$bglr_response_type <- get_bglr_response_type(
           self$responses$y$type
         )
 
-        if (!is.null(self$other_params$testing_indices)) {
-          self$y[self$other_params$testing_indices] <- NA
+        if (!is.null(self$fit_params$testing_indices)) {
+          self$y[self$fit_params$testing_indices] <- NA
         }
       }
 
@@ -168,34 +168,33 @@ BayesianModel <- R6Class(
 
     has_to_tune = function() return(FALSE),
 
-    train_univariate = function(x, y, hyperparams, other_params) {
-      mkdir(other_params$trash_dir)
+    train_univariate = function(x, y, fit_params) {
+      mkdir(fit_params$trash_dir)
 
       model <- BGLR(
         y = y,
-        response_type = other_params$bglr_response_type,
+        response_type = fit_params$bglr_response_type,
         ETA = x,
 
-        nIter = other_params$iterations_number,
-        burnIn = other_params$burn_in,
-        thin = other_params$thinning,
-        weights = other_params$records_weights,
-        groups = other_params$response_groups,
+        nIter = fit_params$iterations_number,
+        burnIn = fit_params$burn_in,
+        thin = fit_params$thinning,
+        weights = fit_params$records_weights,
+        groups = fit_params$response_groups,
 
         verbose = FALSE,
-        saveAt = file.path(other_params$trash_dir, "bayesian_")
+        saveAt = file.path(fit_params$trash_dir, "bayesian_")
       )
 
-      rmdir(other_params$trash_dir)
+      rmdir(fit_params$trash_dir)
 
       return(model)
     },
     predict_univariate = function(model,
                                   x,
                                   responses,
-                                  other_params,
-                                  hyperparams) {
-      if (is.null(other_params$testing_indices)) {
+                                  fit_params) {
+      if (is.null(fit_params$testing_indices)) {
         stop(
           "Error in predicting. With bayesian models you need to provide the ",
           "testing_indices parameter when calling bayesian_model function ",
@@ -209,11 +208,11 @@ BayesianModel <- R6Class(
 
         predictions_cols <- apply(probabilities, 1, which.max)
         predictions <- classes[predictions_cols]
-        predictions <- predictions[other_params$testing_indices]
+        predictions <- predictions[fit_params$testing_indices]
         predictions <- factor(predictions, levels = responses$y$levels)
 
         probabilities <- as.data.frame(
-          probabilities[other_params$testing_indices, ]
+          probabilities[fit_params$testing_indices, ]
         )
 
         predictions <- list(
@@ -221,9 +220,9 @@ BayesianModel <- R6Class(
           probabilities = probabilities
         )
       } else {
-        predictions <- model$yHat[other_params$testing_indices]
+        predictions <- model$yHat[fit_params$testing_indices]
         if (is.null(predictions)) {
-          predictions <- model$ETAHat[other_params$testing_indices]
+          predictions <- model$ETAHat[fit_params$testing_indices]
         }
 
         predictions <- list(predicted = predictions)
@@ -242,38 +241,37 @@ BayesianModel <- R6Class(
       return(coefs)
     },
 
-    train_multivariate = function(x, y, hyperparams, other_params) {
-      mkdir(other_params$trash_dir)
+    train_multivariate = function(x, y, fit_params) {
+      mkdir(fit_params$trash_dir)
 
       model <- hush(Multitrait(
         y = y,
         ETA = x,
 
-        resCov = other_params$covariance_structure,
-        nIter = other_params$iterations_number,
-        burnIn = other_params$burn_in,
-        thin = other_params$thinning,
+        resCov = fit_params$covariance_structure,
+        nIter = fit_params$iterations_number,
+        burnIn = fit_params$burn_in,
+        thin = fit_params$thinning,
 
         verbose = FALSE,
-        saveAt = file.path(other_params$trash_dir, "bayesian_")
+        saveAt = file.path(fit_params$trash_dir, "bayesian_")
       ))
 
-      rmdir(other_params$trash_dir)
+      rmdir(fit_params$trash_dir)
 
       return(model)
     },
     predict_multivariate = function(model,
                                     x,
                                     responses,
-                                    other_params,
-                                    hyperparams) {
+                                    fit_params) {
       predictions <- list()
       all_predictions <- model$yHat
       if (is.null(all_predictions)) {
         all_predictions <- model$ETAHat
       }
 
-      all_predictions <- all_predictions[other_params$testing_indices, ]
+      all_predictions <- all_predictions[fit_params$testing_indices, ]
 
       for (response_name in names(responses)) {
         predictions[[response_name]] <- list(
