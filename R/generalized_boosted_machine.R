@@ -95,6 +95,8 @@ generalized_boosted_machine <- function(x, y,
                                         tune_folds_number = 5,
                                         tune_testing_proportion = 0.2,
                                         tune_grid_proportion = 1,
+                                        tune_bayes_samples_number = 10,
+                                        tune_bayes_iterations_number = 10,
 
                                         predictors_relationship = NULL,
 
@@ -119,6 +121,8 @@ generalized_boosted_machine <- function(x, y,
       tune_folds_number = tune_folds_number,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
+      tune_bayes_samples_number = tune_bayes_samples_number,
+      tune_bayes_iterations_number = tune_bayes_iterations_number,
 
       predictors_relationship = predictors_relationship,
 
@@ -152,6 +156,8 @@ generalized_boosted_machine <- function(x, y,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
 
     predictors_relationship = predictors_relationship
   )

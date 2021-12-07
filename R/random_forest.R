@@ -10,9 +10,9 @@
 #' @templateVar refFunction randomForestSRC::rfsrc()
 #'
 #' @description
-#' `random_forest()` is a wrapper of the [randomForestSRC::rfsrc()] function with
-#' the ability to tune the hyperparameters (grid search) in a simple way. It
-#' fits univariate and multivariate models for numeric and/or categorical
+#' `random_forest()` is a wrapper of the [randomForestSRC::rfsrc()] function
+#' with the ability to tune the hyperparameters (grid search) in a simple way.
+#' It fits univariate and multivariate models for numeric and/or categorical
 #' response variables.
 #' @template tunable-description
 #'
@@ -120,6 +120,8 @@ random_forest <- function(x, y,
                           tune_folds_number = 5,
                           tune_testing_proportion = 0.2,
                           tune_grid_proportion = 1,
+                          tune_bayes_samples_number = 10,
+                          tune_bayes_iterations_number = 10,
 
                           split_rule = NULL,
                           splits_number = 10,
@@ -151,6 +153,8 @@ random_forest <- function(x, y,
       tune_folds_number = tune_folds_number,
       tune_testing_proportion = tune_testing_proportion,
       tune_grid_proportion = tune_grid_proportion,
+      tune_bayes_samples_number = tune_bayes_samples_number,
+      tune_bayes_iterations_number = tune_bayes_iterations_number,
 
       split_rule = split_rule,
       splits_number = splits_number,
@@ -189,6 +193,8 @@ random_forest <- function(x, y,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
 
     split_rule = split_rule,
     splits_number = splits_number,

@@ -55,7 +55,7 @@ BayesianTuner <- R6Class(
     tune = function() {
       self$folds <- self$cross_validator$get_folds()
 
-      echo("%s*** Tuning ***", get_tabs(self$tabs_number))
+      echo("%s*** Bayesian Optimization Tuning ***", get_tabs(self$tabs_number))
       optimizer <- BayesianOptimization(
         FUN = self$model_evaluation_wrapper,
         bounds = self$hyperparams,
@@ -69,6 +69,7 @@ BayesianTuner <- R6Class(
       self$all_combinations <- as.data.frame(optimizer$History)
       self$all_combinations$Round <- NULL
       colnames(self$all_combinations)[ncol(self$all_combinations)] <- "loss"
+
       self$combinations_number <- nrow(self$all_combinations)
 
       self$best_combination <- as.list(optimizer$Best_Par)

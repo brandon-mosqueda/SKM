@@ -72,22 +72,28 @@ assert_subset_string <- function(x,
 
 # Helpers --------------------------------------------------
 
-assert_tune_cv <- function(tune_cv_type,
+assert_tune_cv <- function(tune_type,
+                           tune_cv_type,
                            tune_folds_number,
                            tune_testing_proportion,
-                           tune_grid_proportion) {
+                           tune_grid_proportion,
+                           tune_bayes_samples_number,
+                           tune_bayes_iterations_number) {
+  assert_subset_string(tune_type, TUNE_TYPES, ignore.case = TRUE, len = 1)
+
   assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
   tune_cv_type <- tolower(tune_cv_type)
 
   min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
-  assert_number(tune_folds_number, finite = TRUE, lower = min_folds_number)
-
+  assert_int(tune_folds_number, lower = min_folds_number)
   assert_number(tune_testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
-  assert_number(tune_grid_proportion, lower = 1e-3, upper = 1)
-}
 
-assert_tune_type <- function(tune_type) {
-  assert_subset_string(tune_type, TUNE_TYPES, ignore.case = TRUE, len = 1)
+  if (tolower(tune_type) == "Bayesian_optimization") {
+    assert_int(tune_bayes_samples_number, lower = 1)
+    assert_int(tune_bayes_iterations_number, lower = 0)
+  } else {
+    assert_number(tune_grid_proportion, lower = 1e-3, upper = 1)
+  }
 }
 
 assert_base_params <- function(x,
@@ -99,6 +105,8 @@ assert_base_params <- function(x,
                                tune_folds_number,
                                tune_testing_proportion,
                                tune_grid_proportion,
+                               tune_bayes_samples_number,
+                               tune_bayes_iterations_number,
                                seed,
                                verbose) {
   assert_xy(
@@ -108,13 +116,14 @@ assert_base_params <- function(x,
     expect_x_matrix = expect_x_matrix
   )
 
-  assert_tune_type(tune_type)
-
   assert_tune_cv(
+    tune_type = tune_type,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
-    tune_grid_proportion = tune_grid_proportion
+    tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number
   )
 
   assert_seed(seed)
@@ -429,6 +438,8 @@ validate_support_vector_machine <- function(x,
                                             tune_folds_number,
                                             tune_testing_proportion,
                                             tune_grid_proportion,
+                                            tune_bayes_samples_number,
+                                            tune_bayes_iterations_number,
 
                                             scale,
                                             class_weights,
@@ -453,6 +464,8 @@ validate_support_vector_machine <- function(x,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
     seed = seed,
     verbose = verbose
   )
@@ -486,6 +499,8 @@ validate_random_forest <- function(x,
                                    tune_folds_number,
                                    tune_testing_proportion,
                                    tune_grid_proportion,
+                                   tune_bayes_samples_number,
+                                   tune_bayes_iterations_number,
 
                                    split_rule,
                                    splits_number,
@@ -506,6 +521,8 @@ validate_random_forest <- function(x,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
     seed = seed,
     verbose = verbose
   )
@@ -562,6 +579,8 @@ validate_generalized_linear_model <- function(x,
                                               tune_folds_number,
                                               tune_testing_proportion,
                                               tune_grid_proportion,
+                                              tune_bayes_samples_number,
+                                              tune_bayes_iterations_number,
 
                                               lambdas_number,
                                               lambda_min_ratio,
@@ -581,6 +600,8 @@ validate_generalized_linear_model <- function(x,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
     seed = seed,
     verbose = verbose
   )
@@ -611,6 +632,8 @@ validate_generalized_boosted_machine <- function(x,
                                                  tune_folds_number,
                                                  tune_testing_proportion,
                                                  tune_grid_proportion,
+                                                 tune_bayes_samples_number,
+                                                 tune_bayes_iterations_number,
 
                                                  predictors_relationship,
 
@@ -626,6 +649,8 @@ validate_generalized_boosted_machine <- function(x,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
     seed = seed,
     verbose = verbose
   )
@@ -673,6 +698,8 @@ validate_deep_learning <- function(x,
                                    tune_folds_number,
                                    tune_testing_proportion,
                                    tune_grid_proportion,
+                                   tune_bayes_samples_number,
+                                   tune_bayes_iterations_number,
 
                                    optimizer,
                                    with_platt_scaling,
@@ -693,6 +720,8 @@ validate_deep_learning <- function(x,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
     tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
     seed = seed,
     verbose = verbose
   )

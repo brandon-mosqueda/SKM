@@ -47,7 +47,7 @@ GridTuner <- R6Class(
         return(invisible(self$best_combination))
       }
 
-      echo("%s*** Tuning ***", get_tabs(self$tabs_number))
+      echo("%s*** Grid Search Tuning ***", get_tabs(self$tabs_number))
       echo(
         "%sTotal combinations: %s",
         get_tabs(self$tabs_number),

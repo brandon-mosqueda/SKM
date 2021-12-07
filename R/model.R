@@ -27,6 +27,8 @@ Model <- R6Class(
     tune_folds_number = NULL,
     tune_testing_proportion = NULL,
     tune_grid_proportion = NULL,
+    tune_bayes_samples_number = NULL,
+    tune_bayes_iterations_number = NULL,
 
     x = NULL,
     y = NULL,
@@ -44,6 +46,8 @@ Model <- R6Class(
                           tune_folds_number = NULL,
                           tune_testing_proportion = NULL,
                           tune_grid_proportion = NULL,
+                          tune_bayes_samples_number = NULL,
+                          tune_bayes_iterations_number = NULL,
                           is_multivariate = FALSE,
                           allow_coefficients = FALSE,
                           is_x_matrix = TRUE) {
@@ -54,6 +58,8 @@ Model <- R6Class(
       self$tune_folds_number <- tune_folds_number
       self$tune_testing_proportion <- tune_testing_proportion
       self$tune_grid_proportion <- tune_grid_proportion
+      self$tune_bayes_samples_number <- tune_bayes_samples_number
+      self$tune_bayes_iterations_number <- tune_bayes_iterations_number
       self$is_multivariate <- is_multivariate
       self$allow_coefficients <- allow_coefficients
       self$is_x_matrix <- is_x_matrix
@@ -205,8 +211,8 @@ Model <- R6Class(
           testing_proportion = self$tune_testing_proportion
         )
         if (is_bayesian_tuner(self$tuner_class)) {
-          tuner_params$samples_number <- self$bayesian_samples_number
-          tuner_params$iterations_number <- self$bayesian_iterations_number
+          tuner_params$samples_number <- self$tune_bayes_samples_number
+          tuner_params$iterations_number <- self$tune_bayes_iterations_number
         } else {
           tuner_params$grid_proportion <- self$tune_grid_proportion
         }
