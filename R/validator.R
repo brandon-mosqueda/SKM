@@ -70,6 +70,64 @@ assert_subset_string <- function(x,
   makeAssertion(x, res, label, NULL)
 }
 
+checkBoundsList <- function(x,
+                            only_ints = FALSE,
+                            lower = -Inf,
+                            upper = Inf,
+                            null.ok = FALSE,
+                            na.ok = FALSE) {
+  result <- checkList(x, any.missing = FALSE)
+  if (!identical(result, TRUE)) return(result)
+
+  result <- checkNames(names(x), must.include = c("min", "max"))
+  if (!identical(result, TRUE)) return(result)
+
+  check_function <- checkNumber
+  if (only_ints) {
+    check_function <- checkInt
+  }
+
+  min <- x$min
+  max <- x$max
+  result <- check_function(
+    min,
+    lower = lower,
+    upper = upper,
+    null.ok = null.ok,
+    na.ok = na.ok
+  )
+  if (!identical(result, TRUE)) return(result)
+
+  result <- check_function(
+    max,
+    lower = lower,
+    upper = upper,
+    null.ok = null.ok,
+    na.ok = na.ok
+  )
+  if (!identical(result, TRUE)) return(result)
+
+  if (max <= min) {
+    return(sprintf("Max must be greater than min, but %s <= %s", max, min))
+  }
+
+  return(TRUE)
+}
+
+assert_bounds_list <- function(x,
+                               only_ints = FALSE,
+                               lower = -Inf,
+                               upper = Inf,
+                               null.ok = FALSE,
+                               na.ok = FALSE,
+                               label = vname(x)) {
+  if (missing(x)) {
+    stop(sprintf("Argument '%s' is missing", label))
+  }
+  res <- checkBoundsList(x, only_ints, lower, upper, null.ok, na.ok)
+  makeAssertion(x, res, label, NULL)
+}
+
 # Helpers --------------------------------------------------
 
 assert_tune_cv <- function(tune_type,
