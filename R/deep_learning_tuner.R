@@ -1,9 +1,7 @@
 #' @importFrom R6 R6Class
 
 #' @include utils.R
-#' @include model_helpers.R
-#' @include metrics.R
-#' @include tuner.R
+#' @include grid_tuner.R
 
 DeepLearningGridTuner <- R6Class(
   classname = "DeepLearningGridTuner",

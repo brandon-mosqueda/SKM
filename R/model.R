@@ -210,7 +210,7 @@ Model <- R6Class(
 
         hyperparams <- private$get_hyperparams()
 
-        tuner_params <- list(
+        tuner <- self$tuner_class$new(
           x = self$x,
           y = self$y,
           responses = self$responses,
@@ -221,15 +221,12 @@ Model <- R6Class(
           fit_params = self$fit_params,
           cv_type = self$tune_cv_type,
           folds_number = self$tune_folds_number,
-          testing_proportion = self$tune_testing_proportion
+          testing_proportion = self$tune_testing_proportion,
+          grid_proportion = self$tune_grid_proportion,
+
+          tune_bayes_iterations_number = self$tune_bayes_iterations_number,
+          tune_bayes_samples_number = self$tune_bayes_samples_number
         )
-        if (is_bayesian_tuner(self$tuner_class)) {
-          tuner_params$samples_number <- self$tune_bayes_samples_number
-          tuner_params$iterations_number <- self$tune_bayes_iterations_number
-        } else {
-          tuner_params$grid_proportion <- self$tune_grid_proportion
-        }
-        tuner <- do.call(self$tuner_class$new, tuner_params)
 
         tuner$tune()
         self$best_hyperparams <- tuner$best_combination

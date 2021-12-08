@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-#' @importFrom glmnet glmnet
+#' @importFrom glmnet cv.glmnet
 
 #' @include utils.R
 #' @include model.R
@@ -13,24 +13,24 @@ GeneralizedLinearModel <- R6Class(
 
     initialize = function(...,
                           alpha,
-                          lambda,
 
+                          tune_type,
                           lambdas_number,
-                          lambda_min_ratio,
                           records_weights,
                           standardize,
                           fit_intercept) {
+      tune_type <- paste0("glm_", tune_type)
+
       super$initialize(
         ...,
+        tune_type = tune_type,
         name = "Generalized Linear Model",
         allow_coefficients = TRUE
       )
 
       self$fit_params$alpha <- alpha
-      self$fit_params$lambda <- lambda
 
       self$fit_params$lambdas_number <- lambdas_number
-      self$fit_params$lambda_min_ratio <- lambda_min_ratio
       self$fit_params$records_weights <- records_weights
       self$fit_params$standardize <- standardize
       self$fit_params$fit_intercept <- fit_intercept
@@ -46,37 +46,32 @@ GeneralizedLinearModel <- R6Class(
         is_multivariate = self$is_multivariate
       )
 
+      self$fit_params$cv_loss <- get_glmnet_loss(
+        response_type = self$responses$y$type,
+        is_multivariate = self$is_multivariate
+      )
+
       self$fit_params$records_weights <- remove_if_has_more(
         x = self$fit_params$records_weights,
         compare_value = nrow(self$x),
         indices_to_remove = self$removed_rows
       )
-
-      # Evaluate one model first to obtain the lambdas sequence and the perform
-      # cross validation by our own
-      if (is.null(self$fit_params$lambda)) {
-        fit_params <- list(alpha = self$fit_params$alpha[1], lambda = NULL)
-
-        fit_params <- self$fit_params
-        fit_params$records_weights <- NULL
-
-        model <- private$train(
-          x = self$x,
-          y = self$y,
-          fit_params = fit_params
-        )
-        self$fit_params$lambda <- model$lambda
-      }
     },
 
-    tune = function() {
-      true_other_params <- self$fit_params
+    # Always tune because in when tuninig is fitted the model.
+    has_to_tune = function() return(TRUE),
+    get_hyperparams = function() {
+      hyperparams <- super$get_hyperparams()
+      # Always include alpha even when there is only one value.
+      hyperparams$alpha <- self$fit_params$alpha
 
-      self$fit_params$records_weights <- NULL
+      return(hyperparams)
+    },
+    train = function(...) {
+      model <- self$best_hyperparams$model
+      self$best_hyperparams$model <- NULL
 
-      super$tune()
-
-      self$fit_params <- true_other_params
+      return(model)
     },
 
     train_univariate = train_glm,
@@ -85,8 +80,8 @@ GeneralizedLinearModel <- R6Class(
                                   responses,
                                   fit_params) {
       if (is_class_response(responses$y$type)) {
-        predictions <- predict(model, x, type = "class")
-        probabilities <- predict(model, x, type = "response")
+        predictions <- predict(model, x, type = "class", s = "lambda.min")
+        probabilities <- predict(model, x, type = "response", s = "lambda.min")
 
         if (is_binary_response(responses$y$type)) {
           # This only returns the probabilities of the second level
@@ -103,7 +98,9 @@ GeneralizedLinearModel <- R6Class(
           probabilities = as.data.frame(probabilities)
         ))
       } else {
-        return(list(predicted = c(predict(model, x))))
+        predicted <- c(predict(model, x, type = "response", s = "lambda.min"))
+
+        return(list(predicted = predicted))
       }
     },
     coefficients_univariate = function() {
@@ -139,7 +136,7 @@ GeneralizedLinearModel <- R6Class(
                                     x,
                                     responses,
                                     fit_params) {
-      all_predictions <- predict(model, x)
+      all_predictions <- predict(model, x, s = "lambda.min")
       all_predictions <- all_predictions[, , 1]
       predictions <- list()
 

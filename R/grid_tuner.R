@@ -30,6 +30,9 @@ GridTuner <- R6Class(
         combinations_number,
         ceiling(combinations_number * self$grid_proportion)
       )
+      if (is_empty(combinations_indices)) {
+        combinations_indices <- 1
+      }
       all_combinations <- all_combinations[combinations_indices, , drop = FALSE]
       combinations_number <- nrow(all_combinations)
       all_combinations$loss <- as.numeric(NA)
@@ -56,7 +59,7 @@ GridTuner <- R6Class(
 
       folds <- self$cross_validator$get_folds()
 
-      for (combination_i in 1:self$combinations_number) {
+      for (combination_i in seq(self$combinations_number)) {
         echo(
           "%sCombination: %s / %s",
           get_tabs(self$tabs_number + 1),
@@ -71,7 +74,7 @@ GridTuner <- R6Class(
 
         loss_values <- c()
 
-        for (fold_i in 1:self$cross_validator$folds_number) {
+        for (fold_i in seq(self$cross_validator$folds_number)) {
           echo(
             "%s%s: %s / %s",
             get_tabs(self$tabs_number + 2),

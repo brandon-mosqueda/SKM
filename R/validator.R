@@ -657,7 +657,6 @@ validate_generalized_linear_model <- function(x,
                                               is_multivariate,
 
                                               alpha,
-                                              lambda,
 
                                               tune_type,
                                               tune_cv_type,
@@ -668,7 +667,6 @@ validate_generalized_linear_model <- function(x,
                                               tune_bayes_iterations_number,
 
                                               lambdas_number,
-                                              lambda_min_ratio,
                                               records_weights,
                                               standardize,
                                               fit_intercept,
@@ -691,11 +689,12 @@ validate_generalized_linear_model <- function(x,
     verbose = verbose
   )
 
+  assert_int(tune_folds_number, lower = 3)
+  assert_subset_string(tune_cv_type, GLM_CV_TYPES, ignore.case = TRUE, len = 1)
+
   assert_numeric(alpha, lower = 0, upper = 1, any.missing = FALSE)
 
-  assert_numeric(lambda, finite = TRUE, any.missing = FALSE, null.ok = TRUE)
   assert_number(lambdas_number, finite = TRUE, lower = 1)
-  assert_number(lambda_min_ratio, finite = TRUE, lower = 0)
 
   assert_numeric(records_weights, len = nrow(x), null.ok = TRUE, finite = TRUE)
 

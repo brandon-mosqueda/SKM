@@ -99,6 +99,8 @@ BAYESIAN_COVARIANCE_STRUCTURE_TYPES <- c(
 
 TUNE_CV_TYPES <- c("K_fold", "Random")
 
+GLM_CV_TYPES <- c("K_fold")
+
 TUNE_TYPES <- c("Grid_search", "Bayesian_optimization")
 
 # Others --------------------------------------------------

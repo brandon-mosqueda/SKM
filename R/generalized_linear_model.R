@@ -35,17 +35,10 @@
 #'
 #'   `alpha = 0` is the lasso penalty, `alpha = 1` is the ridge penalty and `0 <
 #'   alpha < 1` is the elasticnet penalty. 1 by default.
-#' @param lambda (`numeric`) (__tunable__) The penalty value (coefficient
-#'   shrinkage). If provided `lambdas_number` parameter is ignored and the
-#'   provided values are used for tuning. `NULL` by default.
 #' @template cv-tune-params
 #' @param lambdas_number (`numeric(1)`) The number of lambda values to be
 #'   generated and evaluated in tuning. If `lambda` is provided, this parameter
 #'   is ignored. 100 by default.
-#' @param lambda_min_ratio (`numeric(1)`) Smallest value for lambda, as a
-#'   fraction of `lambda.max`, the (data derived) entry value (i.e. the smallest
-#'   value for which all coefficients are zero). `ifelse(nrow(x) < ncol(x),
-#'   0.01, 1e-04)` by default.
 #' @param records_weights (`numeric`) Observation weights. `NULL` by default (1
 #'   for each observation).
 #' @param standardize (`logical(1)`) Should the `x` variables be standardized?
@@ -97,22 +90,14 @@
 generalized_linear_model <- function(x, y,
 
                                      alpha = 1,
-                                     lambda = NULL,
 
                                      tune_type = "Grid_search",
-                                     tune_cv_type = "K_fold",
                                      tune_folds_number = 5,
-                                     tune_testing_proportion = 0.2,
                                      tune_grid_proportion = 1,
                                      tune_bayes_samples_number = 10,
                                      tune_bayes_iterations_number = 10,
 
                                      lambdas_number = 100,
-                                     lambda_min_ratio = ifelse(
-                                       nrow(x) < ncol(x),
-                                       0.01,
-                                       1e-04
-                                     ),
                                      records_weights = NULL,
                                      standardize = TRUE,
                                      fit_intercept = TRUE,
@@ -131,18 +116,16 @@ generalized_linear_model <- function(x, y,
       is_multivariate = is_multivariate,
 
       alpha = alpha,
-      lambda = lambda,
 
       tune_type = tune_type,
-      tune_cv_type = tune_cv_type,
+      tune_cv_type = "K_fold",
       tune_folds_number = tune_folds_number,
-      tune_testing_proportion = tune_testing_proportion,
+      tune_testing_proportion = 0.2,
       tune_grid_proportion = tune_grid_proportion,
       tune_bayes_samples_number = tune_bayes_samples_number,
       tune_bayes_iterations_number = tune_bayes_iterations_number,
 
       lambdas_number = lambdas_number,
-      lambda_min_ratio = lambda_min_ratio,
       records_weights = records_weights,
       standardize = standardize,
       fit_intercept = fit_intercept,
@@ -168,18 +151,16 @@ generalized_linear_model <- function(x, y,
     is_multivariate = is_multivariate,
 
     alpha = alpha,
-    lambda = lambda,
 
     tune_type = tune_type,
-    tune_cv_type = tune_cv_type,
+    tune_cv_type = "K_fold",
     tune_folds_number = tune_folds_number,
-    tune_testing_proportion = tune_testing_proportion,
+    tune_testing_proportion = 0.2,
     tune_grid_proportion = tune_grid_proportion,
     tune_bayes_samples_number = tune_bayes_samples_number,
     tune_bayes_iterations_number = tune_bayes_iterations_number,
 
     lambdas_number = lambdas_number,
-    lambda_min_ratio = lambda_min_ratio,
     records_weights = records_weights,
     standardize = standardize,
     fit_intercept = fit_intercept

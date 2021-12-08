@@ -1,4 +1,5 @@
 #' @import keras
+#' @importFrom glmnet cv.glmnet
 
 #' @include utils.R
 
@@ -99,6 +100,10 @@ get_tuner <- function(type) {
     tuner <- DeepLearningGridTuner
   } else if (type == "deep_bayesian_optimization") {
     tuner <- DeepLearningBayesianTuner
+  }  else if (type == "glm_grid_search") {
+    tuner <- GLMGridTuner
+  } else if (type == "glm_bayesian_optimization") {
+    tuner <- GLMBayesianTuner
   } else {
     stop(sprintf(
       "{%s} is not a valid type of tuning",
@@ -265,18 +270,30 @@ get_glmnet_family <- function(response_type, is_multivariate) {
   return(family)
 }
 
+get_glmnet_loss <- function(response_type, is_multivariate) {
+  if (is_multivariate || is_numeric_response(response_type)) {
+    loss <- "mse"
+  } else {
+    loss <- "class"
+  }
+
+  return(loss)
+}
+
 train_glm <- function(x, y, fit_params) {
-  model <- glmnet(
+  model <- cv.glmnet(
     x = x,
     y = y,
 
     family = fit_params$response_family,
+    type.measure = fit_params$cv_loss,
 
     alpha = fit_params$alpha,
-    lambda = fit_params$lambda,
+
+    foldid = fit_params$folds,
+    nfolds = fit_params$cv_folds_number,
 
     nlambda = fit_params$lambdas_number,
-    lambda.min.ratio = fit_params$lambda_min_ratio,
     weights = fit_params$records_weights,
     standardize = fit_params$standardize,
     intercept = fit_params$fit_intercept
@@ -307,6 +324,17 @@ predict_univariate_glm <- function(model, data, response) {
   }
 
   return(predictions)
+}
+
+format_glmnet_folds <- function(folds) {
+  records_number <- length(folds[[1]]$training) + length(folds[[1]]$testing)
+  new_folds <- rep(1, records_number)
+
+  for (i in seq_along(folds)) {
+    new_folds[folds[[i]]$testing] <- i
+  }
+
+  return(new_folds)
 }
 
 # SVM --------------------------------------------------
