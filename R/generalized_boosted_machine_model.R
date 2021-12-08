@@ -38,6 +38,29 @@ GeneralizedBoostedMachineModel <- R6Class(
     # Methods --------------------------------------------------
 
     prepare_others = function() {
+      if (is_bayesian_tuner(self$tuner_class)) {
+        self$fit_params$trees_number <- format_bayes_hyperparam(
+          self$fit_params$trees_number,
+          is_int = TRUE
+        )
+        self$fit_params$max_depth <- format_bayes_hyperparam(
+          self$fit_params$max_depth,
+          is_int = TRUE
+        )
+        self$fit_params$node_size <- format_bayes_hyperparam(
+          self$fit_params$node_size,
+          is_int = TRUE
+        )
+        self$fit_params$shrinkage <- format_bayes_hyperparam(
+          self$fit_params$shrinkage,
+          is_int = FALSE
+        )
+        self$fit_params$sampled_records_proportion <- format_bayes_hyperparam(
+          self$fit_params$sampled_records_proportion,
+          is_int = FALSE
+        )
+      }
+
       if (is_binary_response(self$responses$y$type)) {
         self$y <- ifelse(self$y == self$responses$y$levels[1], 1, 0)
       }

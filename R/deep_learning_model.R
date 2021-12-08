@@ -94,15 +94,8 @@ DeepLearningModel <- R6Class(
     # Methods --------------------------------------------------
 
     get_hyperparams = function() {
-      hyperparams <- list()
-
-      for (param_name in names(self$fit_params)) {
-        param <- self$fit_params[[param_name]]
-
-        if (param_name != "responses" && is_hyperparam(param)) {
-          hyperparams[[param_name]] <- param
-        }
-      }
+      hyperparams <- super$get_hyperparams()
+      hyperparams$responses <- NULL
 
       return(hyperparams)
     },

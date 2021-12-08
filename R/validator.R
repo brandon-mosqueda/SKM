@@ -740,23 +740,30 @@ validate_generalized_boosted_machine <- function(x,
     verbose = verbose
   )
 
-  assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
-  assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
-  assert_numeric(
-    max_depth,
-    lower = 1,
-    finite = TRUE,
-    any.missing = FALSE,
-    null.ok = TRUE
-  )
-  assert_numeric(
-    sampled_records_proportion,
-    lower = 1e-3,
-    upper = 1,
-    finite = TRUE,
-    any.missing = FALSE
-  )
-  assert_numeric(shrinkage, finite = TRUE, any.missing = FALSE)
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(trees_number, lower = 1, only_ints = TRUE)
+    assert_bounds(node_size, lower = 1, only_ints = TRUE)
+    assert_bounds(max_depth, lower = 1, only_ints = TRUE)
+    assert_bounds(
+      sampled_records_proportion,
+      lower = 1e-3,
+      upper = 1,
+      only_ints = FALSE
+    )
+    assert_bounds(shrinkage, only_ints = FALSE)
+  } else {
+    assert_numeric(trees_number, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(node_size, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(max_depth, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(
+      sampled_records_proportion,
+      lower = 1e-3,
+      upper = 1,
+      finite = TRUE,
+      any.missing = FALSE
+    )
+    assert_numeric(shrinkage, finite = TRUE, any.missing = FALSE)
+  }
 
   assert_numeric(
     predictors_relationship,
