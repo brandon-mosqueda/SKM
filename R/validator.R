@@ -438,30 +438,69 @@ assert_penalty <- function(penalty, null.ok = TRUE) {
   )
 }
 
-assert_layers <- function(layers) {
+assert_layers <- function(layers, tune_type) {
   assert_list(layers, min.len = 1)
 
   for (layer in layers) {
     assert_list(layer)
 
-    assert_numeric(
-      layer$neurons_number,
-      null.ok = TRUE,
-      any.missing = FALSE,
-      lower = 1e-10
-    )
+    if (is_bayesian_tuner(tune_type)) {
+      assert_bounds(layer$neurons_number, lower = 1e-10, null.ok = TRUE)
 
-    assert_subset_string(
-      layer$activation,
-      VALID_ACTIVATION_FUNCTIONS,
-      empty.ok = TRUE,
-      ignore.case = TRUE
-    )
+      assert_subset_string(
+        layer$activation,
+        VALID_ACTIVATION_FUNCTIONS,
+        len = 1,
+        empty.ok = TRUE,
+        ignore.case = TRUE
+      )
 
-    assert_penalty(layer$dropout)
+      assert_bounds(layer$neurons_number, lower = 1e-10, null.ok = TRUE)
+      assert_bounds(
+        layer$dropout,
+        lower = 0,
+        upper = 1,
+        null.ok = TRUE
+      )
+      assert_bounds(
+        layer$ridge_penalty,
+        lower = 0,
+        upper = 1,
+        null.ok = TRUE
+      )
+      assert_bounds(
+        layer$lasso_penalty,
+        lower = 0,
+        upper = 1,
+        null.ok = TRUE
+      )
+    } else {
+      assert_numeric(
+        layer$neurons_number,
+        null.ok = TRUE,
+        any.missing = FALSE,
+        lower = 1e-10
+      )
 
-    assert_penalty(layer$ridge_penalty)
-    assert_penalty(layer$lasso_penalty)
+      assert_numeric(
+        layer$neurons_proportion,
+        null.ok = TRUE,
+        any.missing = FALSE,
+        lower = 1e-10
+      )
+
+      assert_subset_string(
+        layer$activation,
+        VALID_ACTIVATION_FUNCTIONS,
+        empty.ok = TRUE,
+        ignore.case = TRUE
+      )
+
+      assert_penalty(layer$dropout)
+
+      assert_penalty(layer$ridge_penalty)
+      assert_penalty(layer$lasso_penalty)
+    }
   }
 }
 
@@ -477,11 +516,16 @@ assert_optimizer <- function(optimizer) {
   )
 }
 
-assert_output_penalties <- function(output_penalties) {
+assert_output_penalties <- function(output_penalties, tune_type) {
   assert_list(output_penalties, len = 2, any.missing = FALSE)
 
-  assert_penalty(output_penalties$ridge_penalty, null.ok = FALSE)
-  assert_penalty(output_penalties$lasso_penalty, null.ok = FALSE)
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(output_penalties$ridge_penalty, lower = 0, upper = 1)
+    assert_bounds(output_penalties$lasso_penalty, lower = 0, upper = 1)
+  } else {
+    assert_penalty(output_penalties$ridge_penalty, null.ok = FALSE)
+    assert_penalty(output_penalties$lasso_penalty, null.ok = FALSE)
+  }
 }
 
 assert_cv_kfold <- function(records_number, k) {
@@ -829,17 +873,23 @@ validate_deep_learning <- function(x,
     verbose = verbose
   )
 
-  assert_numeric(
-    learning_rate,
-    lower = 1e-100,
-    finite = TRUE,
-    any.missing = FALSE
-  )
-  assert_numeric(epochs_number, lower = 1, finite = TRUE, any.missing = FALSE)
-  assert_numeric(batch_size, lower = 1, finite = TRUE, any.missing = FALSE)
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(learning_rate, lower = 1e-100)
+    assert_bounds(epochs_number, lower = 1)
+    assert_bounds(batch_size, lower = 1)
+  } else {
+    assert_numeric(
+      learning_rate,
+      lower = 1e-100,
+      finite = TRUE,
+      any.missing = FALSE
+    )
+    assert_numeric(epochs_number, lower = 1, finite = TRUE, any.missing = FALSE)
+    assert_numeric(batch_size, lower = 1, finite = TRUE, any.missing = FALSE)
+  }
 
-  assert_layers(layers)
-  assert_output_penalties(output_penalties)
+  assert_layers(layers, tune_type)
+  assert_output_penalties(output_penalties, tune_type)
 
   assert_optimizer(optimizer)
   assert_logical(with_platt_scaling, len = 1, any.missing = FALSE)

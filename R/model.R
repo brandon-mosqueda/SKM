@@ -40,7 +40,7 @@ Model <- R6Class(
     initialize = function(x,
                           y,
                           name,
-                          tune_type = NULL,
+                          tune_type = "grid_search",
                           tune_cv_type = NULL,
                           tune_folds_number = NULL,
                           tune_testing_proportion = NULL,

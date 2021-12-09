@@ -5,7 +5,8 @@
 #' @include utils.R
 #' @include model.R
 #' @include globals.R
-#' @include deep_learning_tuner.R
+#' @include deep_learning_grid_tuner.R
+#' @include deep_learning_bayesian_tuner.R
 #' @include model_helpers.R
 
 DeepLearningModel <- R6Class(
@@ -92,6 +93,14 @@ DeepLearningModel <- R6Class(
   private = list(
     # Methods --------------------------------------------------
 
+    has_to_tune = function() {
+      responses <- self$fit_params$responses
+      self$fit_params$responses <- NULL
+      result <- super$has_to_tune()
+      self$fit_params$responses <- responses
+
+      return(result)
+    },
     get_hyperparams = function() {
       hyperparams <- super$get_hyperparams()
       hyperparams$responses <- NULL
@@ -143,23 +152,58 @@ DeepLearningModel <- R6Class(
       self$y <- new_y
     },
     prepare_others = function() {
+      if (is_bayesian_tuner(self$tuner_class)) {
+        self$fit_params$epochs_number <- format_bayes_hyperparam(
+          self$fit_params$epochs_number,
+          is_int = TRUE
+        )
+        self$fit_params$batch_size <- format_bayes_hyperparam(
+          self$fit_params$batch_size,
+          is_int = TRUE
+        )
+        self$fit_params$learning_rate <- format_bayes_hyperparam(
+          self$fit_params$learning_rate
+        )
+      }
+
       # Convert all the neurons proportion to integer values
       for (i in 1:self$fit_params$hidden_layers_number) {
         neurons_i <- sprintf("neurons_number_%s", i)
         proportion_i <- sprintf("neurons_proportion_%s", i)
 
         layer_neurons <- self$fit_params[[neurons_i]]
-        if (!is.null(self$fit_params[[proportion_i]])) {
-          layer_proportions <- sapply(
-            self$fit_params[[proportion_i]],
-            proportion_to,
-            to = ncol(self$x),
-            upper = Inf
-          )
-          layer_neurons <- c(layer_neurons, layer_proportions)
+        layer_proportions <- self$fit_params[[neurons_i]]
+
+        if (is_bayesian_tuner(self$tuner_class)) {
+          layer_neurons <- format_bayes_hyperparam(layer_neurons, is_int = TRUE)
+          self$fit_params[[sprintf("dropout_%s", i)]] <-
+            format_bayes_hyperparam(
+              self$fit_params[[sprintf("dropout_%s", i)]]
+            )
+          self$fit_params[[sprintf("ridge_penalty_%s", i)]] <-
+            format_bayes_hyperparam(
+              self$fit_params[[sprintf("ridge_penalty_%s", i)]]
+            )
+          self$fit_params[[sprintf("lasso_penalty_%s", i)]] <-
+            format_bayes_hyperparam(
+              self$fit_params[[sprintf("lasso_penalty_%s", i)]]
+            )
+
+        } else {
+          if (!is.null(self$fit_params[[proportion_i]])) {
+            layer_proportions <- sapply(
+              self$fit_params[[proportion_i]],
+              proportion_to,
+              to = ncol(self$x),
+              upper = Inf
+            )
+            layer_neurons <- c(layer_neurons, layer_proportions)
+          }
+
+          layer_neurons <- ceiling(layer_neurons)
         }
+
         self$fit_params[[proportion_i]] <- NULL
-        layer_neurons <- ceiling(layer_neurons)
         self$fit_params[[neurons_i]] <- layer_neurons
 
         activation_i <- sprintf("activation_%s", i)
