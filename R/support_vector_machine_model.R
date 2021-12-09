@@ -70,6 +70,22 @@ SupportVectorMachineModel <- R6Class(
         ncol(self$x),
         self$removed_x_cols
       )
+
+      if (is_bayesian_tuner(self$tuner_class)) {
+        self$fit_params$degree <- format_bayes_hyperparam(
+          self$fit_params$degree,
+          is_int = TRUE
+        )
+        self$fit_params$gamma <- format_bayes_hyperparam(
+          self$fit_params$gamma
+        )
+        self$fit_params$coef0 <- format_bayes_hyperparam(
+          self$fit_params$coef0
+        )
+        self$fit_params$cost <- format_bayes_hyperparam(
+          self$fit_params$cost
+        )
+      }
     },
 
     train_univariate = function(x, y, fit_params) {

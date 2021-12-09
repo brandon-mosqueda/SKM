@@ -546,10 +546,18 @@ validate_support_vector_machine <- function(x,
   assert_svm_scale(scale, ncol(x))
 
   assert_svm_kernel(kernel)
-  assert_numeric(degree, finite = TRUE, any.missing = FALSE)
-  assert_numeric(gamma, finite = TRUE, any.missing = FALSE)
-  assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
-  assert_numeric(cost, finite = TRUE, any.missing = FALSE)
+
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(degree, only_ints = TRUE)
+    assert_bounds(gamma)
+    assert_bounds(coef0)
+    assert_bounds(cost)
+  } else {
+    assert_numeric(degree, finite = TRUE, any.missing = FALSE)
+    assert_numeric(gamma, finite = TRUE, any.missing = FALSE)
+    assert_numeric(coef0, finite = TRUE, any.missing = FALSE)
+    assert_numeric(cost, finite = TRUE, any.missing = FALSE)
+  }
 
   assert_svm_class_weights(class_weights)
   assert_number(cache_size, finite = TRUE)
