@@ -224,8 +224,8 @@ Model <- R6Class(
           testing_proportion = self$tune_testing_proportion,
           grid_proportion = self$tune_grid_proportion,
 
-          tune_bayes_iterations_number = self$tune_bayes_iterations_number,
-          tune_bayes_samples_number = self$tune_bayes_samples_number
+          iterations_number = self$tune_bayes_iterations_number,
+          samples_number = self$tune_bayes_samples_number
         )
 
         tuner$tune()

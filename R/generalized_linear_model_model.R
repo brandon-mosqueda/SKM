@@ -41,6 +41,10 @@ GeneralizedLinearModel <- R6Class(
 
     prepare_multivariate_y = prepare_multivariate_y_only_numeric,
     prepare_others = function() {
+      if (is_bayesian_tuner(self$tuner_class)) {
+        self$fit_params$alpha <- format_bayes_hyperparam(self$fit_params$alpha)
+      }
+
       self$fit_params$response_family <- get_glmnet_family(
         response_type = self$responses$y$type,
         is_multivariate = self$is_multivariate
@@ -70,6 +74,7 @@ GeneralizedLinearModel <- R6Class(
     train = function(...) {
       model <- self$best_hyperparams$model
       self$best_hyperparams$model <- NULL
+      self$fit_params$model <- NULL
 
       return(model)
     },

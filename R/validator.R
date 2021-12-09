@@ -700,7 +700,11 @@ validate_generalized_linear_model <- function(x,
   assert_int(tune_folds_number, lower = 3)
   assert_subset_string(tune_cv_type, GLM_CV_TYPES, ignore.case = TRUE, len = 1)
 
-  assert_numeric(alpha, lower = 0, upper = 1, any.missing = FALSE)
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(alpha, lower = 0, upper = 1)
+  } else {
+    assert_numeric(alpha, lower = 0, upper = 1, any.missing = FALSE)
+  }
 
   assert_number(lambdas_number, finite = TRUE, lower = 1)
 
