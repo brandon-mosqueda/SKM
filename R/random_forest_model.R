@@ -86,7 +86,8 @@ RandomForestModel <- R6Class(
         }
 
         self$fit_params$sampled_x_vars_number <- format_bayes_hyperparam(
-          self$fit_params$sampled_x_vars_number
+          self$fit_params$sampled_x_vars_number,
+          is_int = TRUE
         )
       } else {
         self$fit_params$sampled_x_vars_number <- proportion_to(
