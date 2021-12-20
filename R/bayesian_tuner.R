@@ -1,8 +1,8 @@
 #' @importFrom R6 R6Class
-#' @importFrom rBayesianOptimization BayesianOptimization
 
 #' @include utils.R
 #' @include tuner.R
+#' @include RBO_BayesianOptimization.R
 
 BayesianTuner <- R6Class(
   classname = "BayesianTuner",
