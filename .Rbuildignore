@@ -10,3 +10,4 @@ test.R
 vscode.code-workspace
 ^man-roxygen
 ^man/figures/SKM.drawio$
+^paper$

@@ -62,7 +62,7 @@ GeneralizedLinearModel <- R6Class(
       )
     },
 
-    # Always tune because in when tuninig is fitted the model.
+    # Always tune because when tuninig is fitted the model.
     has_to_tune = function() return(TRUE),
     get_hyperparams = function() {
       hyperparams <- super$get_hyperparams()
@@ -75,6 +75,9 @@ GeneralizedLinearModel <- R6Class(
       model <- self$best_hyperparams$model
       self$best_hyperparams$model <- NULL
       self$fit_params$model <- NULL
+
+      self$fit_params$lambda <- model$lambda.min
+      self$best_hyperparams$lambda <- model$lambda.min
 
       return(model)
     },
