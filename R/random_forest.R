@@ -43,9 +43,6 @@
 #' @param splits_number (`numeric(1)`) Non-negative integer value for number of
 #'   random splits to consider for each candidate splitting variable. 10 by
 #'   default.
-#' @param importance (`logical(1)`) Should variable importance (VIMP) be
-#'   computed? When it is `TRUE` variable importance it is extracted using
-#'   [coef.Model()] function. `TRUE` by default.
 #' @param x_vars_weights (`numeric`) Vector of non-negative weights (does not
 #'   have to sum to 1) representing the probability of selecting a variable for
 #'   splitting. `NULL` by default (uniform weights).
@@ -125,7 +122,6 @@ random_forest <- function(x, y,
 
                           split_rule = NULL,
                           splits_number = 10,
-                          importance = TRUE,
                           x_vars_weights = NULL,
                           records_weights = NULL,
                           na_action = "omit",
@@ -158,7 +154,6 @@ random_forest <- function(x, y,
 
       split_rule = split_rule,
       splits_number = splits_number,
-      importance = importance,
       x_vars_weights = x_vars_weights,
       records_weights = records_weights,
       na_action = na_action,
@@ -198,7 +193,6 @@ random_forest <- function(x, y,
 
     split_rule = split_rule,
     splits_number = splits_number,
-    importance = importance,
     x_vars_weights = x_vars_weights,
     records_weights = records_weights,
     na_action = na_action

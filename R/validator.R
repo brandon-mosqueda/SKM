@@ -629,7 +629,6 @@ validate_random_forest <- function(x,
 
                                    split_rule,
                                    splits_number,
-                                   importance,
                                    x_vars_weights,
                                    records_weights,
                                    na_action,
@@ -684,8 +683,6 @@ validate_random_forest <- function(x,
   assert_forest_split_rule(split_rule)
 
   assert_number(splits_number, lower = 0, finite = TRUE)
-
-  assert_logical(importance, len = 1, any.missing = FALSE)
 
   assert_numeric(
     x_vars_weights,

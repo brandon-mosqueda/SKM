@@ -23,7 +23,6 @@ RandomForestModel <- R6Class(
 
                           split_rule,
                           splits_number,
-                          importance,
                           x_vars_weights,
                           records_weights,
                           na_action) {
@@ -45,7 +44,6 @@ RandomForestModel <- R6Class(
         self$fit_params$split_rule <- tolower(split_rule)
       }
       self$fit_params$splits_number <- splits_number
-      self$fit_params$importance <- importance
       self$fit_params$x_vars_weights <- x_vars_weights
       self$fit_params$records_weights <- records_weights
       self$fit_params$na_action <- prepare_random_forest_na_action(na_action)
@@ -132,8 +130,6 @@ RandomForestModel <- R6Class(
 
     tune = function() {
       true_other_params <- self$fit_params
-      # When tuning use importance FALSE for quicker evalution
-      self$fit_params$importance <- FALSE
       self$fit_params$records_weights <- NULL
 
       super$tune()
@@ -146,8 +142,6 @@ RandomForestModel <- R6Class(
                                   x,
                                   responses,
                                   fit_params) {
-      # Required to generates the same names as in training
-      x <- data.frame(x)
       predictions <- predict(model, newdata = x)
 
       if (is_class_response(responses$y$type)) {
@@ -162,11 +156,7 @@ RandomForestModel <- R6Class(
       return(predictions)
     },
     coefficients_univariate = function() {
-      if (self$fit_params$importance) {
-        coefs <- self$fitted_model$importance
-      } else {
-        coefs <- vimp(self$fitted_model)$importance
-      }
+      coefs <- vimp(self$fitted_model)$importance
 
       if (is_class_response(self$responses$y$type)) {
         coefs <- t(coefs)
@@ -180,8 +170,6 @@ RandomForestModel <- R6Class(
                                     x,
                                     responses,
                                     fit_params) {
-      # Required to generates the same names as in training
-      x <- data.frame(x)
       all_predictions <- predict(model, newdata = x)
       predictions <- list()
 

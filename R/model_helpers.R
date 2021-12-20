@@ -231,17 +231,16 @@ get_random_forest_formula <- function(responses,
 }
 
 train_random_forest <- function(x, y, fit_params) {
-  data <- data.frame(y, x)
+  x$y <- y
 
   model <- rfsrc(
     formula = fit_params$model_formula,
-    data = data,
+    data = x,
     ntree = fit_params$trees_number,
     mtry = fit_params$sampled_x_vars_number,
     nodesize = fit_params$node_size,
     nodedepth = fit_params$node_depth,
 
-    importance = fit_params$importance,
     splitrule = fit_params$split_rule,
     nsplit = fit_params$splits_number,
     xvar.wt = fit_params$x_vars_weights,
