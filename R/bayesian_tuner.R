@@ -30,9 +30,10 @@ BayesianTuner <- R6Class(
       loss_values <- c()
 
       echo(
-        "%sCombination: %s",
+        "%sCombination: %s / %s",
         get_tabs(self$tabs_number + 1),
-        self$current_combination
+        self$current_combination,
+        self$combinations_number
       )
       self$current_combination <- self$current_combination + 1
 
@@ -54,6 +55,7 @@ BayesianTuner <- R6Class(
     },
     tune = function() {
       self$folds <- self$cross_validator$get_folds()
+      self$combinations_number <- self$samples_number + self$iterations_number
 
       echo("%s*** Bayesian Optimization Tuning ***", get_tabs(self$tabs_number))
       optimizer <- BayesianOptimization(

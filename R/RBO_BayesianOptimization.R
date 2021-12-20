@@ -98,8 +98,10 @@ BayesianOptimization <- function(FUN, bounds, init_grid_dt = NULL, init_points =
     if (identical(names(init_grid_dt), DT_bounds[, Parameter]) == TRUE) {
       init_grid_dt[, Value := -Inf]
     } else if (identical(names(init_grid_dt), c(DT_bounds[, Parameter], "Value")) == TRUE) {
-      paste(nrow(init_grid_dt), "points in hyperparameter space were pre-sampled\n", sep = " ") %>%
-        cat(.)
+      if (verbose) {
+        paste(nrow(init_grid_dt), "points in hyperparameter space were pre-sampled\n", sep = " ") %>%
+          cat(.)
+      }
     } else {
       stop("bounds and init_grid_dt should be compatible")
     }
@@ -133,11 +135,10 @@ BayesianOptimization <- function(FUN, bounds, init_grid_dt = NULL, init_points =
       next
     }
     # Function Evaluation
-    This_Log <- utils::capture.output({
-      This_Time <- system.time({
-        This_Score_Pred <- do.call(what = FUN, args = as.list(This_Par))
-      })
+    This_Time <- system.time({
+      This_Score_Pred <- do.call(what = FUN, args = as.list(This_Par))
     })
+
     # Saving History and Prediction
     data.table::set(DT_history,
                     i = as.integer(i),
@@ -176,10 +177,8 @@ BayesianOptimization <- function(FUN, bounds, init_grid_dt = NULL, init_points =
       magrittr::set_names(., DT_bounds[, Parameter]) %>%
       inset(., DT_bounds[Type == "integer", Parameter], round(extract(., DT_bounds[Type == "integer", Parameter])))
     # Function Evaluation
-    Next_Log <- utils::capture.output({
-      Next_Time <- system.time({
-        Next_Score_Pred <- do.call(what = FUN, args = as.list(Next_Par))
-      })
+    Next_Time <- system.time({
+      Next_Score_Pred <- do.call(what = FUN, args = as.list(Next_Par))
     })
     # Saving History and Prediction
     data.table::set(DT_history,
@@ -206,12 +205,16 @@ BayesianOptimization <- function(FUN, bounds, init_grid_dt = NULL, init_points =
                  History = DT_history,
                  Pred = Pred_DT)
   # Printing Best
-  cat("\n Best Parameters Found: \n")
-  paste(names(DT_history),
-        c(format(DT_history[which.max(Value), "Round", with = FALSE], trim = FALSE, digits = NULL, nsmall = 0),
+  if (verbose) {
+    cat("\n Best Parameters Found: \n")
+  }
+  if (verbose) {
+    paste(names(DT_history),
+          c(format(DT_history[which.max(Value), "Round", with = FALSE], trim = FALSE, digits = NULL, nsmall = 0),
           format(DT_history[which.max(Value), -"Round", with = FALSE], trim = FALSE, digits = NULL, nsmall = 4)),
-        sep = " = ", collapse = "\t") %>%
+          sep = " = ", collapse = "\t") %>%
     cat(., "\n")
+  }
   # Return
   return(Result)
 }
