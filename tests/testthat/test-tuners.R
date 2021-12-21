@@ -8,7 +8,8 @@ expect_tuning <- function(tuner,
                           folds_number,
                           testing_proportion,
                           hyperparams,
-                          grid_proportion) {
+                          grid_proportion = NULL,
+                          combinations_number = NULL) {
   expect_class(tuner, "Tuner")
   expect_equal(tuner$loss_function, loss_function)
 
@@ -16,9 +17,11 @@ expect_tuning <- function(tuner,
   expect_equal(tuner$cross_validator$folds_number, folds_number)
   expect_equal(tuner$cross_validator$testing_proportion, testing_proportion)
 
-  combinations_number <- ceiling(
-    nrow(expand.grid(hyperparams)) * grid_proportion
-  )
+  if (is.null(combinations_number)) {
+    combinations_number <- ceiling(
+      nrow(expand.grid(hyperparams)) * grid_proportion
+    )
+  }
   expect_equal(tuner$combinations_number, combinations_number)
 
   expect_data_frame(
@@ -55,7 +58,8 @@ clone_tuner <- function(tuner,
                         cv_type = NULL,
                         folds_number = NULL,
                         testing_proportion = NULL,
-                        grid_proportion = NULL) {
+                        grid_proportion = NULL,
+                        ...) {
   return(class$new(
     x = nonull(x, tuner$x),
     y = nonull(y, tuner$y),
@@ -69,7 +73,8 @@ clone_tuner <- function(tuner,
     cv_type = nonull(cv_type, tuner$cv_type),
     folds_number = nonull(folds_number, tuner$folds_number),
     testing_proportion = nonull(testing_proportion, tuner$testing_proportion),
-    grid_proportion = nonull(grid_proportion, tuner$grid_proportion)
+    grid_proportion = nonull(grid_proportion, tuner$grid_proportion),
+    ...
   ))
 }
 
@@ -178,8 +183,6 @@ test_that("GridTuner (univariate)", {
   )
 
   # Categorical all combinations -----------------------------------------------
-
-  fit_params$response_family <- "multinomial"
 
   tuner <- clone_tuner(
     tuner = tuner,
@@ -534,5 +537,91 @@ test_that("Grid Deep learning tuner (multivariate)", {
     testing_proportion = NULL,
     hyperparams = single_hyperparams,
     grid_proportion = 0.5
+  )
+})
+
+test_that("BayesianTuner (univariate)", {
+  # Numeric all combinations --------------------------------------------------
+
+  fit_params <- list(
+    degree = 2,
+    kernel = "polynomial",
+    scale = TRUE,
+    class_weights = NULL,
+    cache_size = 40,
+    tolerance = 0.001,
+    epsilon = 0.1,
+    shrinking = TRUE,
+    fitted = TRUE
+  )
+
+  hyperparams <- list(
+    gamma = list(min = 1 / 5, max = 1),
+    coef0 = list(min = 0, 2),
+    cost = list(min = 0.001, max = 0.5)
+  )
+
+  tuner <- BayesianTuner$new(
+    x = to_matrix(x_num),
+    y = y_num,
+    responses = list(y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)),
+    is_multivariate = FALSE,
+    training_function =
+      SupportVectorMachineModel$private_methods$train_univariate,,
+    predict_function =
+      SupportVectorMachineModel$private_methods$predict_univariate,
+    hyperparams = hyperparams,
+    fit_params = fit_params,
+    cv_type = "K_fold",
+    folds_number = 5,
+    testing_proportion = NULL,
+    samples_number = 5,
+    iterations_number = 2
+  )
+
+  hush(tuner$tune())
+
+  expect_tuning(
+    tuner = tuner,
+    loss_function = mse,
+    cv_class = "KFoldCV",
+    folds_number = 5,
+    testing_proportion = NULL,
+    hyperparams = hyperparams,
+    combinations_number = 7
+  )
+
+  # Categorical all combinations -----------------------------------------------
+
+  tuner <- clone_tuner(
+    tuner = tuner,
+    class = BayesianTuner,
+    x = to_matrix(x_cat),
+    y = y_cat,
+    responses = list(
+      y = list(
+        type = RESPONSE_TYPES$CATEGORICAL,
+        levels = levels(y_cat)
+      )
+    ),
+    loss_function = pcic,
+    hyperparams = hyperparams,
+    fit_params = fit_params,
+    grid_proportion = 1,
+    samples_number = 5,
+    iterations_number = 2
+  )
+
+  hush(tuner$tune())
+
+  expect_tuning(
+    tuner = tuner,
+    loss_function = pcic,
+    cv_class = "KFoldCV",
+    folds_number = 5,
+    testing_proportion = NULL,
+    hyperparams = hyperparams,
+    grid_proportion = 1,
+    combinations_number = 7
   )
 })
