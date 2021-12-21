@@ -231,11 +231,12 @@ get_random_forest_formula <- function(responses,
 }
 
 train_random_forest <- function(x, y, fit_params) {
-  x$y <- y
+  # In this format for multivariate analysis
+  data <- data.frame(y, x)
 
   model <- rfsrc(
     formula = fit_params$model_formula,
-    data = x,
+    data = data,
     ntree = fit_params$trees_number,
     mtry = fit_params$sampled_x_vars_number,
     nodesize = fit_params$node_size,

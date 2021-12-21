@@ -1,4 +1,4 @@
-suppressMessages(library(glmnet))
+suppressMessages(library(e1071))
 
 data(Iris)
 
@@ -42,7 +42,7 @@ expect_tuning <- function(tuner,
 }
 
 clone_tuner <- function(tuner,
-                        class = Tuner,
+                        class,
                         x = NULL,
                         y = NULL,
                         responses = NULL,
@@ -51,7 +51,7 @@ clone_tuner <- function(tuner,
                         predict_function = NULL,
                         loss_function = NULL,
                         hyperparams = NULL,
-                        other_params = NULL,
+                        fit_params = NULL,
                         cv_type = NULL,
                         folds_number = NULL,
                         testing_proportion = NULL,
@@ -65,7 +65,7 @@ clone_tuner <- function(tuner,
     predict_function = nonull(predict_function, tuner$predict_function),
     loss_function = nonull(loss_function, tuner$loss_function),
     hyperparams = nonull(hyperparams, tuner$hyperparams),
-    other_params = nonull(other_params, tuner$other_params),
+    fit_params = nonull(fit_params, tuner$fit_params),
     cv_type = nonull(cv_type, tuner$cv_type),
     folds_number = nonull(folds_number, tuner$folds_number),
     testing_proportion = nonull(testing_proportion, tuner$testing_proportion),
@@ -79,34 +79,44 @@ temp_loss <- function(observed, predicted, responses = NULL) {
   return(rnorm(1, x, 2))
 }
 
-test_that("Tuner (univariate)", {
+test_that("GridTuner (univariate)", {
   # Numeric all combinations --------------------------------------------------
 
-  other_params <- list(
-    response_family = "gaussian",
-    lambdas_number = 100,
-    lambda_min_ratio = 0.01,
-    records_weights = NULL,
-    standardize = TRUE,
-    fit_intercept = TRUE
+  fit_params <- list(
+    kernel = "polynomial",
+    scale = TRUE,
+    class_weights = NULL,
+    cache_size = 40,
+    tolerance = 0.001,
+    epsilon = 0.1,
+    shrinking = TRUE,
+    fitted = TRUE
   )
 
   hyperparams <- list(
-    alpha = c(0, 0.5, 1),
-    lambda = c(0.1, 0.2, 0.5)
+    degree = c(2, 3),
+    gamma = 1 / 5,
+    coef0 = c(0, 2),
+    cost = 1
   )
-  single_hyperparams <- list(alpha = 1, lambda = 0.5)
+  single_hyperparams <- list(
+    degree = 3,
+    gamma = 1 / 5,
+    coef0 = 0,
+    cost = 1
+  )
 
-  tuner <- Tuner$new(
+  tuner <- GridTuner$new(
     x = to_matrix(x_num),
     y = y_num,
     responses = list(y = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL)),
     is_multivariate = FALSE,
-    training_function = train_glm,
+    training_function =
+      SupportVectorMachineModel$private_methods$train_univariate,,
     predict_function =
-      GeneralizedLinearModel$private_methods$predict_univariate,
+      SupportVectorMachineModel$private_methods$predict_univariate,
     hyperparams = hyperparams,
-    other_params = other_params,
+    fit_params = fit_params,
     cv_type = "K_fold",
     folds_number = 5,
     testing_proportion = NULL,
@@ -129,6 +139,7 @@ test_that("Tuner (univariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
+    class = GridTuner,
     grid_proportion = 0.5
   )
 
@@ -148,6 +159,7 @@ test_that("Tuner (univariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
+    class = GridTuner,
     hyperparams = single_hyperparams,
     loss_function = temp_loss,
     grid_proportion = 0.5
@@ -167,10 +179,11 @@ test_that("Tuner (univariate)", {
 
   # Categorical all combinations -----------------------------------------------
 
-  other_params$response_family <- "multinomial"
+  fit_params$response_family <- "multinomial"
 
   tuner <- clone_tuner(
     tuner = tuner,
+    class = GridTuner,
     x = to_matrix(x_cat),
     y = y_cat,
     responses = list(
@@ -181,7 +194,7 @@ test_that("Tuner (univariate)", {
     ),
     loss_function = pcic,
     hyperparams = hyperparams,
-    other_params = other_params,
+    fit_params = fit_params,
     grid_proportion = 1
   )
 
@@ -198,10 +211,10 @@ test_that("Tuner (univariate)", {
   )
 })
 
-test_that("Tuner (Multivariate)", {
+test_that("GridTuner (Multivariate)", {
   # All combinations --------------------------------------------------
 
-  other_params <- list(
+  fit_params <- list(
     model_formula = formula("Multivar(y1, y2) ~ ."),
     importance = FALSE,
     splits_number = 10,
@@ -217,8 +230,8 @@ test_that("Tuner (Multivariate)", {
     sampled_x_vars_number = 2
   )
 
-  tuner <- Tuner$new(
-    x = to_matrix(x_multi_cat),
+  tuner <- GridTuner$new(
+    x = x_multi_cat,
     y = y_multi_cat,
     responses = list(
       y1 = list(type = RESPONSE_TYPES$CONTINUOUS, levels = NULL),
@@ -232,7 +245,7 @@ test_that("Tuner (Multivariate)", {
     predict_function =
       RandomForestModel$private_methods$predict_multivariate,
     hyperparams = hyperparams,
-    other_params = other_params,
+    fit_params = fit_params,
     cv_type = "Random",
     folds_number = 3,
     testing_proportion = 0.2,
@@ -255,6 +268,7 @@ test_that("Tuner (Multivariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
+    class = GridTuner,
     grid_proportion = 0.5
   )
 
@@ -274,6 +288,7 @@ test_that("Tuner (Multivariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
+    class = GridTuner,
     hyperparams = single_hyperparams,
     loss_function = temp_loss,
     grid_proportion = 0.5
@@ -292,9 +307,8 @@ test_that("Tuner (Multivariate)", {
   )
 })
 
-test_that("Deep learning tuner (univariate)", {
+test_that("Grid deep learning tuner (univariate)", {
   # All combinations --------------------------------------------------
-  roxygen2::roxygenise()
 
   hyperparams <- list(
     neurons_number_1 = 10,
@@ -323,7 +337,7 @@ test_that("Deep learning tuner (univariate)", {
     )
   )
 
-  tuner <- DeepLearningTuner$new(
+  tuner <- DeepLearningGridTuner$new(
     x = to_matrix(x_num),
     y = y_num,
     responses = responses,
@@ -332,7 +346,7 @@ test_that("Deep learning tuner (univariate)", {
     predict_function = invisible,
     loss_function = invisible,
     hyperparams = hyperparams,
-    other_params = list(
+    fit_params = list(
       hidden_layers_number = 1,
       shuffle = TRUE,
       responses = responses,
@@ -362,7 +376,7 @@ test_that("Deep learning tuner (univariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
-    class = DeepLearningTuner,
+    class = DeepLearningGridTuner,
     grid_proportion = 0.5
   )
 
@@ -382,7 +396,7 @@ test_that("Deep learning tuner (univariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
-    class = DeepLearningTuner,
+    class = DeepLearningGridTuner,
     hyperparams = single_hyperparams,
     loss_function = temp_loss,
     grid_proportion = 0.5
@@ -401,7 +415,7 @@ test_that("Deep learning tuner (univariate)", {
   )
 })
 
-test_that("Deep learning tuner (multivariate)", {
+test_that("Grid Deep learning tuner (multivariate)", {
   # All combinations --------------------------------------------------
 
   hyperparams <- list(
@@ -445,7 +459,7 @@ test_that("Deep learning tuner (multivariate)", {
   y <- cbind(y$y1, to_categorical(as.numeric(y$y2) - 1))
   colnames(y) <- c("y1", "setosa", "versicolor", "virginica")
 
-  tuner <- DeepLearningTuner$new(
+  tuner <- DeepLearningGridTuner$new(
     x = to_matrix(x_multi_cat),
     y = y,
     responses = responses,
@@ -454,7 +468,7 @@ test_that("Deep learning tuner (multivariate)", {
     predict_function = invisible,
     loss_function = invisible,
     hyperparams = hyperparams,
-    other_params = list(
+    fit_params = list(
       hidden_layers_number = 1,
       shuffle = TRUE,
       responses = responses,
@@ -484,7 +498,7 @@ test_that("Deep learning tuner (multivariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
-    class = DeepLearningTuner,
+    class = DeepLearningGridTuner,
     grid_proportion = 0.5
   )
 
@@ -504,7 +518,7 @@ test_that("Deep learning tuner (multivariate)", {
 
   tuner <- clone_tuner(
     tuner = tuner,
-    class = DeepLearningTuner,
+    class = DeepLearningGridTuner,
     hyperparams = single_hyperparams,
     loss_function = temp_loss,
     grid_proportion = 0.5
