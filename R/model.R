@@ -101,7 +101,7 @@ Model <- R6Class(
 
       x <- private$get_x_for_model(x, remove_cols = FALSE)
       if (!is.null(self$removed_x_cols)) {
-        x <- x[, -self$removed_x_cols]
+        x <- x[, -self$removed_x_cols, drop = FALSE]
       }
 
       predict_function <- ifelse(

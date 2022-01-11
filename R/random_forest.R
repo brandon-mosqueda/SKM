@@ -5,7 +5,7 @@
 #' @title Fit a Random Forest Model
 #'
 #' @templateVar ClassName RandomForestModel
-#' @templateVar XType data.frame
+#' @templateVar XType matrix
 #' @templateVar YType `vector` or `data.frame`
 #' @templateVar refFunction randomForestSRC::rfsrc()
 #'
@@ -16,7 +16,7 @@
 #' response variables.
 #' @template tunable-description
 #'
-#' @template x-data-frame-param
+#' @template x-matrix-param
 #' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
 #'   variable(s). If it is a `data.frame` or a `matrix` with 2 or more columns,
 #'   a multivariate model is assumed, a univariate model otherwise. If `y` is

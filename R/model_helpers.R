@@ -232,7 +232,7 @@ get_random_forest_formula <- function(responses,
 
 train_random_forest <- function(x, y, fit_params) {
   # In this format for multivariate analysis
-  data <- data.frame(y, x)
+  data <- data.frame(y, x, check.names = FALSE)
 
   model <- rfsrc(
     formula = fit_params$model_formula,

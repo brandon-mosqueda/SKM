@@ -29,8 +29,7 @@ RandomForestModel <- R6Class(
       super$initialize(
         ...,
         name = "Random Forest",
-        allow_coefficients = TRUE,
-        is_x_matrix = FALSE
+        allow_coefficients = TRUE
       )
 
       self$fit_params$trees_number <- trees_number
@@ -142,6 +141,7 @@ RandomForestModel <- R6Class(
                                   x,
                                   responses,
                                   fit_params) {
+      x <- data.frame(x, check.names = FALSE)
       predictions <- predict(model, newdata = x)
 
       if (is_class_response(responses$y$type)) {
@@ -170,6 +170,7 @@ RandomForestModel <- R6Class(
                                     x,
                                     responses,
                                     fit_params) {
+      x <- data.frame(x, check.names = FALSE)
       all_predictions <- predict(model, newdata = x)
       predictions <- list()
 

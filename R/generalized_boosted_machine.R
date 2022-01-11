@@ -16,7 +16,7 @@
 #' response variables.
 #' @template tunable-description
 #'
-#' @template x-data-frame-param
+#' @template x-matrix-param
 #' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
 #'   variable. If it is a `data.frame` or a `matrix` it must have only one
 #'   column. If `y` is `character`, `logical` or `factor` a categorical response
