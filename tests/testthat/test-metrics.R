@@ -151,6 +151,65 @@ test_that("pccc", {
   expect_identical(pccc(NULL, NULL), NaN)
 })
 
+test_that("sensitivity", {
+  expect_identical(sensitivity("a", "a"), 1)
+  expect_identical(sensitivity(1, 1), 1)
+  expect_identical(sensitivity(1, 2), NaN)
+  expect_identical(sensitivity("a", "b"), NaN)
+  expect_identical(sensitivity(c("a", "b"), c("b", "b")), NaN)
+
+  result <- c(NaN, 0.5, NaN)
+  names(result) <- c("a", "b", "c")
+  expect_identical(
+    sensitivity(c("a", NA, "b", "c"), c("b", "b", "b", NA)),
+    result
+  )
+
+  expect_identical(sensitivity(rep("a", 20), rep("a", 20)), 1)
+  expect_identical(sensitivity(rep("a", 20), rep("b", 20)), NaN)
+
+  sensitivities <- sensitivity(
+    categorical_vars$observed,
+    categorical_vars$predicted
+  )
+  result <- c(1, 0.5, 0.6667)
+  names(result) <- c("A", "B", "C")
+  expect_equal(round(sensitivities, 4), result)
+
+  expect_error(
+    sensitivity("a", c("a", "b")),
+    "observed and predicted must have the same length"
+  )
+  expect_error(
+    sensitivity("a", NULL),
+    "observed and predicted must have the same length"
+  )
+
+  x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
+  y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
+  expect_identical(sensitivity(x, y), 1)
+  y[c(2, 4, 5)] <- "B"
+  result <- c(1, 1, 0)
+  names(result) <- c("A", "C", "B")
+  expect_identical(sensitivity(x, y), result)
+
+  expect_identical(sensitivity(NA, "a"), NaN)
+  expect_identical(sensitivity("a", NA), NaN)
+  expect_identical(sensitivity(NA, NA), NaN)
+  expect_identical(sensitivity(NULL, NULL), NaN)
+
+  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
+  y <- c(
+    "a", "a", "b", "c",
+    "a", "b", "b", "c",
+    "a", "b", "b", "c"
+  )
+  sensitivities <- sensitivity(x, y)
+  result <- c(0.5, 0.4, 0.3333)
+  names(result) <- c("a", "b", "c")
+  expect_equal(round(sensitivities, 4), result)
+})
+
 test_that("pcic", {
   expect_identical(pcic("a", "a"), 0)
   expect_identical(pcic(1, 1), 0)

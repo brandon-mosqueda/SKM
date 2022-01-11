@@ -147,6 +147,72 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
   )
 }
 
+#' @title Sensitivity
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the sensitivity, the metric that evaluates a modelss
+#' ability to predict true positives of each available category. For binary data
+#' a single value is returned, for more than 2 categories a vector of
+#' sensitivities is returned one per each category.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the sensitivity.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' sensitivity(c("a", "b"), c("a", "b"))
+#' sensitivity(c("a", "b"), c("b", "a"))
+#' sensitivity(c("a", "b"), c("b", "b"))
+#' sensitivity(c(TRUE, FALSE), c(FALSE, TRUE))
+#' sensitivity(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  all_levels <- na.omit(union(observed, predicted))
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  }
+
+  conf_matrix <- confusion_matrix(
+    observed,
+    predicted,
+    all_levels = all_levels,
+    na.rm = na.rm
+  )
+
+  if (is_empty(conf_matrix)) {
+    return(NaN)
+  }
+
+  all_levels <- colnames(conf_matrix)
+
+  if (length(all_levels) == 2) {
+    tp <- conf_matrix[1, 1]
+    tn <- conf_matrix[2, 2]
+    fp <- conf_matrix[1, 2]
+    fn <- conf_matrix[2, 1]
+
+    return(tp / (tp + fn))
+  }
+
+  sensitivities <- vector("numeric", length(all_levels))
+  names(sensitivities) <- all_levels
+
+  for (level in all_levels) {
+    sensitivities[level] <- conf_matrix[level, level] /
+      sum(conf_matrix[, level])
+  }
+
+  return(sensitivities)
+}
+
 #' @title Proportion of Correctly Classified Cases (accuracy)
 #'
 #' @description
