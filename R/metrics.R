@@ -40,15 +40,12 @@ confusion_matrix <- function(observed,
                              na.rm = TRUE) {
   assert_same_length(observed, predicted)
 
-  observed <- as.factor(observed)
-  predicted <- as.factor(predicted)
-
   if (is.null(all_levels)) {
-    all_levels <- union(levels(observed), levels(predicted))
+    all_levels <- na.omit(union(observed, predicted))
   }
 
-  levels(observed) <- all_levels
-  levels(predicted) <- all_levels
+  observed <- factor(observed, levels = all_levels)
+  predicted <- factor(predicted, levels = all_levels)
 
   useNA <- if (na.rm) "no" else "always"
   return(table(observed, predicted, useNA = useNA))
@@ -92,6 +89,62 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   Pe <- sum(row_marginal_props * col_marginal_props)
 
   return((Po - Pe) / (1 - Pe))
+}
+
+#' @title Matthews Correlation Coefficient (MCC)
+#'
+#' @description
+#' Given the observed and predicted values of binary data computes the Matthews
+#' Correlation Coefficient (MCC) also known as Phi Coefficient or Mean Square
+#' Contingency Coefficient.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the Matthews Correlation Coefficient.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' mcc(c("a", "b"), c("a", "b"))
+#' mcc(c("a", "b"), c("b", "a"))
+#' mcc(c("a", "b"), c("b", "b"))
+#' mcc(c(TRUE, FALSE), c(FALSE, TRUE))
+#' }
+#'
+#' @export
+mcc <- function(observed, predicted, na.rm = TRUE) {
+  assert_same_length(observed, predicted)
+
+  all_levels <- na.omit(union(observed, predicted))
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  } else if (length(all_levels) > 2) {
+    stop("Matthews correlation coefficient (MCC) is only for binary variables")
+  }
+
+  observed <- factor(observed, levels = all_levels)
+  predicted <- factor(predicted, levels = all_levels)
+
+  useNA <- if (na.rm) "no" else "always"
+  conf_matrix <- confusion_matrix(
+    observed,
+    predicted,
+    all_levels = all_levels,
+    na.rm = na.rm
+  )
+
+  tp <- conf_matrix[1, 1]
+  tn <- conf_matrix[2, 2]
+  fp <- conf_matrix[1, 2]
+  fn <- conf_matrix[2, 1]
+
+  return(
+    (tp * tn - fp * fn) /
+    sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+  )
 }
 
 #' @title Proportion of Correctly Classified Cases (accuracy)

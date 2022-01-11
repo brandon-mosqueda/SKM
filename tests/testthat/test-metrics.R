@@ -25,7 +25,7 @@ test_that("confusion_matrix", {
     TRUE
   )
 
-  true_matrix <- matrix(c(1, 0, 0, 0), nrow = 2, byrow = TRUE)
+  true_matrix <- matrix(c(0, 1, 0, 0), nrow = 2, byrow = TRUE)
   colnames(true_matrix) <- c("a", "b")
   rownames(true_matrix) <- colnames(true_matrix)
 
@@ -64,6 +64,13 @@ test_that("confusion_matrix", {
   expect_matrix(conf, nrows = 4, ncols = 4)
   expect_names(rownames(conf), permutation.of = c("A", "B", "C", "D"))
   expect_names(colnames(conf), permutation.of = c("A", "B", "C", "D"))
+
+  conf <- confusion_matrix(c("a", "b"), c("b", "b"))
+  true_matrix <- matrix(c(0, 1, 0, 1), nrow = 2, byrow = TRUE)
+  colnames(true_matrix) <- c("a", "b")
+  rownames(true_matrix) <- colnames(true_matrix)
+
+  expect_identical(all(conf == true_matrix), TRUE)
 })
 
 test_that("kappa_coef", {
@@ -82,7 +89,29 @@ test_that("kappa_coef", {
   expect_identical(kappa_coeff("a", "a"), NaN)
   expect_identical(kappa_coeff(NA, "a"), NaN)
   expect_identical(kappa_coeff("a", NA), NaN)
-  expect_identical(kappa_coeff("a", "b"), NaN)
+  expect_identical(kappa_coeff("a", "b"), 0)
+})
+
+test_that("mcc", {
+  expect_identical(mcc(c("a", "b"), c("a", "b")), 1)
+  expect_identical(mcc(rep(c("a", "b"), 20), rep(c("a", "b"), 20)), 1)
+
+  coeff <- mcc(
+    c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0),
+    c(0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+  )
+  expect_equal(round(coeff, 4), 0.4781)
+
+  expect_identical(mcc(c("a", "b"), c("b", "b")), NaN)
+
+  expect_identical(mcc(c("a", "b"), c("b", "a")), -1)
+  expect_identical(mcc(c("a", "b"), c("b", "a")), -1)
+  expect_identical(mcc(rep(c("a", "b"), 20), rep(c("b", "a"), 20)), -1)
+
+  expect_identical(mcc("a", "a"), NaN)
+  expect_identical(mcc(NA, "a"), NaN)
+  expect_identical(mcc("a", NA), NaN)
+  expect_identical(mcc("a", "b"), NaN)
 })
 
 test_that("pccc", {
