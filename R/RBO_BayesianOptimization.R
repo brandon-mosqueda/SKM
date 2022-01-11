@@ -83,8 +83,6 @@
 #' }
 #' @importFrom magrittr %>% %T>% extract extract2 inset
 #' @importFrom data.table data.table setnames set setDT :=
-#' @export
-
 BayesianOptimization <- function(FUN, bounds, init_grid_dt = NULL, init_points = 0, n_iter, acq = "ucb", kappa = 2.576, eps = 0.0, kernel = list(type = "exponential", power = 2), verbose = TRUE, ...) {
   # Preparation
   ## DT_bounds

@@ -11,8 +11,6 @@
 #' @importFrom foreach foreach %do%
 #' @importFrom magrittr %>%
 #' @keywords internal
-#' @export
-
 Matrix_runif <- function(n, lower, upper) {
   foreach(i = seq_along(lower), .combine = "cbind") %do% {
     runif(n, min = lower[i], max = upper[i]) %>%
@@ -35,8 +33,6 @@ utils::globalVariables(c("i", "."))
 #' @return a matrix of scaled hyperparameters
 #' @importFrom magrittr %>%
 #' @keywords internal
-#' @export
-
 Min_Max_Scale_Mat <- function(mat, lower, upper) {
   t((t(mat) - lower) / (upper - lower)) %>%
     pmin(., 1 - .Machine$double.eps) %>%
@@ -56,8 +52,6 @@ utils::globalVariables(".")
 #' @return a vector of original hyperparameters
 #' @importFrom magrittr %>%
 #' @keywords internal
-#' @export
-
 Min_Max_Inverse_Scale_Vec <- function(vec, lower, upper) {
   (vec * (upper - lower) + lower) %>%
     pmin(., upper - .Machine$double.eps) %>%

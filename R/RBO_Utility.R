@@ -13,8 +13,6 @@
 #' @importFrom stats pnorm dnorm
 #' @importFrom magrittr %>%
 #' @keywords internal
-#' @export
-
 Utility <- function(x_vec, GP, acq = "ucb", y_max, kappa, eps) {
   # Gaussian Process Prediction
   GP_Pred <- GPfit::predict.GP(object = GP, xnew = matrix(x_vec, nrow = 1))

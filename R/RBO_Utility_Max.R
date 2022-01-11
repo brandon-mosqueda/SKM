@@ -15,8 +15,6 @@
 #' @importFrom foreach foreach %do%
 #' @importFrom magrittr %>%
 #' @keywords internal
-#' @export
-
 Utility_Max <- function(DT_bounds, GP, acq = "ucb", y_max, kappa, eps) {
   # Try Different Initial Values
   Mat_tries <- Matrix_runif(100,

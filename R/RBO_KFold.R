@@ -9,8 +9,6 @@
 #' @param seed random seed to be used.
 #' @return a list of indices for K-Folds Cross-Validation
 #' @importFrom stats na.omit
-#' @export
-
 KFold <- function(target, nfolds = 10, stratified = FALSE, seed = 0) {
   # Function for generating index for each fold
   nfold_index <- function(index, nfolds, seed) {
