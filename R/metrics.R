@@ -154,7 +154,7 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
 #' classes) computes the sensitivity, the metric that evaluates a modelss
 #' ability to predict true positives of each available category. For binary data
 #' a single value is returned, for more than 2 categories a vector of
-#' sensitivities is returned one per each category.
+#' sensitivities is returned, one per each category.
 #'
 #' @inheritParams confusion_matrix
 #'
@@ -211,6 +211,74 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   }
 
   return(sensitivities)
+}
+
+#' @title Specificity
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the specificity, the metric that evaluates a model's
+#' ability to predict true negatives of each available category. For binary data
+#' a single value is returned, for more than 2 categories a vector of
+#' sensitivities is returned, one per each category.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the specificity.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' specificity(c("a", "b"), c("a", "b"))
+#' specificity(c("a", "b"), c("b", "a"))
+#' specificity(c("a", "b"), c("b", "b"))
+#' specificity(c(TRUE, FALSE), c(FALSE, TRUE))
+#' specificity(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  all_levels <- na.omit(union(observed, predicted))
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  }
+
+  conf_matrix <- confusion_matrix(
+    observed,
+    predicted,
+    all_levels = all_levels,
+    na.rm = na.rm
+  )
+
+  if (is_empty(conf_matrix)) {
+    return(NaN)
+  }
+
+  all_levels <- colnames(conf_matrix)
+
+  if (length(all_levels) == 2) {
+    tp <- conf_matrix[1, 1]
+    tn <- conf_matrix[2, 2]
+    fp <- conf_matrix[1, 2]
+    fn <- conf_matrix[2, 1]
+
+    return(tn / (tn + fp))
+  }
+
+  specificities <- vector("numeric", length(all_levels))
+  names(specificities) <- all_levels
+
+  for (i in seq(all_levels)) {
+    level <- all_levels[i]
+
+    level_matrix <- conf_matrix[, -i, drop = FALSE]
+    specificities[level] <- sum(level_matrix[level, ]) / sum(level_matrix)
+  }
+
+  return(specificities)
 }
 
 #' @title Proportion of Correctly Classified Cases (accuracy)
