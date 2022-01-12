@@ -621,8 +621,9 @@ rmse <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @inheritParams mse
 #' @param type (`character(1)`) (case not sensitive) The normalization type to
-#'   use. The options are `"sd"`, `"mean"`, `"maxmin"` (or `"range"`) and `"iqr"`
-#'   (for more information, see Details section below). `"sd"` by default.
+#'   use. The options are `"sd"`, `"mean"`, `"maxmin"` (or `"range"`) and
+#'   `"iqr"` (for more information, see Details section below). `"sd"` by
+#'   default.
 #'
 #' @details
 #' The formula is the same as [rmse()] (Root Mean Square Error) but divided by a
@@ -880,6 +881,54 @@ get_loss_function <- function(responses, is_multivariate) {
 
 # Summary --------------------------------------------------
 
+#' @title Categorical summary
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the confusion matrix, Kappa's coefficient, Matthews'
+#' correlation coefficient, accuracy, sensitivity, specificity, precision and
+#' Brier's score.
+#'
+#' @inheritParams confusion_matrix
+#' @inheritParams brier_score
+#'
+#' @return
+#' A list with the confusion_matrix and all metrics. Matthews' correlation
+#' coefficient is only returned for binary data and Brier's score when the
+#' probabilities matrix is provided.
+#'
+#' @examples
+#' \dontrun{
+#' categorical_summary(c("a", "b"), c("a", "b"))
+#' categorical_summary(c("a", "b"), c("b", "a"))
+#' categorical_summary(c("a", "b", "a"), c("b", "a", "c"))
+#'
+#' example <- data.frame(
+#'   observed = c("a", "a", "a", "a", "b", "b", "b", "b", "c", "c", "c", "c"),
+#'   predicted = c("a", "a", "b", "c", "a", "b", "b", "c", "a", "b", "b", "c"),
+#'   a = c(
+#'     0.2377, 0.2924, 0.0406, 0.1893, 0.3978, 0.1965,
+#'     0.0673, 0.2796, 0.1921, 0.2020, 0.1752, 0.3428
+#'   ),
+#'   b = c(
+#'     0.0432, 0.1948, 0.0835, 0.3969, 0.0749, 0.0250,
+#'     0.1507, 0.0752, 0.3952, 0.0807, 0.3097, 0.1282
+#'   ),
+#'   c = c(
+#'     0.7190, 0.5126, 0.8757, 0.4136, 0.5272, 0.7783,
+#'     0.7818, 0.6451, 0.4125, 0.7172, 0.5150, 0.5288
+#'   )
+#' )
+#' categorical_summary(
+#'   example$observed,
+#'   example$predicted,
+#'   example[, c("a", "b", "c")]
+#' )
+#' }
+#'
+#' @family categorical_metrics
+#'
+#' @export
 categorical_summary <- function(observed,
                                 predicted,
                                 probabilities = NULL,
@@ -953,6 +1002,7 @@ categorical_summary <- function(observed,
   return(summary)
 }
 
+#' @export
 print.CategoricalSummary <- function(summary, digits = 4) {
   cat("* Confusion matrix:\n")
   print(summary$confusion_matrix)
@@ -1002,4 +1052,54 @@ print.CategoricalSummary <- function(summary, digits = 4) {
   }
 
   return(invisible(summary))
+}
+
+#' @title Numeric summary
+#'
+#' @description
+#' Given the observed and predicted values of numeric data computes the Mean
+#' Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean
+#' Squared Error (NRMSE), Mean Arctangent Absolute Percentage Error (MAAPE),
+#' Mean Absolute Error (MAE) and Person's correlation
+#'
+#' @inheritParams mse
+#'
+#' @return
+#' A list with all metrics.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' numeric_summary(x, x)
+#' numeric_summary(x, x - 1)
+#' numeric_summary(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
+#' @export
+numeric_summary <- function(observed, predicted, na.rm = TRUE) {
+  summary <- list(
+    mse = mse(observed, predicted, na.rm = na.rm),
+    rmse = rmse(observed, predicted, na.rm = na.rm),
+    nrmse = nrmse(observed, predicted, na.rm = na.rm),
+    maape = maape(observed, predicted, na.rm = na.rm),
+    mae = mae(observed, predicted, na.rm = na.rm),
+    pearson = pearson(observed, predicted, na.rm = na.rm)
+  )
+
+  class(summary) <- "NumericSummary"
+
+  return(summary)
+}
+
+#' @export
+print.NumericSummary <- function(summary, digits = 4) {
+  cat(sprintf("* MSE: %s\n", round(summary$mse, digits)))
+  cat(sprintf("* RMSE: %s\n", round(summary$rmse, digits)))
+  cat(sprintf("* NRMSE: %s\n", round(summary$nrmse, digits)))
+  cat(sprintf("* MAAPE: %s\n", round(summary$maape, digits)))
+  cat(sprintf("* MAE: %s\n", round(summary$mae, digits)))
+  cat(sprintf("* Pearson correlation: %s\n", round(summary$pearson, digits)))
 }

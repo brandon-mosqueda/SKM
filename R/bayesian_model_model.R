@@ -56,7 +56,6 @@ BayesianModel <- R6Class(
       } else {
         i <- 1
         x_names <- sapply(x_names, function(name) {
-          print(name)
           if (is_empty(name) || name == "") {
             name <- sprintf("x_%s", i)
             i <<- i + 1

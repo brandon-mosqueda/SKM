@@ -111,7 +111,7 @@ test_that("matthews_coeff", {
   expect_identical(matthews_coeff(c("a", "b"), c("b", "a")), -1)
   expect_identical(
     matthews_coeff(rep(c("a", "b"), 20), rep(c("b", "a"), 20)),
-    -
+    -1
   )
 
   expect_identical(matthews_coeff("a", "a"), NaN)
