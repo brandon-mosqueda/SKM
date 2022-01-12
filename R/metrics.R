@@ -151,10 +151,10 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
-#' classes) computes the sensitivity, the metric that evaluates a modelss
-#' ability to predict true positives of each available category. For binary data
-#' a single value is returned, for more than 2 categories a vector of
-#' sensitivities is returned, one per each category.
+#' classes) computes the sensitivity (also known as recall), the metric that
+#' evaluates a models ability to predict true positives of each available
+#' category. For binary data a single value is returned, for more than 2
+#' categories a vector of sensitivities is returned, one per each category.
 #'
 #' @inheritParams confusion_matrix
 #'
@@ -279,6 +279,108 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   }
 
   return(specificities)
+}
+
+#' @title Recall
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the recall (also known as sensitibity), the metric that
+#' evaluates a models ability to predict true positives of each available
+#' category. For binary data a single value is returned, for more than 2
+#' categories a vector of recalls is returned, one per each category.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the recall.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' recall(c("a", "b"), c("a", "b"))
+#' recall(c("a", "b"), c("b", "a"))
+#' recall(c("a", "b"), c("b", "b"))
+#' recall(c(TRUE, FALSE), c(FALSE, TRUE))
+#' recall(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  return(sensitivity(
+    observed,
+    predicted,
+    all_levels = all_levels,
+    na.rm = na.rm
+  ))
+}
+
+#' @title Precision
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the precision, that represents the ratio of true positives
+#' to total predicted positives. For binary data a single value is returned, for
+#' more than 2 categories a vector of precisions is returned, one per each
+#' category.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the precision.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' precision(c("a", "b"), c("a", "b"))
+#' precision(c("a", "b"), c("b", "a"))
+#' precision(c("a", "b"), c("b", "b"))
+#' precision(c(TRUE, FALSE), c(FALSE, TRUE))
+#' precision(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  all_levels <- na.omit(union(observed, predicted))
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  }
+
+  conf_matrix <- confusion_matrix(
+    observed,
+    predicted,
+    all_levels = all_levels,
+    na.rm = na.rm
+  )
+
+  if (is_empty(conf_matrix)) {
+    return(NaN)
+  }
+
+  all_levels <- colnames(conf_matrix)
+
+  if (length(all_levels) == 2) {
+    tp <- conf_matrix[1, 1]
+    tn <- conf_matrix[2, 2]
+    fp <- conf_matrix[1, 2]
+    fn <- conf_matrix[2, 1]
+
+    return(tp / (tp + fp))
+  }
+
+  precisions <- vector("numeric", length(all_levels))
+  names(precisions) <- all_levels
+
+  diag_sum <- sum(diag(conf_matrix))
+
+  for (level in all_levels) {
+    precisions[level] <- conf_matrix[level, level] / diag_sum
+  }
+
+  return(precisions)
 }
 
 #' @title Proportion of Correctly Classified Cases (accuracy)
