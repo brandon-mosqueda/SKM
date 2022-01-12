@@ -1,0 +1,61 @@
+---
+title: "Sparse Kernels Methods (SKM), a general purpose machine learning R library"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+author:
+  - "Osval Antonio Montesinos López$^1$"
+  - "Abelardo Montesinos López$^2$"
+  - "Brandon Alejandro Mosqueda González$^3$"
+bibliography: references.bib
+csl: /home/bmosqueda/Desktop/notes/cls/ieee.csl
+output:
+  bookdown::pdf_document2:
+    toc: false
+    number_sections: false
+    includes:
+      in_header: "/home/bmosqueda/dotfiles/header_rmd.tex"
+  bookdown::word_document2:
+    toc: false
+    number_sections: false
+    includes:
+      in_header: "/home/bmosqueda/dotfiles/header_rmd.tex"
+---
+
+$^1$Facultad de Telemática, Universidad de Colima, Colima, Mexico, $^2$Centro Universitario de Ciencias Exactas e Ingenierías (CUCEI), Universidad de Guadalajara, Guadalajara, Mexico, $^3$Centro de Investigación en Computación (CIC), Instituto Politécnico Nacional (IPN), Esq. Miguel Othón de Mendizábal, Mexico city, Mexico.
+
+\Large
+
+# Abstract
+
+# Introduction
+
+Machine learning has become the main approch for solving problemas based on data. We can find applications that use machine learning to solve complex problems everywhere, from devices and digital services of daily use as smartphones and websites to scientific research of many areas of knowledge [@crosscheck; @genomic_selection; @speech_recognition; @object_detection]. As machine learning research has progressed, the supply and demand of software that facilites its implmentation too, for this reason nowadays we can find numerous open source packages for data related tasks and machine learning algorithms [@tensorflow; @pandas; @dplyr; @h2o].
+
+One of the most used programming languages for data analysis is R [@R], due to its statistical computing focus, free and open source software nature and the thousands of packages that extends its power to all kind of analysis and all related tasks of data science. It is difficult to find a machine learning algorithm which does not exist a package for implementing it in R, even it can be said that some of the R packages contains more complete/specialized implementations [@e1071; @randomForestSRC; @glmnet] than those available in other programming languages. As machine learning is strongly based in statistical models and as R is the _de facto_ language for statistics research, those who want to do machine learning sooner or later they will encounter R.
+
+The majority of R's packages of machine learning algorithms includes one type of model or a family of similar models and each package was developed by different people, which, together the fact that in R does not exist a code style guideline or standard widely used make harder the use of the packages because in most cases to train a model you have to learn about the package that includes it, the expected data format, the name and expected parameters and the code convention (if any) used by the package. In addition to this, you may need other packages to perform cross validation of your models, hyperparameter tuning, compute accuracy metrics, etc. There are some libraries that seek to integrate a wide range of tools needed for machine learning in one place, for example, scikit-learn [@scikit-learn] in Python, H2O [@h2o] in Java (with both R and Python versions), caret [@caret], mlr3 [@mlr3] and tidymodels [@tidymodels] in R. All of these options have their own philosophy and they were designed using different approaches to do machine learning.
+
+We consider the mlr3 package the most powerful R package for machine learning in terms of the things you can do with it. mlr3 is an object oriented solution for machine learning focused in extensibility since it does not implement any model itself, but provide a unified interface to many existing packages in R. This is its major advantage but it is clear that such approach does not solve completely the dependency of other package which requieres the user to learn a little of both the package that implements the model and mlr3. Learning how to use all the mlr3 environment it is worthwhile because it also has efficient implementation of most data related tasks, parallelization, hyperparameter tuning, feature selection, etc. But you have to get used to the way it works and how things are defined in parts with the object oriented paradigm, not so common in R programming.
+
+On the other hand we have caret and tidymodels which both packages provide therir own uniform interface to use them, a very important factor in good quality software. In the same way as mlr3, these two packages use third party packages of machine learning algorithms under the hood to train models, even with different options for the same algorithm. Caret is the oldest of these 3 packages, for this reason it still enjoys of considerable popularity while the major advantage of tidymodels is that belongs to the tidyverse, a collection of R packages designed for data science that share an underlying design philosophy, grammar and data structures [@tidyverse], so if you are familiar with tidyverse packages, you are going to start using tidymodels in a natural way.
+
+In this work we present SKM (Sparse Kernels Methods), a new R package for machine learning that includes functions for model training, tuning, prediction, metrics evaluation and sparse kernels. The main goal of this package is not to provide a full toolkit for data analysis as the previouos packages we have already mentioned nor to include a interface to so many other packages, but focus specifically in 6 type of models: generalized boosted machines, generalized linear models, support vector machines, random forest, bayesian regression models and feed forward artificial neural networks. The models functions in SKM were designed keeping in mind simplicity, so the parameters, hyperparameters and tuning specifications are defined directly when calling the function and the user only have to see one example to understand how to package works. We strive to make clearer the documentation following a base convention in the functions and all the parameters are validated with checkmate [@checkmate] in order to inform the user when an error ocurrs with meaningul error messages, something that many other packages neglect. The most important hyperparameters of each model can be tuned with two different methods, grid search and bayesian optimization [@gaussian_processes] (based on the code of rBayesianOptimization [@rBayesianOptimization] package). Although bayesian optimization is very popular and effective method of tuning, the mlr3 and caret packages does not offer it as option.
+
+To the best of our knowledge, there is no R package for sparse kernels computation so this is one of biggest contributions of SKM, which is also what gives it its name.
+
+As software developers and consumers we are aware of the importance of share our work with the community, besides SKM is based completely on open source software, so we release this package under the GNU Lesser General Public License v3.0 (LGPLv3), so anyone can explore the source code, make modifications and develop other tools from this.
+
+# Models
+
+# Metrics
+
+# Functions
+
+# Sparse Kernels
+
+# Installation
+
+# Experiments
+
+# Conclusions and future work
+
+# References
