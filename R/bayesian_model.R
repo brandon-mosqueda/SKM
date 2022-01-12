@@ -51,7 +51,7 @@
 #'   residual variance of each data-point is set to be proportional to the
 #'   inverse of the squared-weight. `NULL` by default.
 #' @param response_groups (`factor`) (only for univariate models) A vector of
-#'   the same length of `y` that associates observations with groups, each group
+#'   the same length as `y` that associates observations with groups, each group
 #'   will have an associated variance component for the error term. `NULL` by
 #'   default.
 #' @param testing_indices (`numeric`) The records' indices to be used as testing
