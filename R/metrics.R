@@ -106,17 +106,19 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' mcc(c("a", "b"), c("a", "b"))
-#' mcc(c("a", "b"), c("b", "a"))
-#' mcc(c("a", "b"), c("b", "b"))
-#' mcc(c(TRUE, FALSE), c(FALSE, TRUE))
+#' matthews_coeff(c("a", "b"), c("a", "b"))
+#' matthews_coeff(c("a", "b"), c("b", "a"))
+#' matthews_coeff(c("a", "b"), c("b", "b"))
+#' matthews_coeff(c(TRUE, FALSE), c(FALSE, TRUE))
 #' }
 #'
 #' @export
-mcc <- function(observed, predicted, na.rm = TRUE) {
+matthews_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   assert_same_length(observed, predicted)
 
-  all_levels <- get_all_levels(observed, predicted)
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(observed, predicted)
+  }
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -169,7 +171,9 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @export
 sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- get_all_levels(observed, predicted)
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(observed, predicted)
+  }
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -234,7 +238,9 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @export
 specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- get_all_levels(observed, predicted)
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(observed, predicted)
+  }
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -336,7 +342,9 @@ recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @export
 precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- get_all_levels(observed, predicted)
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(observed, predicted)
+  }
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -376,7 +384,7 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   return(precisions)
 }
 
-#' @title Proportion of Correctly Classified Cases (accuracy)
+#' @title Proportion of Correctly Classified Cases (PCCC)
 #'
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
@@ -403,6 +411,33 @@ pccc <- function(observed, predicted, na.rm = TRUE) {
     assert_same_length(observed, predicted)
 
   return(mean(as.character(observed) == as.character(predicted), na.rm = na.rm))
+}
+
+#' @title Accuracy
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the accuracy (also known as proportion of correctly
+#' classified cases).
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' A single numeric value with the accuracy.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' accuracy(c("a", "b"), c("a", "b"))
+#' accuracy(c("a", "b"), c("b", "a"))
+#' accuracy(c("a", "b"), c("b", "b"))
+#' accuracy(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+accuracy <- function(observed, predicted, na.rm = TRUE) {
+  return(pccc(observed, predicted, na.rm = na.rm))
 }
 
 #' @title Proportion of Incorrectly Classified Cases
@@ -479,9 +514,9 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
 brier_score <- function(observed, probabilities, na.rm = TRUE) {
   if (!na.rm && (anyNA(observed) || anyNA(probabilities))) {
     return(NaN)
-  } else if (length(observed) != nrow(probabilities)) {
+  } else if (length(observed) != NROW(probabilities)) {
     stop("observed and probabilities must have the same number of records")
-  } else if (is.null(ncol(probabilities)) || ncol(probabilities) < 2) {
+  } else if (is.null(NCOL(probabilities)) || NCOL(probabilities) < 2) {
     stop("probabilities must have at least two columns (classes)")
   } else if (is.null(colnames(probabilities))) {
     stop("probabilities must have the classes' names as columns names")
@@ -841,4 +876,130 @@ get_loss_function <- function(responses, is_multivariate) {
       set_collapse(responses[[1]]$type)
     ))
   }
+}
+
+# Summary --------------------------------------------------
+
+categorical_summary <- function(observed,
+                                predicted,
+                                probabilities = NULL,
+                                all_levels = NULL,
+                                na.rm = TRUE) {
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(observed, predicted)
+  }
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  }
+
+  summary <- list(
+    confusion_matrix = confusion_matrix(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
+    kappa_coeff = kappa_coeff(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
+    sensitivity = sensitivity(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
+    specificity = specificity(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
+    precision = precision(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
+    accuracy = accuracy(
+      observed,
+      predicted,
+      na.rm = na.rm
+    )
+  )
+
+  if (length(all_levels) == 2) {
+    summary$matthews_coeff <- matthews_coeff(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    )
+  }
+
+  if (!is.null(probabilities)) {
+    summary$brier_score <- brier_score(
+      observed,
+      probabilities = probabilities,
+      na.rm = na.rm
+    )
+  }
+
+  class(summary) <- "CategoricalSummary"
+
+  return(summary)
+}
+
+print.CategoricalSummary <- function(summary, digits = 4) {
+  cat("* Confusion matrix:\n")
+  print(summary$confusion_matrix)
+  cat(sprintf(
+    "\n* Kappa coefficient: %s\n",
+    round(summary$kappa_coeff, digits)
+  ))
+  cat(sprintf("* Accuracy: %s\n", round(summary$accuracy, digits)))
+
+  if (!is.null(summary$matthews_coeff)) {
+    cat(sprintf(
+      "* Matthews correlation coefficient: %s\n",
+      round(summary$matthews_coeff, digits)
+    ))
+  }
+
+  if (!is.null(summary$brier_score)) {
+    cat(sprintf(
+      "* Brier Score: %s\n",
+      round(summary$brier_score, digits)
+    ))
+  }
+
+  all_levels <- colnames(summary$confusion_matrix)
+
+  if (length(all_levels) == 2) {
+    cat(sprintf("* Sensitivity: %s\n", round(summary$sensitivity, digits)))
+    cat(sprintf("* Specificity: %s\n", round(summary$specificity, digits)))
+    cat(sprintf("* Precision: %s\n", round(summary$precision, digits)))
+  } else {
+    table_summary <- matrix(
+      c(summary$sensitivity, summary$specificity, summary$precision),
+      nrow = length(all_levels),
+      ncol = length(all_levels),
+      byrow = TRUE
+    )
+    colnames(table_summary) <- all_levels
+    rownames(table_summary) <- c(
+      "* Sensitivity",
+      "* Specificity",
+      "* Precision"
+    )
+    table_summary <- round(table_summary, digits)
+
+    cat("\n")
+    print(table_summary)
+  }
+
+  return(invisible(summary))
 }

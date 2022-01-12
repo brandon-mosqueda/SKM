@@ -92,26 +92,32 @@ test_that("kappa_coef", {
   expect_identical(kappa_coeff("a", "b"), 0)
 })
 
-test_that("mcc", {
-  expect_identical(mcc(c("a", "b"), c("a", "b")), 1)
-  expect_identical(mcc(rep(c("a", "b"), 20), rep(c("a", "b"), 20)), 1)
+test_that("matthews_coeff", {
+  expect_identical(matthews_coeff(c("a", "b"), c("a", "b")), 1)
+  expect_identical(
+    matthews_coeff(rep(c("a", "b"), 20), rep(c("a", "b"), 20)),
+    1
+  )
 
-  coeff <- mcc(
+  coeff <- matthews_coeff(
     c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0),
     c(0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
   )
   expect_equal(round(coeff, 4), 0.4781)
 
-  expect_identical(mcc(c("a", "b"), c("b", "b")), NaN)
+  expect_identical(matthews_coeff(c("a", "b"), c("b", "b")), NaN)
 
-  expect_identical(mcc(c("a", "b"), c("b", "a")), -1)
-  expect_identical(mcc(c("a", "b"), c("b", "a")), -1)
-  expect_identical(mcc(rep(c("a", "b"), 20), rep(c("b", "a"), 20)), -1)
+  expect_identical(matthews_coeff(c("a", "b"), c("b", "a")), -1)
+  expect_identical(matthews_coeff(c("a", "b"), c("b", "a")), -1)
+  expect_identical(
+    matthews_coeff(rep(c("a", "b"), 20), rep(c("b", "a"), 20)),
+    -
+  )
 
-  expect_identical(mcc("a", "a"), NaN)
-  expect_identical(mcc(NA, "a"), NaN)
-  expect_identical(mcc("a", NA), NaN)
-  expect_identical(mcc("a", "b"), NaN)
+  expect_identical(matthews_coeff("a", "a"), NaN)
+  expect_identical(matthews_coeff(NA, "a"), NaN)
+  expect_identical(matthews_coeff("a", NA), NaN)
+  expect_identical(matthews_coeff("a", "b"), NaN)
 })
 
 test_that("pccc", {
