@@ -13,11 +13,10 @@
 #' classes) computes the confusion matrix.
 #'
 #' @template base-metrics-params
-#' @param all_levels (`character`) The levels that have to be included in the
-#'   confusion matrix. Useful when `observed` and `predicted` are not factors or
-#'   they both have no all levels. If it is `NULL` the union of `observed`
-#'   levels and `predicted` levels is used (after being coerced to `factor`).
-#'  `NULL` by default.
+#' @param all_levels (`character`) The whole levels (categories) that `observed`
+#'   and `predicted` have. Useful when `observed` and `predicted` are not
+#'   factors or they both have no all levels. If it is `NULL` the union of
+#'   `observed` levels and `predicted` levels is used. `NULL` by default.
 #'
 #' @return
 #' An object of class `table` with the confusion matrix for all levels.
@@ -41,7 +40,7 @@ confusion_matrix <- function(observed,
   assert_same_length(observed, predicted)
 
   if (is.null(all_levels)) {
-    all_levels <- na.omit(union(observed, predicted))
+    all_levels <- get_all_levels(observed, predicted)
   }
 
   observed <- factor(observed, levels = all_levels)
@@ -117,7 +116,7 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 mcc <- function(observed, predicted, na.rm = TRUE) {
   assert_same_length(observed, predicted)
 
-  all_levels <- na.omit(union(observed, predicted))
+  all_levels <- get_all_levels(observed, predicted)
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -125,10 +124,6 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
     stop("Matthews correlation coefficient (MCC) is only for binary variables")
   }
 
-  observed <- factor(observed, levels = all_levels)
-  predicted <- factor(predicted, levels = all_levels)
-
-  useNA <- if (na.rm) "no" else "always"
   conf_matrix <- confusion_matrix(
     observed,
     predicted,
@@ -153,13 +148,13 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the sensitivity (also known as recall), the metric that
 #' evaluates a models ability to predict true positives of each available
-#' category. For binary data a single value is returned, for more than 2
-#' categories a vector of sensitivities is returned, one per each category.
+#' category.
 #'
 #' @inheritParams confusion_matrix
 #'
 #' @return
-#' A single numeric value with the sensitivity.
+#' For binary data a single value is returned, for more than 2 categories a
+#' vector of sensitivities is returned, one per each category.
 #'
 #' @family categorical_metrics
 #'
@@ -174,7 +169,7 @@ mcc <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @export
 sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- na.omit(union(observed, predicted))
+  all_levels <- get_all_levels(observed, predicted)
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -218,14 +213,13 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the specificity, the metric that evaluates a model's
-#' ability to predict true negatives of each available category. For binary data
-#' a single value is returned, for more than 2 categories a vector of
-#' sensitivities is returned, one per each category.
+#' ability to predict true negatives of each available category.
 #'
 #' @inheritParams confusion_matrix
 #'
 #' @return
-#' A single numeric value with the specificity.
+#' For binary data a single value is returned, for more than 2 categories a
+#' vector of sensitivities is returned, one per each category.
 #'
 #' @family categorical_metrics
 #'
@@ -240,7 +234,7 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @export
 specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- na.omit(union(observed, predicted))
+  all_levels <- get_all_levels(observed, predicted)
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
@@ -287,13 +281,13 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the recall (also known as sensitibity), the metric that
 #' evaluates a models ability to predict true positives of each available
-#' category. For binary data a single value is returned, for more than 2
-#' categories a vector of recalls is returned, one per each category.
+#' category.
 #'
 #' @inheritParams confusion_matrix
 #'
 #' @return
-#' A single numeric value with the recall.
+#' For binary data a single value is returned, for more than 2 categories a
+#' vector of recalls is returned, one per each category.
 #'
 #' @family categorical_metrics
 #'
@@ -321,14 +315,13 @@ recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the precision, that represents the ratio of true positives
-#' to total predicted positives. For binary data a single value is returned, for
-#' more than 2 categories a vector of precisions is returned, one per each
-#' category.
+#' to total predicted positives.
 #'
 #' @inheritParams confusion_matrix
 #'
 #' @return
-#' A single numeric value with the precision.
+#' For binary data a single value is returned, for more than 2 categories a
+#' vector of precisions is returned, one per each category.
 #'
 #' @family categorical_metrics
 #'
@@ -343,7 +336,7 @@ recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @export
 precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  all_levels <- na.omit(union(observed, predicted))
+  all_levels <- get_all_levels(observed, predicted)
 
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")

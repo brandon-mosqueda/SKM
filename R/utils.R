@@ -450,6 +450,21 @@ has <- function(...) {
   return(!(anyNA(x) || any(sapply(x, is.null)) || anyNaN(x)))
 }
 
+get_all_levels <- function(x, y) {
+  all_levels <- NULL
+
+  if (is.factor(x)) {
+    all_levels <- levels(x)
+  }
+  if (is.factor(y)) {
+    all_levels <- c(all_levels, levels(y))
+  }
+
+  all_levels <- na.omit(union(all_levels, union(x, y)))
+
+  return(all_levels)
+}
+
 #' @title nonull
 #' @description Get the first value that is not NULL.
 #' @export

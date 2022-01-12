@@ -187,7 +187,9 @@ test_that("sensitivity", {
 
   x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
   y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
-  expect_identical(sensitivity(x, y), 1)
+  result <- c(1, 1, NaN)
+  names(result) <- c("A", "C", "B")
+  expect_identical(sensitivity(x, y), result)
   y[c(2, 4, 5)] <- "B"
   result <- c(1, 1, 0)
   names(result) <- c("A", "C", "B")
@@ -246,7 +248,9 @@ test_that("specificity", {
 
   x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
   y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
-  expect_identical(specificity(x, y), 1)
+  result <- c(0, 0, 0)
+  names(result) <- c("A", "C", "B")
+  expect_identical(specificity(x, y), result)
   y[c(2, 4, 5)] <- "B"
   result <- c(0.4, 0.25, 0)
   names(result) <- c("A", "C", "B")
@@ -305,7 +309,9 @@ test_that("precision", {
 
   x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
   y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
-  expect_identical(precision(x, y), 1)
+  result <- c(0.5, 0.5, 0)
+  names(result) <- c("A", "C", "B")
+  expect_identical(precision(x, y), result)
   y[c(2, 4, 5)] <- "B"
   result <- c(0.3333, 0.6667, 0)
   names(result) <- c("A", "C", "B")
