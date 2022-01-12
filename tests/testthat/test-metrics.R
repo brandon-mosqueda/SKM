@@ -340,6 +340,67 @@ test_that("precision", {
   expect_equal(round(precisions, 4), result)
 })
 
+test_that("f1_score", {
+  expect_identical(f1_score("a", "a"), 1)
+  expect_identical(f1_score(1, 1), 1)
+  expect_identical(f1_score(1, 2), NaN)
+  expect_identical(f1_score("a", "b"), NaN)
+  expect_identical(f1_score(c("a", "b"), c("b", "b")), NaN)
+
+  result <- c(NaN, 0.6667, NaN)
+  names(result) <- c("a", "b", "c")
+  expect_equal(
+    round(f1_score(c("a", NA, "b", "c"), c("b", "b", "b", NA)), 4),
+    result
+  )
+
+  expect_identical(f1_score(rep("a", 20), rep("a", 20)), 1)
+  expect_identical(f1_score(rep("a", 20), rep("b", 20)), NaN)
+
+  f1_scores <- f1_score(
+    categorical_vars$observed,
+    categorical_vars$predicted
+  )
+  result <- c(0.5714, 0.2857, 0.5)
+  names(result) <- c("A", "B", "C")
+  expect_equal(round(f1_scores, 4), result)
+
+  expect_error(
+    f1_score("a", c("a", "b")),
+    "observed and predicted must have the same length"
+  )
+  expect_error(
+    f1_score("a", NULL),
+    "observed and predicted must have the same length"
+  )
+
+  x <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "C"))
+  y <- factor(c("A", "A", "C", "A", "C", "C"), levels = c("A", "B", "C"))
+  result <- c(0.6667, 0.6667, NaN)
+  names(result) <- c("A", "C", "B")
+  expect_identical(round(f1_score(x, y), 4), result)
+  y[c(2, 4, 5)] <- "B"
+  result <- c(0.5, 0.8, NaN)
+  names(result) <- c("A", "C", "B")
+  expect_equal(round(f1_score(x, y), 4), result)
+
+  expect_identical(f1_score(NA, "a"), NaN)
+  expect_identical(f1_score("a", NA), NaN)
+  expect_identical(f1_score(NA, NA), NaN)
+  expect_identical(f1_score(NULL, NULL), NaN)
+
+  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
+  y <- c(
+    "a", "a", "b", "c",
+    "a", "b", "b", "c",
+    "a", "b", "b", "c"
+  )
+  precisions <- f1_score(x, y)
+  result <- c(0.4444, 0.4, 0.25)
+  names(result) <- c("a", "b", "c")
+  expect_equal(round(precisions, 4), result)
+})
+
 test_that("pcic", {
   expect_identical(pcic("a", "a"), 0)
   expect_identical(pcic(1, 1), 0)

@@ -20,7 +20,7 @@ output:
       in_header: "/home/bmosqueda/dotfiles/header_rmd.tex"
 ---
 
-$^1$Facultad de Telemática, Universidad de Colima, Colima, Mexico, $^2$Centro Universitario de Ciencias Exactas e Ingenierías (CUCEI), Universidad de Guadalajara, Guadalajara, Mexico, $^3$Centro de Investigación en Computación (CIC), Instituto Politécnico Nacional (IPN), Esq. Miguel Othón de Mendizábal, Mexico city, Mexico.
+$^1$Facultad de Telemática, Universidad de Colima, Colima, México, $^2$Centro Universitario de Ciencias Exactas e Ingenierías (CUCEI), Universidad de Guadalajara, Guadalajara, México, $^3$Centro de Investigación en Computación (CIC), Instituto Politécnico Nacional (IPN), México city, México.
 
 \Large
 
@@ -38,17 +38,15 @@ We consider the mlr3 package the most powerful R package for machine learning in
 
 On the other hand we have caret and tidymodels which both packages provide therir own uniform interface to use them, a very important factor in good quality software. In the same way as mlr3, these two packages use third party packages of machine learning algorithms under the hood to train models, even with different options for the same algorithm. Caret is the oldest of these 3 packages, for this reason it still enjoys of considerable popularity while the major advantage of tidymodels is that belongs to the tidyverse, a collection of R packages designed for data science that share an underlying design philosophy, grammar and data structures [@tidyverse], so if you are familiar with tidyverse packages, you are going to start using tidymodels in a natural way.
 
-In this work we present SKM (Sparse Kernels Methods), a new R package for machine learning that includes functions for model training, tuning, prediction, metrics evaluation and sparse kernels. The main goal of this package is not to provide a full toolkit for data analysis as the previouos packages we have already mentioned nor to include a interface to so many other packages, but focus specifically in 6 type of models: generalized boosted machines, generalized linear models, support vector machines, random forest, bayesian regression models and feed forward artificial neural networks. The models functions in SKM were designed keeping in mind simplicity, so the parameters, hyperparameters and tuning specifications are defined directly when calling the function and the user only have to see one example to understand how to package works. We strive to make clearer the documentation following a base convention in the functions and all the parameters are validated with checkmate [@checkmate] in order to inform the user when an error ocurrs with meaningul error messages, something that many other packages neglect. The most important hyperparameters of each model can be tuned with two different methods, grid search and bayesian optimization [@gaussian_processes] (based on the code of rBayesianOptimization [@rBayesianOptimization] package). Although bayesian optimization is very popular and effective method of tuning, the mlr3 and caret packages does not offer it as option.
+In this work we present SKM (Sparse Kernels Methods), a new R package for machine learning that includes functions for model training, tuning, prediction, metrics evaluation and sparse kernels. The main goal of this package is not to provide a full toolkit for data analysis as the previouos packages we have already mentioned nor to include a interface to so many other packages, but focus specifically in 6 type of models: generalized boosted machines, generalized linear models, support vector machines, random forest, bayesian regression models and feed forward artificial neural networks. The models functions in SKM were designed keeping in mind simplicity, so the parameters, hyperparameters and tuning specifications are defined directly when calling the function and the user only have to see one example to understand how the package works. We strive to make clearer the documentation following a base convention in the functions and all the parameters are validated with checkmate [@checkmate] in order to inform the user when an error ocurrs with meaningul error messages, something that many other packages neglect. The most important hyperparameters of each model can be tuned with two different methods, grid search and bayesian optimization [@gaussian_processes] (based on the code of rBayesianOptimization [@rBayesianOptimization] package). Although bayesian optimization is very popular and effective method of tuning, the mlr3 and caret packages does not offer it as option.
 
 To the best of our knowledge, there is no R package for sparse kernels computation so this is one of biggest contributions of SKM, which is also what gives it its name.
 
 As software developers and consumers we are aware of the importance of share our work with the community, besides SKM is based completely on open source software, so we release this package under the GNU Lesser General Public License v3.0 (LGPLv3), so anyone can explore the source code, make modifications and develop other tools from this.
 
-# Models
+# Machine learning algorithms
 
-# Metrics
-
-# Functions
+# Evalution metrics
 
 # Sparse Kernels
 

@@ -384,6 +384,38 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   return(precisions)
 }
 
+#' @title F1 score
+#'
+#' @description
+#' Given the observed and predicted values of categorical data (of any number of
+#' classes) computes the F1 score, that combines the [precision] and [recall],
+#' and it is defined as the harmonic mean of the precision and recall.
+#'
+#' @inheritParams confusion_matrix
+#'
+#' @return
+#' For binary data a single value is returned, for more than 2 categories a
+#' vector of F1 scores is returned, one per each category.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' f1_score(c("a", "b"), c("a", "b"))
+#' f1_score(c("a", "b"), c("b", "a"))
+#' f1_score(c("a", "b"), c("b", "b"))
+#' f1_score(c(TRUE, FALSE), c(FALSE, TRUE))
+#' f1_score(c("a", "b", "a"), c("b", "a", "c"))
+#' }
+#'
+#' @export
+f1_score <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+  p <- precision(observed, predicted, all_levels = all_levels, na.rm = na.rm)
+  r <- recall(observed, predicted, all_levels = all_levels, na.rm = na.rm)
+
+  return(2 * ((p * r) / (p + r)))
+}
+
 #' @title Proportion of Correctly Classified Cases (PCCC)
 #'
 #' @description
@@ -886,8 +918,8 @@ get_loss_function <- function(responses, is_multivariate) {
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the confusion matrix, Kappa's coefficient, Matthews'
-#' correlation coefficient, accuracy, sensitivity, specificity, precision and
-#' Brier's score.
+#' correlation coefficient, accuracy, sensitivity, specificity, precision, F1
+#' score and Brier's score.
 #'
 #' @inheritParams confusion_matrix
 #' @inheritParams brier_score
@@ -973,6 +1005,12 @@ categorical_summary <- function(observed,
       all_levels = all_levels,
       na.rm = na.rm
     ),
+    f1_score = f1_score(
+      observed,
+      predicted,
+      all_levels = all_levels,
+      na.rm = na.rm
+    ),
     accuracy = accuracy(
       observed,
       predicted,
@@ -1032,10 +1070,13 @@ print.CategoricalSummary <- function(summary, digits = 4) {
     cat(sprintf("* Sensitivity: %s\n", round(summary$sensitivity, digits)))
     cat(sprintf("* Specificity: %s\n", round(summary$specificity, digits)))
     cat(sprintf("* Precision: %s\n", round(summary$precision, digits)))
+    cat(sprintf("* F1 score: %s\n", round(summary$f1_score, digits)))
   } else {
     table_summary <- matrix(
-      c(summary$sensitivity, summary$specificity, summary$precision),
-      nrow = length(all_levels),
+      c(
+        summary$sensitivity, summary$specificity,
+        summary$precision, summary$f1_score),
+      nrow = 4,
       ncol = length(all_levels),
       byrow = TRUE
     )
@@ -1043,7 +1084,8 @@ print.CategoricalSummary <- function(summary, digits = 4) {
     rownames(table_summary) <- c(
       "* Sensitivity",
       "* Specificity",
-      "* Precision"
+      "* Precision",
+      "* F1 score"
     )
     table_summary <- round(table_summary, digits)
 
