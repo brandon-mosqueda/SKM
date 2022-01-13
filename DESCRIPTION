@@ -33,7 +33,11 @@ Imports:
     gbm,
     keras,
     tensorflow,
-    BGLR
+    BGLR,
+    data.table,
+    foreach,
+    magrittr,
+    stats
 Collate:
     'RBO_BayesianOptimization.R'
     'RBO_KFold.R'
