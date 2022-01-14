@@ -384,6 +384,56 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   return(precisions)
 }
 
+#' @title Area Under the Curver (AUC)
+#'
+#' @description
+#' Given the observed values and predicted probabilities values of binary data
+#' computes the Area Under the Curve.
+#'
+#' @inheritParams brier_score
+#' @param probabilities (`numeric`) The predicted probabilities values of
+#'   `true_class`. It has to be of the same length as `observed`.
+#' @param true_class (`character(1)`) (case sensitive) The name of the class (or
+#'   level) that probabilities are computed for. `levels(observed)[1]` by
+#'   default.
+#'
+#' @return
+#' A single numeric value with the AUC.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' auc(c("a", "b"), c(0.2, 0.5))
+#' auc(c("a", "b"), c(0.7, 0.8))
+#' auc(c("a", "b"), c(0.4, 0.9), true_class = "b")
+#' auc(c(TRUE, FALSE), c(0.3, 0.2))
+#' }
+#'
+#' @export
+auc <- function(observed,
+                probabilities,
+                true_class = levels(observed)[1],
+                na.rm = TRUE) {
+  assert_same_length(observed, probabilities)
+
+  all_levels <- get_all_levels(observed, observed)
+
+  if (length(all_levels) == 1) {
+    all_levels <- c(all_levels, "OtherClass")
+  } else if (length(all_levels) > 2) {
+    stop("Area Under the Curve (AUC) is only for binary variables")
+  }
+
+  observed <- factor(observed, all_levels)
+  observed <- observed == true_class
+  n1 <- sum(!observed)
+  n2 <- sum(observed)
+  U <- sum(rank(probabilities)[!observed]) - n1 * (n1 + 1) / 2
+
+  return(1 - U / n1 / n2)
+}
+
 #' @title F1 score
 #'
 #' @description
