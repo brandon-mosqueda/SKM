@@ -384,11 +384,11 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   return(precisions)
 }
 
-#' @title Area Under the Curver (AUC)
+#' @title ROC Area Under the Curver (ROC-AUC)
 #'
 #' @description
 #' Given the observed values and predicted probabilities values of binary data
-#' computes the Area Under the Curve.
+#' computes the ROC Area Under the Curve.
 #'
 #' @inheritParams brier_score
 #' @param probabilities (`numeric`) The predicted probabilities values of
@@ -398,23 +398,23 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'   default.
 #'
 #' @return
-#' A single numeric value with the AUC.
+#' A single numeric value with the ROC-AUC.
 #'
 #' @family categorical_metrics
 #'
 #' @examples
 #' \dontrun{
-#' auc(c("a", "b"), c(0.2, 0.5))
-#' auc(c("a", "b"), c(0.7, 0.8))
-#' auc(c("a", "b"), c(0.4, 0.9), true_class = "b")
-#' auc(c(TRUE, FALSE), c(0.3, 0.2))
+#' roc_auc(c("a", "b"), c(0.2, 0.5))
+#' roc_auc(c("a", "b"), c(0.7, 0.8))
+#' roc_auc(c("a", "b"), c(0.4, 0.9), true_class = "b")
+#' roc_auc(c(TRUE, FALSE), c(0.3, 0.2))
 #' }
 #'
 #' @export
-auc <- function(observed,
-                probabilities,
-                true_class = levels(observed)[1],
-                na.rm = TRUE) {
+roc_auc <- function(observed,
+                    probabilities,
+                    true_class = levels(observed)[1],
+                    na.rm = TRUE) {
   assert_same_length(observed, probabilities)
 
   all_levels <- get_all_levels(observed, observed)
@@ -422,7 +422,7 @@ auc <- function(observed,
   if (length(all_levels) == 1) {
     all_levels <- c(all_levels, "OtherClass")
   } else if (length(all_levels) > 2) {
-    stop("Area Under the Curve (AUC) is only for binary variables")
+    stop("Area Under the Curve (ROC-AUC) is only for binary variables")
   }
 
   observed <- factor(observed, all_levels)
@@ -1075,6 +1075,15 @@ categorical_summary <- function(observed,
       all_levels = all_levels,
       na.rm = na.rm
     )
+
+    if (!is.null(probabilities)) {
+      summary$roc_auc <- roc_auc(
+        observed,
+        probabilities[all_levels[1]],
+        true_class = all_levels[1],
+        na.rm = na.rm
+      )
+    }
   }
 
   if (!is.null(probabilities)) {
@@ -1105,6 +1114,10 @@ print.CategoricalSummary <- function(summary, digits = 4) {
       "* Matthews correlation coefficient: %s\n",
       round(summary$matthews_coeff, digits)
     ))
+  }
+
+  if (!is.null(summary$roc_auc)) {
+    cat(sprintf("* ROC-AUC: %s\n", round(summary$roc_auc, digits)))
   }
 
   if (!is.null(summary$brier_score)) {

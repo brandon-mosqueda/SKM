@@ -340,41 +340,41 @@ test_that("precision", {
   expect_equal(round(precisions, 4), result)
 })
 
-test_that("auc", {
-  expect_identical(auc(c("a", "a"), c(0.6, 0.6)), NaN)
-  expect_identical(auc(c(1, 1), c(0.8, 0.7)), NaN)
-  expect_identical(auc(1, c(0.2)), NaN)
-  expect_identical(auc("a", c(0.4)), NaN)
-  expect_identical(auc(c("a", "b"), c(0.6, 0.4)), 1)
-  expect_identical(auc(c("a", "b"), c(0.4, 0.6)), 0)
+test_that("roc_auc", {
+  expect_identical(roc_auc(c("a", "a"), c(0.6, 0.6)), NaN)
+  expect_identical(roc_auc(c(1, 1), c(0.8, 0.7)), NaN)
+  expect_identical(roc_auc(1, c(0.2)), NaN)
+  expect_identical(roc_auc("a", c(0.4)), NaN)
+  expect_identical(roc_auc(c("a", "b"), c(0.6, 0.4)), 1)
+  expect_identical(roc_auc(c("a", "b"), c(0.4, 0.6)), 0)
 
-  expect_identical(auc(rep("a", 5), rep(0.7, 5)), NaN)
-  expect_identical(auc(rep("a", 5), rep(0.3, 5)), NaN)
+  expect_identical(roc_auc(rep("a", 5), rep(0.7, 5)), NaN)
+  expect_identical(roc_auc(rep("a", 5), rep(0.3, 5)), NaN)
 
   expect_error(
-    auc(c("a", "b", "c"), c(0.2, 0.5, 0.9)),
-    "Area Under the Curve \\(AUC\\) is only for binary variables"
+    roc_auc(c("a", "b", "c"), c(0.2, 0.5, 0.9)),
+    "Area Under the Curve \\(ROC-AUC\\) is only for binary variables"
   )
 
   expect_error(
-    auc("a", c("a", "b")),
+    roc_auc("a", c("a", "b")),
     "observed and probabilities must have the same length"
   )
   expect_error(
-    auc("a", NULL),
+    roc_auc("a", NULL),
     "observed and probabilities must have the same length"
   )
 
-  expect_identical(auc(NA, "a"), NaN)
-  expect_identical(auc("a", NA), NaN)
-  expect_identical(auc(NA, NA), NaN)
-  expect_identical(auc(NULL, NULL), NaN)
+  expect_identical(roc_auc(NA, "a"), NaN)
+  expect_identical(roc_auc("a", NA), NaN)
+  expect_identical(roc_auc(NA, NA), NaN)
+  expect_identical(roc_auc(NULL, NULL), NaN)
 
   set.seed(42)
   probs <- rnorm(100)
   observed <- sample(c("a", "b"), 100, replace = TRUE)
 
-  expect_equal(round(auc(observed, probs), 4), 0.4731)
+  expect_equal(round(roc_auc(observed, probs), 4), 0.4731)
 })
 
 test_that("f1_score", {
