@@ -452,10 +452,8 @@ roc_auc <- function(observed,
 #' @examples
 #' \dontrun{
 #' f1_score(c("a", "b"), c("a", "b"))
-#' f1_score(c("a", "b"), c("b", "a"))
+#' f1_score(c("a", "b", "a", "b"), c("a", "b", "b", "a"))
 #' f1_score(c("a", "b"), c("b", "b"))
-#' f1_score(c(TRUE, FALSE), c(FALSE, TRUE))
-#' f1_score(c("a", "b", "a"), c("b", "a", "c"))
 #' }
 #'
 #' @export
@@ -946,19 +944,88 @@ multivariate_loss <- function(observed, predicted, responses) {
   return(mean(all_metrics, na.rm = TRUE))
 }
 
-get_loss_function <- function(responses, is_multivariate) {
+get_loss_function <- function(loss_function, responses, is_multivariate) {
   if (is_multivariate) {
-    return(multivariate_loss)
-  } else if (is_class_response(responses[[1]]$type)) {
-    return(pcic)
-  } else if (is_numeric_response(responses[[1]]$type)) {
-    return(mse)
-  } else {
-    stop(sprintf(
-      "{%s} is not recognized as a type of response variable",
-      set_collapse(responses[[1]]$type)
-    ))
+    if (!is.null(loss_function)) {
+      warning("loss_function is ignored always in multivariate analysis.")
+    }
+
+    return("multivariate_loss")
   }
+
+  if (is.null(loss_function)) {
+    if (is_class_response(responses[[1]]$type)) {
+      return("accuracy")
+    } else if (is_numeric_response(responses[[1]]$type)) {
+      return("mse")
+    }
+  }
+
+  if (
+    is_binary_response(responses[[1]]$type) &&
+    !is_binary_loss(loss_function)
+  ) {
+    warning(
+      loss_function,
+      " is not a valid loss function for binary response variables, ",
+      "accuracy set instead."
+    )
+    loss_function <- "accuracy"
+  } else if (
+    is_numeric_response(responses[[1]]$type) &&
+    !is_numeric_loss(loss_function)
+  ) {
+    warning(
+      loss_function,
+      " is not a valid loss function for numeric response variables, ",
+      "mse set instead."
+    )
+    loss_function <- "mse"
+  } else if (
+    is_categorical_response(responses[[1]]$type) &&
+    !is_categorical_loss(loss_function)
+  ) {
+    warning(
+      loss_function,
+      " is not a valid loss function for categorical response variables, ",
+      "accuracy set instead."
+    )
+    loss_function <- "accuracy"
+  }
+
+  return(loss_function)
+}
+
+wrapper_loss <- function(observed,
+                         predictions,
+                         tuner) {
+  if (tuner$is_multivariate) {
+    loss <- tuner$loss_function(
+      observed = observed,
+      predicted = predictions,
+      responses = tuner$responses
+    )
+  } else {
+    if (tuner$loss_function_name == "roc_auc") {
+      true_class <- levels(observed)[1]
+      loss <- roc_auc(
+        observed = observed,
+        probabilities = predictions$probabilities[[true_class]],
+        true_class = true_class
+      )
+    } else {
+      loss <- tuner$loss_function(
+        observed = observed,
+        predicted = predictions$predicted
+      )
+    }
+  }
+
+  if (need_invert_loss(tuner$loss_function_name)) {
+    loss <- loss * -1
+  }
+
+  return(loss)
 }
 
 # Summary --------------------------------------------------

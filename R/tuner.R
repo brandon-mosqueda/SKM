@@ -19,6 +19,7 @@ Tuner <- R6Class(
     training_function = NULL,
     predict_function = NULL,
     loss_function = NULL,
+    loss_function_name = NULL,
 
     cross_validator = NULL,
     cv_type = NULL,
@@ -45,7 +46,7 @@ Tuner <- R6Class(
                           cv_type,
                           folds_number,
                           testing_proportion,
-                          loss_function = NULL,
+                          loss_function,
                           tabs_number = 0) {
       self$x <- x
       self$y <- y
@@ -64,10 +65,13 @@ Tuner <- R6Class(
       self$testing_proportion <- testing_proportion
       self$responses <- responses
       self$is_multivariate <- is_multivariate
-      self$loss_function <- nonull(
+      self$loss_function_name <- get_loss_function(
         loss_function,
-        get_loss_function(self$responses, self$is_multivariate)
+        self$responses,
+        self$is_multivariate
       )
+      self$loss_function <- eval(parse(text = self$loss_function_name))
+
       self$tabs_number <- tabs_number
       self$fit_params <- fit_params
 
@@ -98,18 +102,11 @@ Tuner <- R6Class(
         fit_params = hyperparams
       )
 
-      if (self$is_multivariate) {
-        loss <- self$loss_function(
-          observed = y_testing,
-          predicted = predictions,
-          responses = self$responses
-        )
-      } else {
-        loss <- self$loss_function(
-          observed = y_testing,
-          predicted = predictions$predicted
-        )
-      }
+      loss <- wrapper_loss(
+        observed = y_testing,
+        predictions = predictions,
+        tuner = self
+      )
 
       return(loss)
     },

@@ -51,6 +51,8 @@ BayesianTuner <- R6Class(
         loss_values <- c(loss_values, loss)
       }
 
+      # All loss functions used in eval_one_fold return a value to be minimized
+      # and this functions needs to return a value to be maximized.
       return(list(Score = -mean(loss_values), Pred = 0))
     },
     tune = function() {
@@ -81,6 +83,17 @@ BayesianTuner <- R6Class(
 
       self$best_combination <- as.list(optimizer$Best_Par)
       self$best_combination$loss <- optimizer$Best_Value * -1
+
+      if (need_invert_loss(self$loss_function_name)) {
+        self$all_combinations$loss <- self$all_combinations$loss * -1
+        self$best_combination$loss <- self$best_combination$loss * -1
+      }
+      self$all_combinations[[self$loss_function_name]] <-
+        self$all_combinations$loss
+      self$best_combination[[self$loss_function_name]] <-
+        self$best_combination$loss
+      self$all_combinations$loss <- NULL
+      self$best_combination$loss <- NULL
 
       return(invisible(self$best_combination))
     }

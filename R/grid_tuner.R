@@ -98,6 +98,12 @@ GridTuner <- R6Class(
         order(self$all_combinations$loss), ,
         drop = FALSE
       ]
+      if (need_invert_loss(self$loss_function_name)) {
+        self$all_combinations$loss <- self$all_combinations$loss * -1
+      }
+      self$all_combinations[[self$loss_function_name]] <-
+        self$all_combinations$loss
+      self$all_combinations$loss <- NULL
       self$best_combination <- as.list(self$all_combinations[1, , drop = FALSE])
 
       return(invisible(self$best_combination))

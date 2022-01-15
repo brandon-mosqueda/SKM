@@ -689,6 +689,27 @@ is_class_response <- function(response_type) {
   )
 }
 
+is_binary_loss <- function(loss_function) {
+  valid_binary_loss_functions <- c(
+    TUNE_BINARY_LOSS_FUNCTIONS,
+    TUNE_CATEGORICAL_LOSS_FUNCTIONS
+  )
+
+  return(loss_function %in% valid_binary_loss_functions)
+}
+
+is_numeric_loss <- function(loss_function) {
+  return(loss_function %in% TUNE_NUMERIC_LOSS_FUNCTIONS)
+}
+
+is_categorial_loss <- function(loss_function) {
+  return(loss_function %in% TUNE_CATEGORICAL_LOSS_FUNCTIONS)
+}
+
+need_invert_loss <- function(loss_function) {
+  return(loss_function %in% NEED_INVERT_LOSS)
+}
+
 # Cross validation --------------------------------------------------
 
 #' @export
