@@ -84,8 +84,8 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   row_marginal_props <- rowSums(conf_matrix) / N
   col_marginal_props <- colSums(conf_matrix) / N
 
-  Po <- sum(diagonal_counts) / N
-  Pe <- sum(row_marginal_props * col_marginal_props)
+  Po <- as.numeric(sum(diagonal_counts) / N)
+  Pe <- sum(as.numeric(row_marginal_props * col_marginal_props))
 
   return((Po - Pe) / (1 - Pe))
 }
@@ -136,10 +136,10 @@ matthews_coeff <- function(observed,
     na.rm = na.rm
   )
 
-  tp <- conf_matrix[1, 1]
-  tn <- conf_matrix[2, 2]
-  fp <- conf_matrix[1, 2]
-  fn <- conf_matrix[2, 1]
+  tp <- as.numeric(conf_matrix[1, 1])
+  tn <- as.numeric(conf_matrix[2, 2])
+  fp <- as.numeric(conf_matrix[1, 2])
+  fn <- as.numeric(conf_matrix[2, 1])
 
   return(
     (tp * tn - fp * fn) /
@@ -201,7 +201,7 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
     fp <- conf_matrix[1, 2]
     fn <- conf_matrix[2, 1]
 
-    return(tp / (tp + fn))
+    return(as.numeric(tp / (tp + fn)))
   }
 
   sensitivities <- vector("numeric", length(all_levels))
@@ -268,7 +268,7 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
     fp <- conf_matrix[1, 2]
     fn <- conf_matrix[2, 1]
 
-    return(tn / (tn + fp))
+    return(as.numeric(tn / (tn + fp)))
   }
 
   specificities <- vector("numeric", length(all_levels))
@@ -372,7 +372,7 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
     fp <- conf_matrix[1, 2]
     fn <- conf_matrix[2, 1]
 
-    return(tp / (tp + fp))
+    return(as.numeric(tp / (tp + fp)))
   }
 
   precisions <- vector("numeric", length(all_levels))
@@ -381,7 +381,7 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   diag_sum <- sum(diag(conf_matrix))
 
   for (level in all_levels) {
-    precisions[level] <- conf_matrix[level, level] / diag_sum
+    precisions[level] <- as.numeric(conf_matrix[level, level]) / diag_sum
   }
 
   return(precisions)
