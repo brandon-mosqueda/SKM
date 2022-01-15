@@ -113,7 +113,10 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' }
 #'
 #' @export
-matthews_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+matthews_coeff <- function(observed,
+                           predicted,
+                           all_levels = NULL,
+                           na.rm = TRUE) {
   assert_same_length(observed, predicted)
 
   if (is.null(all_levels)) {
@@ -121,7 +124,7 @@ matthews_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE)
   }
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   } else if (length(all_levels) > 2) {
     stop("Matthews correlation coefficient (MCC) is only for binary variables")
   }
@@ -176,7 +179,7 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   }
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   }
 
   conf_matrix <- confusion_matrix(
@@ -243,7 +246,7 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   }
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   }
 
   conf_matrix <- confusion_matrix(
@@ -347,7 +350,7 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   }
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   }
 
   conf_matrix <- confusion_matrix(
@@ -394,7 +397,7 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' @param probabilities (`numeric`) The predicted probabilities values of
 #'   `true_class`. It has to be of the same length as `observed`.
 #' @param true_class (`character(1)`) (case sensitive) The name of the class (or
-#'   level) that probabilities are computed for. `levels(observed)[1]` by
+#'   level) that probabilities are computed for. `levels(observed)[2]` by
 #'   default.
 #'
 #' @return
@@ -413,14 +416,14 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' @export
 roc_auc <- function(observed,
                     probabilities,
-                    true_class = levels(observed)[1],
+                    true_class = levels(observed)[2],
                     na.rm = TRUE) {
   assert_same_length(observed, probabilities)
 
   all_levels <- get_all_levels(observed, observed)
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   } else if (length(all_levels) > 2) {
     stop("Area Under the Curve (ROC-AUC) is only for binary variables")
   }
@@ -1088,7 +1091,7 @@ categorical_summary <- function(observed,
   }
 
   if (length(all_levels) == 1) {
-    all_levels <- c(all_levels, "OtherClass")
+    all_levels <- c("OtherClass", all_levels)
   }
 
   summary <- list(
