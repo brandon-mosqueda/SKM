@@ -488,8 +488,7 @@ prepare_y_to_deep_learning <- function(y, response_type) {
 predict_class <- function(probabilities, response_type, levels) {
   if (is_binary_response(response_type)) {
     # With binary responses, probabilities is a vector that refers to level 2
-    predictions <- ifelse(probabilities > 0.5, 2, 1)
-    predictions <- levels[predictions]
+    predictions <- levels[as.integer(probabilities > 0.5) + 1]
 
     probabilities <- cbind(1 - probabilities, probabilities)
   } else if (is_categorical_response(response_type)) {

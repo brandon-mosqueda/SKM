@@ -62,7 +62,7 @@ GeneralizedBoostedMachineModel <- R6Class(
       }
 
       if (is_binary_response(self$responses$y$type)) {
-        self$y <- ifelse(self$y == self$responses$y$levels[1], 1, 0)
+        self$y <- as.integer(self$y) - 1
       }
 
       self$fit_params$distribution <- get_gbm_distribution(
@@ -121,14 +121,10 @@ GeneralizedBoostedMachineModel <- R6Class(
       )
 
       if (is_binary_response(responses$y$type)) {
-        # Predictions are only the probabilities of being 1 (response level 1)
-        probabilities <- cbind(predictions, 1 - predictions)
+        # Predictions are only the probabilities of being 1 (response level 2)
+        probabilities <- cbind(1 - predictions, predictions)
         colnames(probabilities) <- responses$y$levels
-        predictions <- ifelse(
-          predictions > 0.5,
-          responses$y$levels[1],
-          responses$y$levels[2]
-        )
+        predictions <- responses$y$levels[as.integer(predictions > 0.5) + 1]
         predictions <- factor(predictions, levels = responses$y$levels)
 
         predictions <- list(
