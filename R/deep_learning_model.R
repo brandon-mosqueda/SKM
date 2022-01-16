@@ -21,6 +21,8 @@ DeepLearningModel <- R6Class(
 
     initialize = function(...,
                           tune_type,
+                          is_multivariate,
+
                           learning_rate,
                           epochs_number,
                           batch_size,
@@ -28,6 +30,7 @@ DeepLearningModel <- R6Class(
                           output_penalties,
 
                           optimizer,
+                          loss_function,
                           with_platt_scaling,
                           platt_proportion,
                           shuffle,
@@ -35,7 +38,12 @@ DeepLearningModel <- R6Class(
                           early_stop_patience) {
       tune_type <- paste0("deep_", tune_type)
 
-      super$initialize(..., tune_type = tune_type, name = "Deep Learning")
+      super$initialize(
+        ...,
+        tune_type = tune_type,
+        is_multivariate = is_multivariate,
+        name = "Deep Learning"
+      )
 
       self$fit_params$learning_rate <- learning_rate
       self$fit_params$epochs_number <- epochs_number
@@ -61,6 +69,18 @@ DeepLearningModel <- R6Class(
       }
 
       self$fit_params$optimizer <- tolower(optimizer)
+
+      if (self$is_multivariate && !is.null(loss_function)) {
+        warning(
+          "In multivariate models no custom loss function can be used, the ",
+          "default function will be used."
+        )
+        loss_function <- NULL
+      }
+      if (!is.null(loss_function)) {
+        self$fit_params$loss_function <- tolower(loss_function)
+      }
+
       self$fit_params$with_platt_scaling <- with_platt_scaling
       self$fit_params$platt_proportion <- platt_proportion
       self$fit_params$shuffle <- shuffle
@@ -95,15 +115,22 @@ DeepLearningModel <- R6Class(
 
     has_to_tune = function() {
       responses <- self$fit_params$responses
+      y_colnames <- self$fit_params$y_colnames
+
       self$fit_params$responses <- NULL
+      self$fit_params$y_colnames <- NULL
+
       result <- super$has_to_tune()
+
       self$fit_params$responses <- responses
+      self$fit_params$y_colnames <- y_colnames
 
       return(result)
     },
     get_hyperparams = function() {
       hyperparams <- super$get_hyperparams()
       hyperparams$responses <- NULL
+      hyperparams$y_colnames <- NULL
 
       return(hyperparams)
     },
@@ -222,8 +249,9 @@ DeepLearningModel <- R6Class(
             levels = self$responses[[name]]$levels
           )
 
-        self$responses[[name]]$loss_function <- get_loss(
-          self$responses[[name]]$type
+        self$responses[[name]]$loss_function <- nonull(
+          self$fit_params$loss_function,
+          get_loss(self$responses[[name]]$type)
         )
 
         self$responses[[name]]$metric <- get_metric(self$responses[[name]]$type)

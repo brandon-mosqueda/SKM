@@ -10,6 +10,7 @@ DeepLearningBayesianTuner <- R6Class(
   public = list(
     # Methods --------------------------------------------------
 
-    eval_one_fold = deep_learning_eval_one_fold
+    eval_one_fold = deep_learning_eval_one_fold,
+    tune = deep_learning_tune
   )
 )

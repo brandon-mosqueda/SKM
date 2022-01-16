@@ -107,6 +107,14 @@
 #'   reduce the loss function and update the weights in backpropagation. The
 #'   available options are `"adadelta"`, `"adagrad"`, `"adamax"`, `"adam"`,
 #'   `"nadam"`, `"rmsprop"` and `"sgd"`. `"adam"` by default.
+#' @param loss_function (`character(1)`) (case not sensitive) The name of the
+#'   loss function the model will seek to minimize during training and tuning.
+#'   You can find the complete list of available loss functions in the Details
+#'   section below. This parameter can be used only in univariate analysis.
+#'   `NULL` by default which selects one automatically based on the type of the
+#'   response variable `y`: `"mean_squared_error"` for continuous, `"poisson"`
+#'   for counts, `"binary_crossentropy"` for binary and
+#'   `"categorical_crossentropy"` for categorical.
 #' @param with_platt_scaling (`logical(1)`) Should Platt scaling be used to fit
 #'   the model and adjust the predictions? Only available for univariate models
 #'   with a numeric or binary response variable. For more information, see
@@ -210,12 +218,12 @@ deep_learning <- function(x, y,
                           tune_cv_type = "K_fold",
                           tune_folds_number = 5,
                           tune_testing_proportion = 0.2,
-                          tune_loss_function = NULL,
                           tune_grid_proportion = 1,
                           tune_bayes_samples_number = 10,
                           tune_bayes_iterations_number = 10,
 
                           optimizer = "adam",
+                          loss_function = NULL,
                           with_platt_scaling = FALSE,
                           platt_proportion = 0.3,
                           shuffle = TRUE,
@@ -245,12 +253,12 @@ deep_learning <- function(x, y,
       tune_cv_type = tune_cv_type,
       tune_folds_number = tune_folds_number,
       tune_testing_proportion = tune_testing_proportion,
-      tune_loss_function = tune_loss_function,
       tune_grid_proportion = tune_grid_proportion,
       tune_bayes_samples_number = tune_bayes_samples_number,
       tune_bayes_iterations_number = tune_bayes_iterations_number,
 
       optimizer = optimizer,
+      loss_function = loss_function,
       with_platt_scaling = with_platt_scaling,
       platt_proportion = platt_proportion,
       shuffle = shuffle,
@@ -293,12 +301,12 @@ deep_learning <- function(x, y,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
-    tune_loss_function = tune_loss_function,
     tune_grid_proportion = tune_grid_proportion,
     tune_bayes_samples_number = tune_bayes_samples_number,
     tune_bayes_iterations_number = tune_bayes_iterations_number,
 
     optimizer = optimizer,
+    loss_function = loss_function,
     with_platt_scaling = with_platt_scaling,
     platt_proportion = platt_proportion,
     shuffle = shuffle,

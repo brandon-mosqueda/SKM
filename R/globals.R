@@ -66,6 +66,26 @@ VALID_OPTIMIZERS <- c(
   "sgd"
 )
 
+VALID_DEEP_LEARNING_LOSS_FUNCTIONS <- c(
+  "binary_crossentropy",
+  "categorical_crossentropy",
+  "sparse_categorical_crossentropy",
+  "poisson",
+  "kl_divergence",
+
+  "mean_squared_error",
+  "mean_absolute_error",
+  "mean_absolute_percentage_error",
+  "mean_squared_logarithmic_error",
+  "cosine_similarity",
+  "huber",
+  "log_cosh",
+
+  "hinge",
+  "squared_hinge",
+  "categorical_hinge"
+)
+
 DEFAULT_LAYER_NEURONS <- 50
 DEFAULT_LAYER_ACTIVATION <- "relu"
 DEFAULT_LAYER_DROPOUT <- 0

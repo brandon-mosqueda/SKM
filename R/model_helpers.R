@@ -384,6 +384,22 @@ deep_learning_eval_one_fold <- function(fold, combination) {
   return(model$validation_loss)
 }
 
+deep_learning_tune <- function() {
+  super$tune()
+
+  n_cols <- ncol(self$all_combinations)
+  new_loss <- ifelse(
+    self$is_multivariate,
+    "loss",
+    self$responses$y$loss_function
+  )
+
+  colnames(self$all_combinations)[n_cols] <- new_loss
+  names(self$best_combination)[n_cols] <- new_loss
+
+  return(invisible(self$best_combination))
+}
+
 get_keras_optimizer_function <- function(optimizer) {
   return(switch(
     tolower(optimizer),
@@ -443,7 +459,7 @@ get_last_layer_neurons_number <- function(response_type, levels) {
 
 get_loss <- function(response_type) {
   if (is_continuous_response(response_type)) {
-    loss <- "mse"
+    loss <- "mean_squared_error"
   } else if (is_discrete_response(response_type)) {
     loss <- "poisson"
   } else if (is_categorical_response(response_type)) {

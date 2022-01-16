@@ -518,12 +518,19 @@ assert_layers <- function(layers, tune_type) {
 }
 
 assert_optimizer <- function(optimizer) {
-  assert_string(optimizer)
-
   assert_subset_string(
     optimizer,
     VALID_OPTIMIZERS,
     empty.ok = FALSE,
+    ignore.case = TRUE,
+    len = 1
+  )
+}
+
+assert_deep_learning_loss_function <- function(loss_function) {
+  assert_subset_string(
+    loss_function,
+    VALID_DEEP_LEARNING_LOSS_FUNCTIONS,
     ignore.case = TRUE,
     len = 1
   )
@@ -862,12 +869,12 @@ validate_deep_learning <- function(x,
                                    tune_cv_type,
                                    tune_folds_number,
                                    tune_testing_proportion,
-                                   tune_loss_function,
                                    tune_grid_proportion,
                                    tune_bayes_samples_number,
                                    tune_bayes_iterations_number,
 
                                    optimizer,
+                                   loss_function,
                                    with_platt_scaling,
                                    platt_proportion,
                                    shuffle,
@@ -885,7 +892,7 @@ validate_deep_learning <- function(x,
     tune_cv_type = tune_cv_type,
     tune_folds_number = tune_folds_number,
     tune_testing_proportion = tune_testing_proportion,
-    tune_loss_function = tune_loss_function,
+    tune_loss_function = NULL,
     tune_grid_proportion = tune_grid_proportion,
     tune_bayes_samples_number = tune_bayes_samples_number,
     tune_bayes_iterations_number = tune_bayes_iterations_number,
@@ -912,6 +919,7 @@ validate_deep_learning <- function(x,
   assert_output_penalties(output_penalties, tune_type)
 
   assert_optimizer(optimizer)
+  assert_deep_learning_loss_function(loss_function)
   assert_logical(with_platt_scaling, len = 1, any.missing = FALSE)
   assert_number(platt_proportion, lower = 1e-3, upper = 1 - 1e-3)
 
