@@ -125,13 +125,12 @@ TUNE_TYPES <- c("Grid_search", "Bayesian_optimization")
 
 TUNE_NUMERIC_LOSS_FUNCTIONS <- c("mse", "maape", "mae", "nrmse", "rmse")
 
-TUNE_BINARY_LOSS_FUNCTIONS <- c("f1_score", "matthews_coeff", "roc_auc")
+TUNE_BINARY_LOSS_FUNCTIONS <- c("f1_score", "roc_auc")
 
 TUNE_CATEGORICAL_LOSS_FUNCTIONS <- c("accuracy", "kappa_coeff")
 
 NEED_INVERT_LOSS <- c(
   "f1_score",
-  "matthews_coeff",
   "roc_auc",
   "accuracy",
   "kappa_coeff"
