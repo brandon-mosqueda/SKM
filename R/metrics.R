@@ -1009,8 +1009,18 @@ wrapper_loss <- function(observed,
       responses = tuner$responses
     )
   } else {
+    # For GBM that needs the response in 0, 1 format
+    if (
+      !tuner$is_multivariate &&
+      is_binary_response(tuner$responses$y$type) &&
+      !is.factor(observed)
+    ) {
+      observed <- tuner$responses$y$levels[observed + 1]
+      observed <- factor(observed, levels = tuner$responses$y$levels)
+    }
+
     if (tuner$loss_function_name == "roc_auc") {
-      true_class <- levels(observed)[1]
+      true_class <- levels(observed)[2]
       loss <- roc_auc(
         observed = observed,
         probabilities = predictions$probabilities[[true_class]],
