@@ -34,7 +34,7 @@ In this paper we present a new R package for implementing 6 of the most popular 
 
 # Introduction
 
-Machine learning has become the main approch for solving problemas based on data. We can find applications that use machine learning to solve complex problems everywhere, from devices and digital services of daily use as smartphones and websites to scientific research of many areas of knowledge [@crosscheck; @genomic_selection; @speech_recognition; @object_detection]. As machine learning research has progressed, the supply and demand of software that facilites its implmentation too, for this reason nowadays we can find numerous open source packages for data related tasks and machine learning algorithms [@tensorflow; @pandas; @dplyr; @h2o].
+Machine learning has become the main approch for solving problemas based on data. We can find applications that use machine learning to solve complex problems everywhere, from devices and digital services of daily use as smartphones and websites to scientific research of many areas of knowledge [@crosscheck; @genomic_selection; @speech_recognition; @object_detection]. As machine learning research has progressed, the supply and demand of software that facilitates its implmentation too, for this reason nowadays we can find numerous open source packages for data related tasks and machine learning algorithms [@tensorflow; @pandas; @dplyr; @h2o].
 
 One of the most used programming languages for data analysis is R [@R], due to its statistical computing focus, free and open source software nature and the thousands of packages that extends its power to all kind of analysis and all related tasks of data science. It is difficult to find a machine learning algorithm which does not exist a package for implementing it in R, even it can be said that some of the R packages contains more complete/specialized implementations [@e1071; @randomForestSRC; @glmnet] than those available in other programming languages. As machine learning is strongly based in statistical models and as R is the _de facto_ language for statistics research, those who want to do machine learning sooner or later they will encounter R.
 
@@ -63,6 +63,13 @@ As [@sparse_kernels] points out, kernel methods transform the independent variab
 In [Appendix B](#appendix_b) we have included some examples about how you can use the _kernelilze_ function of SKM with several type of data and then fit a model with it.
 
 # Evaluation metrics
+
+Evaluating models' performance is an important task of all machine learning workflow, for this reason we have included in SKM functions of the most popular metrics to evaluate models performance for both regression and classification. The regression metrics included are: Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean Squared Error (NRMSE, with 4 types of normalization), Mean Absolute Error (MAE) and Mean Arctangent Absolute Percentage Error (MAAPE). The classification metrics included are: accuracy, specificity, sensitivity, Kappa coefficient, Brier score, Matthews correlation coefficient, precision, recall, Area Under the ROC Curve (ROC-AUC) and F1 score.
+In addition to the functions already mentioned, the wrapper functions numeric_summary and categorical_summary computes all the regression and classification metrics, respectively, in order to have a complete summary of your model's performance in a simple function.
+
+As expected, all these metrics functions work in harmony with the machine learning algorithms functions, since they use the same data format and no extra data processing is necessary when using using together. This does not limit or complicate the use of them with other packages, on the contrary, detailed documentation is provided.
+
+[Appendix A](#appendix_a) and [Appendix B](#appendix_b) includes examples of some metrics functions that basically receive the observed and predicted values (or probabilities in classification) and returns a numeric value.
 
 # Installation
 
