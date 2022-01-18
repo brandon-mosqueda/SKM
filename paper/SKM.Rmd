@@ -26,6 +26,12 @@ $^1$Facultad de Telemática, Universidad de Colima, Colima, México, $^2$Centro 
 
 # Abstract
 
+\large
+
+In this paper we present a new R package for implementing 6 of the most popular machine learning algorithms with the (optional) use of sparse kernels.
+
+\Large
+
 # Introduction
 
 Machine learning has become the main approch for solving problemas based on data. We can find applications that use machine learning to solve complex problems everywhere, from devices and digital services of daily use as smartphones and websites to scientific research of many areas of knowledge [@crosscheck; @genomic_selection; @speech_recognition; @object_detection]. As machine learning research has progressed, the supply and demand of software that facilites its implmentation too, for this reason nowadays we can find numerous open source packages for data related tasks and machine learning algorithms [@tensorflow; @pandas; @dplyr; @h2o].
@@ -38,24 +44,34 @@ We consider the mlr3 package the most powerful R package for machine learning in
 
 On the other hand we have caret and tidymodels which both packages provide therir own uniform interface to use them, a very important factor in good quality software. In the same way as mlr3, these two packages use third party packages of machine learning algorithms under the hood to train models, even with different options for the same algorithm. Caret is the oldest of these 3 packages, for this reason it still enjoys of considerable popularity while the major advantage of tidymodels is that belongs to the tidyverse, a collection of R packages designed for data science that share an underlying design philosophy, grammar and data structures [@tidyverse], so if you are familiar with tidyverse packages, you are going to start using tidymodels in a natural way.
 
-In this work we present SKM (Sparse Kernels Methods), a new R package for machine learning that includes functions for model training, tuning, prediction, metrics evaluation and sparse kernels. The main goal of this package is not to provide a full toolkit for data analysis as the previouos packages we have already mentioned nor to include a interface to so many other packages, but focus specifically in 6 type of models. The models functions in SKM were designed keeping in mind simplicity, so the parameters, hyperparameters and tuning specifications are defined directly when calling the function and the user only have to see one example to understand how the package works. We strive to make clearer the documentation following a base convention in the functions and all the parameters are validated with checkmate [@checkmate] in order to inform the user when an error ocurrs with meaningul error messages, something that many other packages neglect. The most important hyperparameters of each model can be tuned with two different methods, grid search and bayesian optimization [@gaussian_processes] (based on the code of rBayesianOptimization [@rBayesianOptimization] package). Although bayesian optimization is very popular and effective method of tuning, the mlr3 and caret packages does not offer it as option.
+In this work we present SKM (Sparse Kernels Methods), a new R package for machine learning that includes functions for model training, tuning, prediction, metrics evaluation and sparse kernels computation. The main goal of this package is not to provide a full toolkit for data analysis as the previouos packages we have already mentioned nor to include a interface to so many other packages, but focus specifically in 6 supervised type of models. The model functions in SKM were designed keeping in mind simplicity, so the parameters, hyperparameters and tuning specifications are defined directly when calling the function and the user only have to see one example to understand how the package works. We strive to make clearer the documentation following a base convention in the functions and all the parameters are validated with checkmate [@checkmate] in order to inform the user when an error ocurrs with meaningul error messages, something that many other packages neglect. The most important hyperparameters of each model can be tuned with two different methods, grid search and bayesian optimization [@gaussian_processes] (based on the code of rBayesianOptimization [@rBayesianOptimization] package). Although bayesian optimization is very popular and effective method of tuning, the mlr3 and caret packages does not offer it as option.
 
-To the best of our knowledge, there is no R package for sparse kernels computation so this is one of biggest contributions of SKM, which is also what gives it its name.
+Sparse kernels have proven to be useful in helping the conventional machine learning algorithms capture non-linear patterns in data [@sparse_kernels]. To the best of our knowledge, there is no R package for sparse kernels computation so this is one of biggest contributions of SKM, which is also what gives it its name.
 
 As software developers and consumers we are aware of the importance of share our work with the community, besides SKM is based completely on open source software, so we release this package under the GNU Lesser General Public License v3.0 (LGPLv3), so anyone can explore the source code, make modifications and develop other tools from this.
 
 # Machine learning algorithms
 
-SKM package includes 6 different functions of machine learning algorithms. Each of these functions is one abstraction layer more to other R package that implements a family of algorithms, these are: 1) generalized boosted machines, which internally uses gbm [@gbm] package, 2) generalized linear models of glmnet [@glmnet] package, support vector machines of e1071 [@e1071] package, random forest of randomForestSRC [@randomForestSRC] package, bayesian regression models of BGLR [@BGLR] package and feed forward artificial neural networks of keras [@keras] package. The additional layer of abstraction allows all functions to share the same data input format, internally data is adapted to the expected format of each package. Other benefit of these functions is that parameters that can be inferred from data itself are not asked to the user but set automatically, for example, the family parameter of glmnet package which has to be "gaussian" for continuous response variables, "binomial" for binary variables, "multinomial" for multicategorical variables and "poisson" for count variables, can be inferred from the response data. In addition, the same functions allow to specify in a easy and user friendly way the hyperparameters and tunining details without the need to call another function or instantiate another object but as arguments of the same function. In theory, as it happens with all the packages that calls internally functions of other packages the expected improvement is with regard to ease of use and extended functionality with a little increment in computational demand for the extra operations required, but since these operations are computationally low cost, there is no significant loss of power.
+SKM package includes 6 different functions of supervised machine learning algorithms. Each of these functions is one abstraction layer more to other R package that implements a family of algorithms, these are: 1) generalized boosted machines, which internally uses gbm [@gbm] package, 2) generalized linear models of glmnet [@glmnet] package, support vector machines of e1071 [@e1071] package, random forest of randomForestSRC [@randomForestSRC] package, bayesian regression models of BGLR [@BGLR] package and feed forward artificial neural networks of keras [@keras] package. The additional layer of abstraction allows all functions to share the same data input format, internally data is adapted to the expected format of each package, the result and prediction objects returned by these functions are also in the same format. Other benefit of these functions is that parameters that can be inferred from data itself are not asked to the user but set automatically, for example, the _family_ parameter of glmnet package which has to be "gaussian" for continuous response variables, "binomial" for binary variables, "multinomial" for multicategorical variables and "poisson" for count variables, can be inferred from the response variable. In addition, the same functions allow to specify in a easy and user friendly way the hyperparameters and tunining details without the need to call another function or instantiate another object but as arguments of the same function. In theory, as it happens with all the packages that calls internally functions of other packages the expected improvement is with regard to ease of use and extended functionality with a little increment in computational demand for the extra operations required, but since these operations are computationally low cost, there is no significant loss of power.
+
+We have included in [Appendix A](#appendix_a) some comparative examples of the equivalent implementation of some machine learning models with mlr3, SKM and with the original package.
 
 # Sparse Kernels
+
+As [@sparse_kernels] points out, kernel methods transform the independent variables (inputs) using a kernel function, followed by the application of conventional machine learning techniques to the transformed data to achieve better results. Kernel methods are excellent options when dealing with complex data that shows non-linear patterns for their computational efficiency and because it can be used with any type of predictive machine. So, we have included the _kernelize_ function in SKM that can compute the same 7 kernels and their sparse versions described in [@sparse_kernels]: Linear, Polynomial, Sigmoid, Gaussian, Exponential, Arc-Cosine 1 And Arc-Cosine L. The  kernel computation is independent from the model fitting process, which allows the use of _kernelilze_ function with other packages or the machine learning algorithms implementations of SKM without kernels.
+
+In [Appendix B](#appendix_b) we have included some examples about how you can use the _kernelilze_ function of SKM with several type of data and then fit a model with it.
 
 # Evaluation metrics
 
 # Installation
 
-# Experiments
-
 # Conclusions and future work
 
 # References
+
+<div id="refs"></div>
+
+# Appendix A {#appendix_a}
+
+# Appendix B {#appendix_b}
