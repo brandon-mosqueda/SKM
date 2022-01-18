@@ -158,11 +158,11 @@ test_that("pccc", {
 })
 
 test_that("sensitivity", {
-  expect_identical(sensitivity("a", "a"), NaN)
-  expect_identical(sensitivity(1, 1), NaN)
+  expect_identical(sensitivity("a", "a"), 1)
+  expect_identical(sensitivity(1, 1), 1)
   expect_identical(sensitivity(1, 2), NaN)
   expect_identical(sensitivity("a", "b"), NaN)
-  expect_identical(sensitivity(c("a", "b"), c("b", "b")), NaN)
+  expect_identical(sensitivity(c("a", "b"), c("b", "b")), 1)
 
   result <- c(NaN, 0.5, NaN)
   names(result) <- c("a", "b", "c")
@@ -171,7 +171,7 @@ test_that("sensitivity", {
     result
   )
 
-  expect_identical(sensitivity(rep("a", 20), rep("a", 20)), NaN)
+  expect_identical(sensitivity(rep("a", 20), rep("a", 20)), 1)
   expect_identical(sensitivity(rep("a", 20), rep("b", 20)), NaN)
 
   sensitivities <- sensitivity(
@@ -219,11 +219,11 @@ test_that("sensitivity", {
 })
 
 test_that("specificity", {
-  expect_identical(specificity("a", "a"), 1)
-  expect_identical(specificity(1, 1), 1)
+  expect_identical(specificity("a", "a"), NaN)
+  expect_identical(specificity(1, 1), NaN)
   expect_identical(specificity(1, 2), 0)
   expect_identical(specificity("a", "b"), 0)
-  expect_identical(specificity(c("a", "b"), c("b", "b")), 0.5)
+  expect_identical(specificity(c("a", "b"), c("b", "b")), 0)
 
   result <- c(0.5, NaN, 0)
   names(result) <- c("a", "b", "c")
@@ -232,7 +232,7 @@ test_that("specificity", {
     result
   )
 
-  expect_identical(specificity(rep("a", 20), rep("a", 20)), 1)
+  expect_identical(specificity(rep("a", 20), rep("a", 20)), NaN)
   expect_identical(specificity(rep("a", 20), rep("b", 20)), 0)
 
   specificities <- specificity(
@@ -280,11 +280,11 @@ test_that("specificity", {
 })
 
 test_that("precision", {
-  expect_identical(precision("a", "a"), NaN)
-  expect_identical(precision(1, 1), NaN)
+  expect_identical(precision("a", "a"), 1)
+  expect_identical(precision(1, 1), 1)
   expect_identical(precision(1, 2), 0)
   expect_identical(precision("a", "b"), 0)
-  expect_identical(precision(c("a", "b"), c("b", "b")), 0)
+  expect_identical(precision(c("a", "b"), c("b", "b")), 0.5)
 
   result <- c(0, 1, 0)
   names(result) <- c("a", "b", "c")
@@ -293,7 +293,7 @@ test_that("precision", {
     result
   )
 
-  expect_identical(precision(rep("a", 20), rep("a", 20)), NaN)
+  expect_identical(precision(rep("a", 20), rep("a", 20)), 1)
   expect_identical(precision(rep("a", 20), rep("b", 20)), 0)
 
   precisions <- precision(
@@ -378,11 +378,11 @@ test_that("roc_auc", {
 })
 
 test_that("f1_score", {
-  expect_identical(f1_score("a", "a"), NaN)
-  expect_identical(f1_score(1, 1), NaN)
+  expect_identical(f1_score("a", "a"), 1)
+  expect_identical(f1_score(1, 1), 1)
   expect_identical(f1_score(1, 2), NaN)
   expect_identical(f1_score("a", "b"), NaN)
-  expect_identical(f1_score(c("a", "b"), c("b", "b")), NaN)
+  expect_identical(round(f1_score(c("a", "b"), c("b", "b")), 4), 0.6667)
 
   result <- c(NaN, 0.6667, NaN)
   names(result) <- c("a", "b", "c")
@@ -391,7 +391,7 @@ test_that("f1_score", {
     result
   )
 
-  expect_identical(f1_score(rep("a", 20), rep("a", 20)), NaN)
+  expect_identical(f1_score(rep("a", 20), rep("a", 20)), 1)
   expect_identical(f1_score(rep("a", 20), rep("b", 20)), NaN)
 
   f1_scores <- f1_score(

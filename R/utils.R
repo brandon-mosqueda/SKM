@@ -163,6 +163,19 @@ get_cols_names <- function(x) {
   return(cols_names)
 }
 
+as_tf_rates <- function(confusion_matrix) {
+  # These values are considered because in most functions and in this package
+  # the second level is considered as the reference level, that is, the TRUE or
+  # 1 class and confusion matrix is created putting in the first row/cols the
+  # FALSE class (first level of a factor)
+  return(list(
+    tp = as.numeric(confusion_matrix[2, 2]),
+    tn = as.numeric(confusion_matrix[1, 1]),
+    fp = as.numeric(confusion_matrix[1, 2]),
+    fn = as.numeric(confusion_matrix[2, 1])
+  ))
+}
+
 #' @title Convert data to matrix
 #'
 #' @description

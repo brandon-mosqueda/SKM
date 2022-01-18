@@ -136,14 +136,14 @@ matthews_coeff <- function(observed,
     na.rm = na.rm
   )
 
-  tp <- as.numeric(conf_matrix[1, 1])
-  tn <- as.numeric(conf_matrix[2, 2])
-  fp <- as.numeric(conf_matrix[1, 2])
-  fn <- as.numeric(conf_matrix[2, 1])
+  rates <- as_tf_rates(conf_matrix)
 
   return(
-    (tp * tn - fp * fn) /
-    sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
+    (rates$tp * rates$tn - rates$fp * rates$fn) /
+    sqrt(
+      (rates$tp + rates$fp) * (rates$tp + rates$fn) *
+      (rates$tn + rates$fp) * (rates$tn + rates$fn)
+    )
   )
 }
 
@@ -196,12 +196,9 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   all_levels <- colnames(conf_matrix)
 
   if (length(all_levels) == 2) {
-    tp <- conf_matrix[1, 1]
-    tn <- conf_matrix[2, 2]
-    fp <- conf_matrix[1, 2]
-    fn <- conf_matrix[2, 1]
+    rates <- as_tf_rates(conf_matrix)
 
-    return(as.numeric(tp / (tp + fn)))
+    return(rates$tp / (rates$tp + rates$fn))
   }
 
   sensitivities <- vector("numeric", length(all_levels))
@@ -263,12 +260,9 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   all_levels <- colnames(conf_matrix)
 
   if (length(all_levels) == 2) {
-    tp <- conf_matrix[1, 1]
-    tn <- conf_matrix[2, 2]
-    fp <- conf_matrix[1, 2]
-    fn <- conf_matrix[2, 1]
+    rates <- as_tf_rates(conf_matrix)
 
-    return(as.numeric(tn / (tn + fp)))
+    return(as.numeric(rates$tn / (rates$tn + rates$fp)))
   }
 
   specificities <- vector("numeric", length(all_levels))
@@ -367,12 +361,9 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
   all_levels <- colnames(conf_matrix)
 
   if (length(all_levels) == 2) {
-    tp <- conf_matrix[1, 1]
-    tn <- conf_matrix[2, 2]
-    fp <- conf_matrix[1, 2]
-    fn <- conf_matrix[2, 1]
+    rates <- as_tf_rates(conf_matrix)
 
-    return(as.numeric(tp / (tp + fp)))
+    return(rates$tp / (rates$tp + rates$fp))
   }
 
   precisions <- vector("numeric", length(all_levels))
@@ -418,6 +409,29 @@ roc_auc <- function(observed,
                     probabilities,
                     true_class = levels(observed)[2],
                     na.rm = TRUE) {
+  assert_same_length(observed, probabilities)
+
+  all_levels <- get_all_levels(observed, observed)
+
+  if (length(all_levels) == 1) {
+    all_levels <- c("OtherClass", all_levels)
+  } else if (length(all_levels) > 2) {
+    stop("Area Under the Curve (ROC-AUC) is only for binary variables")
+  }
+
+  observed <- factor(observed, all_levels)
+  observed <- observed == true_class
+  n1 <- sum(!observed)
+  n2 <- sum(observed)
+  U <- sum(rank(probabilities)[!observed]) - n1 * (n1 + 1) / 2
+
+  return(1 - U / n1 / n2)
+}
+
+pr_auc <- function(observed,
+                   probabilities,
+                   true_class = levels(observed)[2],
+                   na.rm = TRUE) {
   assert_same_length(observed, probabilities)
 
   all_levels <- get_all_levels(observed, observed)
