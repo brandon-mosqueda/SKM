@@ -478,6 +478,33 @@ get_all_levels <- function(x, y) {
   return(all_levels)
 }
 
+get_levels <- function(x, y, all_levels = NULL, positive_class = NULL) {
+  if (is.null(all_levels)) {
+    all_levels <- get_all_levels(x, y)
+  }
+
+  if (length(all_levels) == 1) {
+    all_levels <- c("OtherClass", all_levels)
+  }
+
+  if (
+    length(all_levels) == 2 &&
+    !is.null(positive_class) &&
+    all_levels[2] != positive_class
+  ) {
+    if (positive_class != all_levels[1]) {
+      stop(sprintf(paste0(
+        "Your data has any element of positive_class (%s), try to set ",
+        "all_levels parameter with it."
+      )), positive_class)
+    }
+    # The second level in binary responses is always the positive level
+    all_levels <- c(all_levels[2], positive_class)
+  }
+
+  return(all_levels)
+}
+
 #' @title nonull
 #' @description Get the first value that is not NULL.
 #' @export

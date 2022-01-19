@@ -267,6 +267,58 @@ assert_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
   }
 }
 
+assert_observed_probabilities <- function(observed, probabilities) {
+  assert_factor(observed, empty.levels.ok = FALSE, min.len = 1)
+  assert_data_frame(probabilities)
+
+  if (is_empty(observed) || is_empty(probabilities)) {
+    stop("observed and/or probabilities is empty.")
+  } else if (length(observed) != NROW(probabilities)) {
+    stop("observed and probabilities must have the same number of records.")
+  } else if (is.null(NCOL(probabilities)) || NCOL(probabilities) < 2) {
+    stop("probabilities must have at least two columns (classes).")
+  } else if (is.null(colnames(probabilities))) {
+    stop("probabilities must have the classes' names as columns names.")
+  }
+
+  assert_subset(
+    levels(observed),
+    colnames(probabilities),
+    empty.ok = FALSE,
+    .var.name = "observed"
+  )
+}
+
+assert_categorical_obs_pred <- function(observed, predicted) {
+  assert_same_length(observed, predicted)
+
+  assert_factor(observed, empty.levels.ok = FALSE, min.len = 1)
+  assert_factor(predicted, empty.levels.ok = FALSE, min.len = 1)
+
+  if (!is_empty(setdiff(levels(observed), levels(predicted)))) {
+    warning("observed and predicted does not have the same classes (levels).")
+  }
+
+  if (length(union(levels(observed), levels(predicted))) == 1) {
+    warning("There are only one class (level) in observed and predicted data.")
+  }
+}
+
+assert_positive_class <- function(positive_class, classes) {
+  assert_string(positive_class, null.ok = TRUE, na.ok = FALSE)
+  assert_subset(positive_class, classes, empty.ok = TRUE)
+}
+
+assert_confusion_matrix <- function(confusion_matrix) {
+  if (ncol(confusion_matrix) < expected_classes_num) {
+    stop(
+      "There must be at least classes in order to compute sensitivity. ",
+      "Try to set all classes in observed and/or ",
+      "predicted factor levels."
+    )
+  }
+}
+
 assert_xy <- function(x, y, is_multivariate, expect_x_matrix) {
   assert_x(x, expect_x_matrix)
   assert_y(y, is_multivariate)

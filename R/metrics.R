@@ -6,45 +6,38 @@
 
 #' @title Confusion matrix
 #'
-#' @templateVar coercibleTo factor
-#'
 #' @description
 #' Given the observed and predicted values of categorical data (of any number of
 #' classes) computes the confusion matrix.
 #'
-#' @template base-metrics-params
-#' @param all_levels (`character`) The whole levels (categories) that `observed`
-#'   and `predicted` have. Useful when `observed` and `predicted` are not
-#'   factors or they both have no all levels. If it is `NULL` the union of
-#'   `observed` levels and `predicted` levels is used. `NULL` by default.
+#' @param observed (`factor`) The observed values. It has to have the same
+#'   length as `predicted`.
+#' @param predicted (`factor`) The observed values. It has to have the same
+#'   length as `observed`.
+#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `TRUE` by
+#'   default.
 #'
 #' @return
-#' An object of class `table` with the confusion matrix for all levels.
+#' An object of class `table` with the confusion matrix.
 #'
 #' @family categorical_metrics
 #'
 #' @examples
 #' \dontrun{
-#' confusion_matrix("a", "a")
-#' confusion_matrix("a", "b")
-#' confusion_matrix(c("a", "b"), c("c", "d"))
-#' confusion_matrix(c("a", "a"), c("a", "a"), all_levels = c("a", "b"))
+#' confusion_matrix(factor("a"), factor("a"))
+#' confusion_matrix(factor("a"), factor("b"))
+#' confusion_matrix(factor(c("a", "b")), factor(c("c", "d")))
+#' confusion_matrix(factor(c("a", "a")), factor(c("a", "a")))
 #' confusion_matrix(iris$Species, iris$Species)
 #' }
 #'
 #' @export
-confusion_matrix <- function(observed,
-                             predicted,
-                             all_levels = NULL,
-                             na.rm = TRUE) {
-  assert_same_length(observed, predicted)
+confusion_matrix <- function(observed, predicted, na.rm = TRUE) {
+  assert_categorical_obs_pred(observed, predicted)
 
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
-  }
-
-  observed <- factor(observed, levels = all_levels)
-  predicted <- factor(predicted, levels = all_levels)
+  all_classes <- union(levels(observed), levels(predicted))
+  observed <- factor(observed, levels = all_classes)
+  predicted <- factor(predicted, levels = all_classes)
 
   useNA <- if (na.rm) "no" else "always"
   return(table(observed, predicted, useNA = useNA))
@@ -63,21 +56,16 @@ confusion_matrix <- function(observed,
 #'
 #' @examples
 #' \dontrun{
-#' kappa_coeff(c("a", "b"), c("a", "b"))
-#' kappa_coeff(c("a", "b"), c("b", "a"))
-#' kappa_coeff(c("a", "b", "a"), c("b", "a", "c"))
+#' kappa_coeff(factor(c("a", "b")), factor(c("a", "b")))
+#' kappa_coeff(factor(c("a", "b")), factor(c("b", "a")))
+#' kappa_coeff(factor(c("a", "b", "a")), factor(c("b", "a", "c")))
 #' }
 #'
 #' @family categorical_metrics
 #'
 #' @export
-kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(
-    observed,
-    predicted,
-    all_levels = all_levels,
-    na.rm = na.rm
-  )
+kappa_coeff <- function(observed, predicted, na.rm = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
 
   diagonal_counts <- diag(conf_matrix)
   N <- sum(conf_matrix)
@@ -106,35 +94,23 @@ kappa_coeff <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' matthews_coeff(c("a", "b"), c("a", "b"))
-#' matthews_coeff(c("a", "b"), c("b", "a"))
-#' matthews_coeff(c("a", "b"), c("b", "b"))
-#' matthews_coeff(c(TRUE, FALSE), c(FALSE, TRUE))
+#' matthews_coeff(factor(c("a", "b")), factor(c("a", "b")))
+#' matthews_coeff(factor(c("a", "b")), factor(c("b", "a")))
+#' matthews_coeff(factor(c("a", "b")), factor(c("b", "b")))
+#' matthews_coeff(factor(c(TRUE, FALSE)), factor(c(FALSE, TRUE)))
 #' }
 #'
 #' @export
-matthews_coeff <- function(observed,
-                           predicted,
-                           all_levels = NULL,
-                           na.rm = TRUE) {
-  assert_same_length(observed, predicted)
-
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
-  }
-
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  } else if (length(all_levels) > 2) {
-    stop("Matthews correlation coefficient (MCC) is only for binary variables")
-  }
-
+matthews_coeff <- function(observed, predicted, na.rm = TRUE) {
   conf_matrix <- confusion_matrix(
     observed,
     predicted,
-    all_levels = all_levels,
     na.rm = na.rm
   )
+
+  if (ncol(conf_matrix) != 2) {
+    stop("Matthews correlation coefficient (MCC) is only for binary variables")
+  }
 
   rates <- as_tf_rates(conf_matrix)
 
@@ -156,6 +132,10 @@ matthews_coeff <- function(observed,
 #' category.
 #'
 #' @inheritParams confusion_matrix
+#' @param positive_class (`character(1)`) The name of the class (level) to be
+#'   taken as reference as the positive class. This parameter is only used for
+#'   binary variables. `NULL` by default which uses the second class in the
+#'   union of the classes (levels) in `observed` and `predicted`.
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -165,46 +145,38 @@ matthews_coeff <- function(observed,
 #'
 #' @examples
 #' \dontrun{
-#' sensitivity(c("a", "b"), c("a", "b"))
-#' sensitivity(c("a", "b"), c("b", "a"))
-#' sensitivity(c("a", "b"), c("b", "b"))
-#' sensitivity(c(TRUE, FALSE), c(FALSE, TRUE))
-#' sensitivity(c("a", "b", "a"), c("b", "a", "c"))
+#' sensitivity(factor(c("a", "b")), factor(c("a", "b")))
+#' sensitivity(factor(c("a", "b")), factor(c("b", "a")))
+#' sensitivity(factor(c("a", "b")), factor(c("b", "b")))
+#' sensitivity(factor(c(TRUE, FALSE)), factor(c(FALSE, TRUE)))
+#' sensitivity(factor(c("a", "b", "a")), factor(c("b", "a", "c")))
 #' }
 #'
 #' @export
-sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
-  }
-
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  }
-
+sensitivity <- function(observed,
+                        predicted,
+                        positive_class = NULL,
+                        na.rm = TRUE) {
   conf_matrix <- confusion_matrix(
     observed,
     predicted,
-    all_levels = all_levels,
     na.rm = na.rm
   )
+  assert_confusion_matrix(conf_matrix)
+  assert_positive_class(positive_class, colnames(conf_matrix))
 
-  if (is_empty(conf_matrix)) {
-    return(NaN)
-  }
+  all_classes <- colnames(conf_matrix)
 
-  all_levels <- colnames(conf_matrix)
-
-  if (length(all_levels) == 2) {
+  if (length(all_classes) == 2) {
     rates <- as_tf_rates(conf_matrix)
 
     return(rates$tp / (rates$tp + rates$fn))
   }
 
-  sensitivities <- vector("numeric", length(all_levels))
-  names(sensitivities) <- all_levels
+  sensitivities <- vector("numeric", length(all_classes))
+  names(sensitivities) <- all_classes
 
-  for (level in all_levels) {
+  for (level in all_classes) {
     sensitivities[level] <- conf_matrix[level, level] /
       sum(conf_matrix[, level])
   }
@@ -219,7 +191,7 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' classes) computes the specificity, the metric that evaluates a model's
 #' ability to predict true negatives of each available category.
 #'
-#' @inheritParams confusion_matrix
+#' @inheritParams sensitivity
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -229,47 +201,40 @@ sensitivity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' specificity(c("a", "b"), c("a", "b"))
-#' specificity(c("a", "b"), c("b", "a"))
-#' specificity(c("a", "b"), c("b", "b"))
-#' specificity(c(TRUE, FALSE), c(FALSE, TRUE))
-#' specificity(c("a", "b", "a"), c("b", "a", "c"))
+#' specificity(factor(c("a", "b")), factor(c("a", "b")))
+#' specificity(factor(c("a", "b")), factor(c("b", "a")))
+#' specificity(factor(c("a", "b")), factor(c("b", "b")))
+#' specificity(factor(c(TRUE, FALSE)), factor(c(FALSE, TRUE)))
+#' specificity(factor(c("a", "b", "a")), factor(c("b", "a", "c")))
 #' }
 #'
 #' @export
-specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
-  }
-
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  }
-
+specificity <- function(observed,
+                        predicted,
+                        positive_class = NULL,
+                        na.rm = TRUE) {
   conf_matrix <- confusion_matrix(
     observed,
     predicted,
-    all_levels = all_levels,
+    all_classes = all_classes,
     na.rm = na.rm
   )
+  assert_confusion_matrix(conf_matrix)
+  assert_positive_class(positive_class, colnames(conf_matrix))
 
-  if (is_empty(conf_matrix)) {
-    return(NaN)
-  }
+  all_classes <- colnames(conf_matrix)
 
-  all_levels <- colnames(conf_matrix)
-
-  if (length(all_levels) == 2) {
+  if (length(all_classes) == 2) {
     rates <- as_tf_rates(conf_matrix)
 
     return(as.numeric(rates$tn / (rates$tn + rates$fp)))
   }
 
-  specificities <- vector("numeric", length(all_levels))
-  names(specificities) <- all_levels
+  specificities <- vector("numeric", length(all_classes))
+  names(specificities) <- all_classes
 
-  for (i in seq(all_levels)) {
-    level <- all_levels[i]
+  for (i in seq(all_classes)) {
+    level <- all_classes[i]
 
     level_matrix <- conf_matrix[, -i, drop = FALSE]
     specificities[level] <- sum(level_matrix[level, ]) / sum(level_matrix)
@@ -286,7 +251,7 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' evaluates a models ability to predict true positives of each available
 #' category.
 #'
-#' @inheritParams confusion_matrix
+#' @inheritParams sensitivity
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -296,19 +261,22 @@ specificity <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' recall(c("a", "b"), c("a", "b"))
-#' recall(c("a", "b"), c("b", "a"))
-#' recall(c("a", "b"), c("b", "b"))
-#' recall(c(TRUE, FALSE), c(FALSE, TRUE))
-#' recall(c("a", "b", "a"), c("b", "a", "c"))
+#' recall(factor(c("a", "b")), factor(c("a", "b")))
+#' recall(factor(c("a", "b")), factor(c("b", "a")))
+#' recall(factor(c("a", "b")), factor(c("b", "b")))
+#' recall(factor(c(TRUE, FALSE)), factor(c(FALSE, TRUE)))
+#' recall(factor(c("a", "b", "a")), factor(c("b", "a", "c")))
 #' }
 #'
 #' @export
-recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
+recall <- function(observed,
+                   predicted,
+                   positive_class = NULL,
+                   na.rm = TRUE) {
   return(sensitivity(
     observed,
     predicted,
-    all_levels = all_levels,
+    positive_class = positive_class,
     na.rm = na.rm
   ))
 }
@@ -320,7 +288,7 @@ recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' classes) computes the precision, that represents the ratio of true positives
 #' to total predicted positives.
 #'
-#' @inheritParams confusion_matrix
+#' @inheritParams sensitivity
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -330,48 +298,41 @@ recall <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' precision(c("a", "b"), c("a", "b"))
-#' precision(c("a", "b"), c("b", "a"))
-#' precision(c("a", "b"), c("b", "b"))
-#' precision(c(TRUE, FALSE), c(FALSE, TRUE))
-#' precision(c("a", "b", "a"), c("b", "a", "c"))
+#' precision(factor(c("a", "b")), factor(c("a", "b")))
+#' precision(factor(c("a", "b")), factor(c("b", "a")))
+#' precision(factor(c("a", "b")), factor(c("b", "b")))
+#' precision(factor(c(TRUE, FALSE)), factor(c(FALSE, TRUE)))
+#' precision(factor(c("a", "b", "a")), factor(c("b", "a", "c")))
 #' }
 #'
 #' @export
-precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
-  }
-
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  }
-
+precision <- function(observed,
+                      predicted,
+                      positive_class = NULL,
+                      na.rm = TRUE) {
   conf_matrix <- confusion_matrix(
     observed,
     predicted,
-    all_levels = all_levels,
+    all_classes = all_classes,
     na.rm = na.rm
   )
+  assert_confusion_matrix(conf_matrix)
+  assert_positive_class(positive_class, colnames(conf_matrix))
 
-  if (is_empty(conf_matrix)) {
-    return(NaN)
-  }
+  all_classes <- colnames(conf_matrix)
 
-  all_levels <- colnames(conf_matrix)
-
-  if (length(all_levels) == 2) {
+  if (length(all_classes) == 2) {
     rates <- as_tf_rates(conf_matrix)
 
     return(rates$tp / (rates$tp + rates$fp))
   }
 
-  precisions <- vector("numeric", length(all_levels))
-  names(precisions) <- all_levels
+  precisions <- vector("numeric", length(all_classes))
+  names(precisions) <- all_classes
 
   diag_sum <- sum(diag(conf_matrix))
 
-  for (level in all_levels) {
+  for (level in all_classes) {
     precisions[level] <- as.numeric(conf_matrix[level, level]) / diag_sum
   }
 
@@ -384,12 +345,13 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #' Given the observed values and predicted probabilities values of binary data
 #' computes the ROC Area Under the Curve.
 #'
-#' @inheritParams brier_score
-#' @param probabilities (`numeric`) The predicted probabilities values of
-#'   `true_class`. It has to be of the same length as `observed`.
-#' @param true_class (`character(1)`) (case sensitive) The name of the class (or
-#'   level) that probabilities are computed for. `levels(observed)[2]` by
-#'   default.
+#' @inheritParams sensitivity
+#' @param observed (`factor`) The observed values. It has to have the same
+#'   length as rows `probabilities`.
+#' @param probabilities (`data.frame`) The probability of each class for each
+#'   individual. It is required the columns names of `probabilities` corresponds
+#'   to all classes (levels) in `observed` and that `probabilities` has as many
+#'   rows as records `observed`.
 #'
 #' @return
 #' A single numeric value with the ROC-AUC.
@@ -398,29 +360,40 @@ precision <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' roc_auc(c("a", "b"), c(0.2, 0.5))
-#' roc_auc(c("a", "b"), c(0.7, 0.8))
-#' roc_auc(c("a", "b"), c(0.4, 0.9), true_class = "b")
-#' roc_auc(c(TRUE, FALSE), c(0.3, 0.2))
+#' roc_auc(factor(c("a", "b")), data.frame(a = c(0.2, 0.6), b = c(0.5, 0.4)))
+#' roc_auc(factor(c("a", "b")), data.frame(a = c(0.8, 0.3), b = c(0.2, 0.7)))
+#' roc_auc(
+#'   factor(c("a", "b")),
+#'   data.frame(a = c(0.2, 0.6), b = c(0.5, 0.4)),
+#'   positive_class = "b"
+#' )
+#' roc_auc(
+#'   factor(c(TRUE, FALSE)),
+#'   data.frame(`TRUE` = c(0.3, 0.2), `FALSE` = c(0.7, 0.8))
+#' )
 #' }
 #'
 #' @export
 roc_auc <- function(observed,
                     probabilities,
-                    true_class = levels(observed)[2],
+                    positive_class = NULL,
                     na.rm = TRUE) {
-  assert_same_length(observed, probabilities)
+  assert_observed_probabilities(observed, probabilities)
 
-  all_levels <- get_all_levels(observed, observed)
+  all_classes <- colnames(probabilities)
+  assert_positive_class(positive_class, all_classes)
 
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  } else if (length(all_levels) > 2) {
-    stop("Area Under the Curve (ROC-AUC) is only for binary variables")
+  if (length(all_classes) != 2) {
+    stop("ROC Area Under the Curve (ROC-AUC) is only for binary variables")
   }
 
-  observed <- factor(observed, all_levels)
-  observed <- observed == true_class
+  if (is.null(positive_class)) {
+    positive_class <- all_classes[2]
+  }
+
+  observed <- factor(observed, levels = all_classes)
+  observed <- observed == positive_class
+  probabilities <- probabilities[[positive_class]]
   n1 <- sum(!observed)
   n2 <- sum(observed)
   U <- sum(rank(probabilities)[!observed]) - n1 * (n1 + 1) / 2
@@ -430,20 +403,20 @@ roc_auc <- function(observed,
 
 pr_auc <- function(observed,
                    probabilities,
-                   true_class = levels(observed)[2],
+                   positive_class = levels(observed)[2],
                    na.rm = TRUE) {
   assert_same_length(observed, probabilities)
 
-  all_levels <- get_all_levels(observed, observed)
+  all_classes <- get_all_classes(observed, observed)
 
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
-  } else if (length(all_levels) > 2) {
+  if (length(all_classes) == 1) {
+    all_classes <- c("OtherClass", all_classes)
+  } else if (length(all_classes) > 2) {
     stop("Area Under the Curve (ROC-AUC) is only for binary variables")
   }
 
-  observed <- factor(observed, all_levels)
-  observed <- observed == true_class
+  observed <- factor(observed, all_classes)
+  observed <- observed == positive_class
   n1 <- sum(!observed)
   n2 <- sum(observed)
   U <- sum(rank(probabilities)[!observed]) - n1 * (n1 + 1) / 2
@@ -458,7 +431,7 @@ pr_auc <- function(observed,
 #' classes) computes the F1 score, that combines the [precision] and [recall],
 #' and it is defined as the harmonic mean of the precision and recall.
 #'
-#' @inheritParams confusion_matrix
+#' @inheritParams sensitivity
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -468,15 +441,28 @@ pr_auc <- function(observed,
 #'
 #' @examples
 #' \dontrun{
-#' f1_score(c("a", "b"), c("a", "b"))
-#' f1_score(c("a", "b", "a", "b"), c("a", "b", "b", "a"))
-#' f1_score(c("a", "b"), c("b", "b"))
+#' f1_score(factor(c("a", "b")), factor(c("a", "b")))
+#' f1_score(factor(c("a", "b", "a", "b")), factor(c("a", "b", "b", "a")))
+#' f1_score(factor(c("a", "b")), factor(c("b", "b")))
 #' }
 #'
 #' @export
-f1_score <- function(observed, predicted, all_levels = NULL, na.rm = TRUE) {
-  p <- precision(observed, predicted, all_levels = all_levels, na.rm = na.rm)
-  r <- recall(observed, predicted, all_levels = all_levels, na.rm = na.rm)
+f1_score <- function(observed,
+                     predicted,
+                     positive_class = NULL,
+                     na.rm = TRUE) {
+  p <- precision(
+    observed,
+    predicted,
+    positive_class = positive_class,
+    na.rm = na.rm
+  )
+  r <- recall(
+    observed,
+    predicted,
+    positive_class = positive_class,
+    na.rm = na.rm
+  )
 
   return(2 * ((p * r) / (p + r)))
 }
@@ -572,13 +558,7 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
 #' Given the observed values and the predicted probabilites of categorical data
 #' (of at least two classes) computes the Brier Score.
 #'
-#' @inheritParams confusion_matrix
-#' @param observed (`vector`) The observed values. It has to be coercible to
-#'   `<%= coercibleTo %>` and with as many records as rows in `probabilities`.
-#' @param probabilities (`matrix` | `data.frame`) The probability of each class
-#'   for each individual. It is required the columns names of `probabilities`
-#'   corresponds to all levels (or classes) in `observed` and that
-#'   `probabilities` has as many rows as records `observed`.
+#' @inheritParams roc_auc
 #'
 #' @return
 #' A single numeric value with the Brier Score.
@@ -587,36 +567,28 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @examples
 #' \dontrun{
-#' probs <- matrix(c(0.7, 0.3, 0.2, 0.8), 2, 2, byrow = TRUE)
-#' colnames(probs) <- c("0", "1")
-#' brier_score(c(0, 1), probs)
+#' probs <- data.frame(a = c(0.7, 0.2), b = c(0.3, 0.8))
+#' brier_score(factor(c("a", "b")), probs)
 #'
-#' probs <- matrix(
-#'   c(0.2, 0.3, 0.5, 0.8, 0.1, 0.1, 0.3, 0.3, 0.4),
-#'   3,
-#'   3,
-#'   byrow = TRUE
+#' probs <- data.frame(
+#'   a = c(0.2, 0.8, 0.3),
+#'   b = c(0.3, 0.1, 0.3),
+#'   c = c(0.5, 0.1, 0.4),
 #' )
-#' colnames(probs) <- c("a", "b", "c")
 #'
-#' brier_score(c("a", "a", "c"), probs)
+#' brier_score(factor(c("a", "a", "c")), probs)
 #'
 #'
-#' probs <- matrix(c(0, 1), 1, 2)
-#' colnames(probs) <- c("a", "b")
+#' probs <- data.frame(a = 1, b = 0)
 #' brier_score("a", probs)
 #' }
 #'
 #' @export
 brier_score <- function(observed, probabilities, na.rm = TRUE) {
+  assert_observed_probabilities(observed, probabilities)
+
   if (!na.rm && (anyNA(observed) || anyNA(probabilities))) {
     return(NaN)
-  } else if (length(observed) != NROW(probabilities)) {
-    stop("observed and probabilities must have the same number of records")
-  } else if (is.null(NCOL(probabilities)) || NCOL(probabilities) < 2) {
-    stop("probabilities must have at least two columns (classes)")
-  } else if (is.null(colnames(probabilities))) {
-    stop("probabilities must have the classes' names as columns names")
   }
 
   if (na.rm) {
@@ -627,13 +599,6 @@ brier_score <- function(observed, probabilities, na.rm = TRUE) {
       probabilities <- get_records(probabilities, -remove_indices)
     }
   }
-
-  assert_subset(
-    as.character(unique(observed)),
-    colnames(probabilities),
-    empty.ok = FALSE,
-    .var.name = "observed"
-  )
 
   observed <- factor(observed, levels = colnames(probabilities))
   observed_dummy <- model.matrix(~0 + observed)
@@ -646,13 +611,16 @@ brier_score <- function(observed, probabilities, na.rm = TRUE) {
 
 #' @title Mean Squared Error
 #'
-#' @templateVar coercibleTo numeric
-#'
 #' @description
 #' Given the observed and predicted values of numeric data computes the Mean
 #' Squared Error.
 #'
-#' @template base-metrics-params
+#' @param observed (`numeric`) The observed values. It has to have the same
+#'   length as `predicted`.
+#' @param predicted (`numeric`) The observed values. It has to have the same
+#'   length as `observed`.
+#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `TRUE` by
+#'   default.
 #'
 #' @return
 #' A single numeric value with the Mean Squared Error.
@@ -1034,11 +1002,11 @@ wrapper_loss <- function(observed,
     }
 
     if (tuner$loss_function_name == "roc_auc") {
-      true_class <- levels(observed)[2]
+      positive_class <- levels(observed)[2]
       loss <- roc_auc(
         observed = observed,
-        probabilities = predictions$probabilities[[true_class]],
-        true_class = true_class
+        probabilities = predictions$probabilities[[positive_class]],
+        positive_class = positive_class
       )
     } else {
       loss <- tuner$loss_function(
@@ -1108,51 +1076,51 @@ wrapper_loss <- function(observed,
 categorical_summary <- function(observed,
                                 predicted,
                                 probabilities = NULL,
-                                all_levels = NULL,
+                                all_classes = NULL,
                                 na.rm = TRUE) {
-  if (is.null(all_levels)) {
-    all_levels <- get_all_levels(observed, predicted)
+  if (is.null(all_classes)) {
+    all_classes <- get_all_classes(observed, predicted)
   }
 
-  if (length(all_levels) == 1) {
-    all_levels <- c("OtherClass", all_levels)
+  if (length(all_classes) == 1) {
+    all_classes <- c("OtherClass", all_classes)
   }
 
   summary <- list(
     confusion_matrix = confusion_matrix(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     kappa_coeff = kappa_coeff(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     sensitivity = sensitivity(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     specificity = specificity(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     precision = precision(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     f1_score = f1_score(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     ),
     accuracy = accuracy(
@@ -1162,19 +1130,19 @@ categorical_summary <- function(observed,
     )
   )
 
-  if (length(all_levels) == 2) {
+  if (length(all_classes) == 2) {
     summary$matthews_coeff <- matthews_coeff(
       observed,
       predicted,
-      all_levels = all_levels,
+      all_classes = all_classes,
       na.rm = na.rm
     )
 
     if (!is.null(probabilities)) {
       summary$roc_auc <- roc_auc(
         observed,
-        probabilities[all_levels[1]],
-        true_class = all_levels[1],
+        probabilities[all_classes[1]],
+        positive_class = all_classes[1],
         na.rm = na.rm
       )
     }
@@ -1221,9 +1189,9 @@ print.CategoricalSummary <- function(summary, digits = 4) {
     ))
   }
 
-  all_levels <- colnames(summary$confusion_matrix)
+  all_classes <- colnames(summary$confusion_matrix)
 
-  if (length(all_levels) == 2) {
+  if (length(all_classes) == 2) {
     cat(sprintf("* Sensitivity: %s\n", round(summary$sensitivity, digits)))
     cat(sprintf("* Specificity: %s\n", round(summary$specificity, digits)))
     cat(sprintf("* Precision: %s\n", round(summary$precision, digits)))
@@ -1234,10 +1202,10 @@ print.CategoricalSummary <- function(summary, digits = 4) {
         summary$sensitivity, summary$specificity,
         summary$precision, summary$f1_score),
       nrow = 4,
-      ncol = length(all_levels),
+      ncol = length(all_classes),
       byrow = TRUE
     )
-    colnames(table_summary) <- all_levels
+    colnames(table_summary) <- all_classes
     rownames(table_summary) <- c(
       "* Sensitivity",
       "* Specificity",

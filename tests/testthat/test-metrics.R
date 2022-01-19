@@ -30,11 +30,11 @@ test_that("confusion_matrix", {
   rownames(true_matrix) <- colnames(true_matrix)
 
   expect_identical(
-    all(confusion_matrix("a", "b") == true_matrix),
+    all(confusion_matrix(factor("a"), factor("b")) == true_matrix),
     TRUE
   )
 
-  expect_identical(all(confusion_matrix(NA, "a") == 0), TRUE)
+  expect_identical(all(confusion_matrix(as.factor(NA), "a") == 0), TRUE)
   expect_identical(nrow(confusion_matrix(NA, "a")), 1L)
   expect_identical(ncol(confusion_matrix(NA, "a")), 1L)
 
@@ -341,7 +341,8 @@ test_that("precision", {
 })
 
 test_that("roc_auc", {
-  expect_identical(roc_auc(c("a", "a"), c(0.6, 0.6)), NaN)
+  probs <- data.frame(a = c(0.6, 0.6), b = c(0.4, 0.4))
+  expect_identical(roc_auc(c("a", "a"), probs), NaN)
   expect_identical(roc_auc(c(1, 1), c(0.8, 0.7)), NaN)
   expect_identical(roc_auc(1, c(0.2)), NaN)
   expect_identical(roc_auc("a", c(0.4)), NaN)
