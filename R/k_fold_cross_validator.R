@@ -8,8 +8,12 @@ KFoldCV <- R6Class(
   public = list(
     # Constructor --------------------------------------------------
 
-    initialize = function(...) {
-      super$initialize(..., name = "KFoldCV")
+    initialize = function(folds_number, records_number, name = "KFoldCV") {
+      super$initialize(
+        folds_number = folds_number,
+        records_number = records_number,
+        name = name
+      )
     },
 
     # Methods --------------------------------------------------

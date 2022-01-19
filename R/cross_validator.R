@@ -17,7 +17,7 @@ CrossValidator <- R6Class(
 
     initialize = function(name,
                           folds_number,
-                          records_number,
+                          records_number = NULL,
                           testing_proportion = NULL) {
       self$name <- name
       self$folds_number <- folds_number

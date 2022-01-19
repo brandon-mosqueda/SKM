@@ -8,8 +8,16 @@ RandomCV <- R6Class(
   public = list(
     # Constructor --------------------------------------------------
 
-    initialize = function(...) {
-      super$initialize(..., name = "RandomCV")
+    initialize = function(folds_number,
+                          records_number,
+                          testing_proportion,
+                          name = "RandomCV") {
+      super$initialize(
+        folds_number = folds_number,
+        records_number = records_number,
+        testing_proportion = testing_proportion,
+        name = name
+      )
     },
 
     # Methods --------------------------------------------------

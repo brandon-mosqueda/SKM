@@ -25,6 +25,7 @@ Model <- R6Class(
     tune_cv_type = NULL,
     tune_folds_number = NULL,
     tune_testing_proportion = NULL,
+    tune_folds = NULL,
     tune_loss_function = NULL,
     tune_grid_proportion = NULL,
     tune_bayes_samples_number = NULL,
@@ -45,6 +46,7 @@ Model <- R6Class(
                           tune_cv_type = NULL,
                           tune_folds_number = NULL,
                           tune_testing_proportion = NULL,
+                          tune_folds = NULL,
                           tune_loss_function = NULL,
                           tune_grid_proportion = NULL,
                           tune_bayes_samples_number = NULL,
@@ -58,6 +60,7 @@ Model <- R6Class(
       self$tune_cv_type <- tune_cv_type
       self$tune_folds_number <- tune_folds_number
       self$tune_testing_proportion <- tune_testing_proportion
+      self$tune_folds <- tune_folds
       self$tune_loss_function <- tolower(tune_loss_function)
       if (is_empty(self$tune_loss_function)) {
         self$tune_loss_function <- NULL
@@ -228,6 +231,7 @@ Model <- R6Class(
           cv_type = self$tune_cv_type,
           folds_number = self$tune_folds_number,
           testing_proportion = self$tune_testing_proportion,
+          folds = self$tune_folds,
           loss_function = self$tune_loss_function,
           grid_proportion = self$tune_grid_proportion,
 
@@ -238,6 +242,7 @@ Model <- R6Class(
         tuner$tune()
         self$best_hyperparams <- tuner$best_combination
         self$hyperparams_grid <- tuner$all_combinations
+        self$tune_folds <- tuner$cross_validator$folds
       } else {
         self$hyperparams_grid <- data.frame()
         self$best_hyperparams <- list()

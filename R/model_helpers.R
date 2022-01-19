@@ -65,28 +65,29 @@ prepare_multivariate_y_only_numeric <- function() {
 get_cross_validator <- function(type,
                                 records_number,
                                 folds_number,
-                                testing_proportion) {
+                                testing_proportion,
+                                folds) {
   type <- tolower(type)
 
-  validator <- NULL
-  if (type == "k_fold") {
-    validator <- KFoldCV
+  if (!is.null(folds)) {
+    return(CustomCV$new(folds = folds))
+  } else if (type == "k_fold") {
+    return(KFoldCV$new(
+      folds_number = folds_number,
+      records_number = records_number
+    ))
   } else if (type == "random") {
-    validator <- RandomCV
+    return(RandomCV$new(
+      folds_number = folds_number,
+      records_number = records_number,
+      testing_proportion = testing_proportion
+    ))
   } else {
     stop(sprintf(
       "{%s} is not a valid type of cross validation",
       set_collapse(type)
     ))
   }
-
-  instance <- validator$new(
-    folds_number = folds_number,
-    records_number = records_number,
-    testing_proportion = testing_proportion
-  )
-
-  return(instance)
 }
 
 get_tuner <- function(type) {

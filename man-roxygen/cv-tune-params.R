@@ -6,6 +6,12 @@
 #' @param tune_testing_proportion (`numeric(1)`) A number > 0 and < 1 to
 #'   specify the proportion of records to use as validation set when
 #'   `tune_cv_type` is `"Random"`. 0.2 by default.
+#' @param tune_folds (`list`) Custom folds for tuning. It must be a `list` of
+#'   `list`'s where each entry will represent a fold. Each inner `list` has to
+#'   contain the fields `"training"` and `"testing"` with numeric vectors of
+#'   indices of those entries to be used as training and testing in each fold.
+#'   Note that when this parameter is set `tune_cv_type`, `tune_folds_number`
+#'   and `tune_testing_proportion` are ignored. `NULL` by default.
 #' @param tune_loss_function (`character(1)`) (case not sensitive) The loss
 #'   function to use in tuning. The options are `"mse"`, `"maape"`, `"mae"`,
 #'   `"nrmse"` or `"rmse"` when `y` is a numeric response variable,

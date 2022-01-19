@@ -25,6 +25,7 @@ Tuner <- R6Class(
     cv_type = NULL,
     folds_number = NULL,
     testing_proportion = NULL,
+    folds = NULL,
 
     all_combinations = NULL,
     combinations_number = NULL,
@@ -46,6 +47,7 @@ Tuner <- R6Class(
                           cv_type,
                           folds_number,
                           testing_proportion,
+                          folds,
                           loss_function,
                           tabs_number = 0) {
       self$x <- x
@@ -63,6 +65,7 @@ Tuner <- R6Class(
       self$cv_type <- cv_type
       self$folds_number <- folds_number
       self$testing_proportion <- testing_proportion
+      self$folds <- folds
       self$responses <- responses
       self$is_multivariate <- is_multivariate
       self$loss_function_name <- get_loss_function(
@@ -79,7 +82,8 @@ Tuner <- R6Class(
         type = self$cv_type,
         records_number = nrow(self$x),
         folds_number = self$folds_number,
-        testing_proportion = self$testing_proportion
+        testing_proportion = self$testing_proportion,
+        folds = folds
       )
     },
     eval_one_fold = function(fold, combination) {
