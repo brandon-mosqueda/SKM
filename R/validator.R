@@ -292,8 +292,8 @@ assert_observed_probabilities <- function(observed, probabilities) {
 assert_categorical_obs_pred <- function(observed, predicted) {
   assert_same_length(observed, predicted)
 
-  assert_factor(observed, empty.levels.ok = FALSE, min.len = 1)
-  assert_factor(predicted, empty.levels.ok = FALSE, min.len = 1)
+  assert_factor(observed, min.len = 1)
+  assert_factor(predicted, min.len = 1)
 
   if (!is_empty(setdiff(levels(observed), levels(predicted)))) {
     warning("observed and predicted does not have the same classes (levels).")
@@ -310,9 +310,9 @@ assert_positive_class <- function(positive_class, classes) {
 }
 
 assert_confusion_matrix <- function(confusion_matrix) {
-  if (ncol(confusion_matrix) < expected_classes_num) {
+  if (ncol(confusion_matrix) < 2) {
     stop(
-      "There must be at least classes in order to compute sensitivity. ",
+      "There must be at least classes in order to compute the metric. ",
       "Try to set all classes in observed and/or ",
       "predicted factor levels."
     )

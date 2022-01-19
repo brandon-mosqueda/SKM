@@ -34,38 +34,26 @@ test_that("confusion_matrix", {
     TRUE
   )
 
-  expect_identical(all(confusion_matrix(as.factor(NA), "a") == 0), TRUE)
-  expect_identical(nrow(confusion_matrix(NA, "a")), 1L)
-  expect_identical(ncol(confusion_matrix(NA, "a")), 1L)
-
-  expect_identical(all(confusion_matrix("a", NA) == 0), TRUE)
-  expect_identical(nrow(confusion_matrix("a", NA)), 1L)
-  expect_identical(ncol(confusion_matrix("a", NA)), 1L)
-
-  expect_identical(nrow(confusion_matrix(NA, NA)), 0L)
-  expect_identical(ncol(confusion_matrix(NA, NA)), 0L)
-
   temp <- factor(sample(c("versicolor", "setosa"), nrow(iris), replace = TRUE))
   conf <- confusion_matrix(iris$Species, temp)
   expect_matrix(conf, nrows = 3, ncols = 3)
   expect_names(rownames(conf), permutation.of = levels(iris$Species))
   expect_names(colnames(conf), permutation.of = levels(iris$Species))
 
-  conf <- confusion_matrix(c("A", "B"), c("C", "D"))
+  conf <- confusion_matrix(factor(c("A", "B")), factor(c("C", "D")))
   expect_matrix(conf, nrows = 4, ncols = 4)
   expect_names(rownames(conf), permutation.of = c("A", "B", "C", "D"))
   expect_names(colnames(conf), permutation.of = c("A", "B", "C", "D"))
 
   conf <- confusion_matrix(
-    c("A", "B"),
-    c("A", "B"),
-    all_levels = c("A", "B", "C", "D")
+    factor(c("A", "B")),
+    factor(c("A", "B"), levels = c("A", "B", "C", "D"))
   )
   expect_matrix(conf, nrows = 4, ncols = 4)
   expect_names(rownames(conf), permutation.of = c("A", "B", "C", "D"))
   expect_names(colnames(conf), permutation.of = c("A", "B", "C", "D"))
 
-  conf <- confusion_matrix(c("a", "b"), c("b", "b"))
+  conf <- confusion_matrix(factor(c("a", "b")), factor(c("b", "b")))
   true_matrix <- matrix(c(0, 1, 0, 1), nrow = 2, byrow = TRUE)
   colnames(true_matrix) <- c("a", "b")
   rownames(true_matrix) <- colnames(true_matrix)
@@ -74,62 +62,71 @@ test_that("confusion_matrix", {
 })
 
 test_that("kappa_coef", {
-  expect_identical(kappa_coeff(c("a", "b"), c("a", "b")), 1)
-  expect_identical(kappa_coeff(rep(c("a", "b"), 20), rep(c("a", "b"), 20)), 1)
+  expect_identical(kappa_coeff(factor(c("a", "b")), factor(c("a", "b"))), 1)
+  expect_identical(
+    kappa_coeff(factor(rep(c("a", "b"), 20)), factor(rep(c("a", "b"), 20))),
+    1
+  )
 
   coeff <- kappa_coeff(categorical_vars$observed, categorical_vars$predicted)
   expect_equal(round(coeff, 4), 0.5758)
 
-  expect_identical(kappa_coeff(c("a", "b"), c("b", "b")), 0)
+  expect_identical(kappa_coeff(factor(c("a", "b")), factor(c("b", "b"))), 0)
 
-  expect_identical(kappa_coeff(c("a", "b"), c("b", "a")), -1)
-  expect_identical(kappa_coeff(c("a", "b"), c("b", "a")), -1)
-  expect_identical(kappa_coeff(rep(c("a", "b"), 20), rep(c("b", "a"), 20)), -1)
+  expect_identical(kappa_coeff(factor(c("a", "b")), factor(c("b", "a"))), -1)
+  expect_identical(kappa_coeff(factor(c("a", "b")), factor(c("b", "a"))), -1)
+  expect_identical(
+    kappa_coeff(factor(rep(c("a", "b"), 20)), factor(rep(c("b", "a"), 20))),
+    -1
+  )
 
-  expect_identical(kappa_coeff("a", "a"), NaN)
-  expect_identical(kappa_coeff(NA, "a"), NaN)
-  expect_identical(kappa_coeff("a", NA), NaN)
-  expect_identical(kappa_coeff("a", "b"), 0)
+  expect_identical(kappa_coeff(factor("a"), factor("a")), NaN)
+  expect_identical(kappa_coeff(factor("a"), factor("b")), 0)
 })
 
 test_that("matthews_coeff", {
-  expect_identical(matthews_coeff(c("a", "b"), c("a", "b")), 1)
+  expect_identical(matthews_coeff(factor(c("a", "b")), factor(c("a", "b"))), 1)
   expect_identical(
-    matthews_coeff(rep(c("a", "b"), 20), rep(c("a", "b"), 20)),
+    matthews_coeff(factor(rep(c("a", "b"), 20)), factor(rep(c("a", "b"), 20))),
     1
   )
 
   coeff <- matthews_coeff(
-    c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0),
-    c(0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+    factor(c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0)),
+    factor(c(0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1))
   )
   expect_equal(round(coeff, 4), 0.4781)
 
-  expect_identical(matthews_coeff(c("a", "b"), c("b", "b")), NaN)
-
-  expect_identical(matthews_coeff(c("a", "b"), c("b", "a")), -1)
-  expect_identical(matthews_coeff(c("a", "b"), c("b", "a")), -1)
   expect_identical(
-    matthews_coeff(rep(c("a", "b"), 20), rep(c("b", "a"), 20)),
+    matthews_coeff(factor(c("a", "b")), factor(c("b", "b"))),
+    NaN
+  )
+  expect_identical(matthews_coeff(factor(c("a", "b")), factor(c("b", "a"))), -1)
+  expect_identical(
+    matthews_coeff(factor(rep(c("a", "b"), 20)), factor(rep(c("b", "a"), 20))),
     -1
   )
 
-  expect_identical(matthews_coeff("a", "a"), NaN)
-  expect_identical(matthews_coeff(NA, "a"), NaN)
-  expect_identical(matthews_coeff("a", NA), NaN)
-  expect_identical(matthews_coeff("a", "b"), NaN)
+  expect_error(
+    matthews_coeff(factor("a"), factor("a")),
+    "Matthews correlation coefficient \\(MCC\\) is only for binary variables"
+  )
+  expect_identical(matthews_coeff(factor("a"), factor("b")), NaN)
 })
 
 test_that("pccc", {
-  expect_identical(pccc("a", "a"), 1)
-  expect_identical(pccc(1, 1), 1)
-  expect_identical(pccc(1, 2), 0)
-  expect_identical(pccc("a", "b"), 0)
-  expect_identical(pccc(c("a", "b"), c("b", "b")), 0.5)
-  expect_identical(pccc(c("a", NA, "b", "c"), c("b", "b", "b", NA)), 0.5)
+  expect_identical(pccc(factor("a"), factor("a")), 1)
+  expect_identical(pccc(factor(1), factor(1)), 1)
+  expect_identical(pccc(factor(1), factor(2)), 0)
+  expect_identical(pccc(factor("a"), factor("b")), 0)
+  expect_identical(pccc(factor(c("a", "b")), factor(c("b", "b"))), 0.5)
+  expect_identical(
+    pccc(factor(c("a", NA, "b", "c")), factor(c("b", "b", "b", NA))),
+    0.5
+  )
 
-  expect_identical(pccc(rep("a", 20), rep("a", 20)), 1)
-  expect_identical(pccc(rep("a", 20), rep("b", 20)), 0)
+  expect_identical(pccc(factor(rep("a", 20)), factor(rep("a", 20))), 1)
+  expect_identical(pccc(factor(rep("a", 20)), factor(rep("b", 20))), 0)
 
   expect_identical(
     pccc(categorical_vars$observed, categorical_vars$predicted),
@@ -137,11 +134,7 @@ test_that("pccc", {
   )
 
   expect_error(
-    pccc("a", c("a", "b")),
-    "observed and predicted must have the same length"
-  )
-  expect_error(
-    pccc("a", NULL),
+    pccc(factor("a"), factor(c("a", "b"))),
     "observed and predicted must have the same length"
   )
 
@@ -150,29 +143,19 @@ test_that("pccc", {
   expect_identical(pccc(x, y), 1)
   y[c(2, 4, 5)] <- "B"
   expect_identical(pccc(x, y), 0.5)
-
-  expect_identical(pccc(NA, "a"), NaN)
-  expect_identical(pccc("a", NA), NaN)
-  expect_identical(pccc(NA, NA), NaN)
-  expect_identical(pccc(NULL, NULL), NaN)
 })
 
 test_that("sensitivity", {
-  expect_identical(sensitivity("a", "a"), 1)
-  expect_identical(sensitivity(1, 1), 1)
-  expect_identical(sensitivity(1, 2), NaN)
-  expect_identical(sensitivity("a", "b"), NaN)
-  expect_identical(sensitivity(c("a", "b"), c("b", "b")), 1)
+  expect_identical(sensitivity(factor(c("a", "b")), factor(c("b", "b"))), 1)
 
   result <- c(NaN, 0.5, NaN)
   names(result) <- c("a", "b", "c")
   expect_identical(
-    sensitivity(c("a", NA, "b", "c"), c("b", "b", "b", NA)),
+    sensitivity(factor(c("a", NA, "b", "c")), factor(c("b", "b", "b", NA))),
     result
   )
 
-  expect_identical(sensitivity(rep("a", 20), rep("a", 20)), 1)
-  expect_identical(sensitivity(rep("a", 20), rep("b", 20)), NaN)
+  expect_identical(sensitivity(factor(rep("a", 20)), factor(rep("b", 20))), NaN)
 
   sensitivities <- sensitivity(
     categorical_vars$observed,
@@ -201,17 +184,12 @@ test_that("sensitivity", {
   names(result) <- c("A", "C", "B")
   expect_identical(sensitivity(x, y), result)
 
-  expect_identical(sensitivity(NA, "a"), NaN)
-  expect_identical(sensitivity("a", NA), NaN)
-  expect_identical(sensitivity(NA, NA), NaN)
-  expect_identical(sensitivity(NULL, NULL), NaN)
-
-  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
-  y <- c(
+  x <- factor(c(rep("a", 4), rep("b", 4), rep("c", 4)))
+  y <- factor(c(
     "a", "a", "b", "c",
     "a", "b", "b", "c",
     "a", "b", "b", "c"
-  )
+  ))
   sensitivities <- sensitivity(x, y)
   result <- c(0.5, 0.4, 0.3333)
   names(result) <- c("a", "b", "c")
@@ -219,21 +197,16 @@ test_that("sensitivity", {
 })
 
 test_that("specificity", {
-  expect_identical(specificity("a", "a"), NaN)
-  expect_identical(specificity(1, 1), NaN)
-  expect_identical(specificity(1, 2), 0)
-  expect_identical(specificity("a", "b"), 0)
-  expect_identical(specificity(c("a", "b"), c("b", "b")), 0)
+  expect_identical(specificity(factor(c("a", "b")), factor(c("b", "b"))), 0)
 
   result <- c(0.5, NaN, 0)
   names(result) <- c("a", "b", "c")
   expect_identical(
-    specificity(c("a", NA, "b", "c"), c("b", "b", "b", NA)),
+    specificity(factor(c("a", NA, "b", "c")), factor(c("b", "b", "b", NA))),
     result
   )
 
-  expect_identical(specificity(rep("a", 20), rep("a", 20)), NaN)
-  expect_identical(specificity(rep("a", 20), rep("b", 20)), 0)
+  expect_identical(specificity(factor(rep("a", 20)), factor(rep("b", 20))), 0)
 
   specificities <- specificity(
     categorical_vars$observed,
@@ -262,17 +235,12 @@ test_that("specificity", {
   names(result) <- c("A", "C", "B")
   expect_equal(round(specificity(x, y), 4), result)
 
-  expect_identical(specificity(NA, "a"), NaN)
-  expect_identical(specificity("a", NA), NaN)
-  expect_identical(specificity(NA, NA), NaN)
-  expect_identical(specificity(NULL, NULL), NaN)
-
-  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
-  y <- c(
+  x <- factor(c(rep("a", 4), rep("b", 4), rep("c", 4)))
+  y <- factor(c(
     "a", "a", "b", "c",
     "a", "b", "b", "c",
     "a", "b", "b", "c"
-  )
+  ))
   sensitivities <- specificity(x, y)
   result <- c(0.25, 0.2857, 0.3333)
   names(result) <- c("a", "b", "c")
@@ -280,21 +248,16 @@ test_that("specificity", {
 })
 
 test_that("precision", {
-  expect_identical(precision("a", "a"), 1)
-  expect_identical(precision(1, 1), 1)
-  expect_identical(precision(1, 2), 0)
-  expect_identical(precision("a", "b"), 0)
-  expect_identical(precision(c("a", "b"), c("b", "b")), 0.5)
+  expect_identical(precision(factor(c("a", "b")), factor(c("b", "b"))), 0.5)
 
   result <- c(0, 1, 0)
   names(result) <- c("a", "b", "c")
   expect_identical(
-    precision(c("a", NA, "b", "c"), c("b", "b", "b", NA)),
+    precision(factor(c("a", NA, "b", "c")), factor(c("b", "b", "b", NA))),
     result
   )
 
-  expect_identical(precision(rep("a", 20), rep("a", 20)), 1)
-  expect_identical(precision(rep("a", 20), rep("b", 20)), 0)
+  expect_identical(precision(factor(rep("a", 20)), factor(rep("b", 20))), 0)
 
   precisions <- precision(
     categorical_vars$observed,
@@ -323,17 +286,12 @@ test_that("precision", {
   names(result) <- c("A", "C", "B")
   expect_equal(round(precision(x, y), 4), result)
 
-  expect_identical(precision(NA, "a"), NaN)
-  expect_identical(precision("a", NA), NaN)
-  expect_identical(precision(NA, NA), NaN)
-  expect_identical(precision(NULL, NULL), NaN)
-
-  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
-  y <- c(
+  x <- factor(c(rep("a", 4), rep("b", 4), rep("c", 4)))
+  y <- factor(c(
     "a", "a", "b", "c",
     "a", "b", "b", "c",
     "a", "b", "b", "c"
-  )
+  ))
   precisions <- precision(x, y)
   result <- c(0.4, 0.4, 0.2)
   names(result) <- c("a", "b", "c")
@@ -342,58 +300,49 @@ test_that("precision", {
 
 test_that("roc_auc", {
   probs <- data.frame(a = c(0.6, 0.6), b = c(0.4, 0.4))
-  expect_identical(roc_auc(c("a", "a"), probs), NaN)
-  expect_identical(roc_auc(c(1, 1), c(0.8, 0.7)), NaN)
-  expect_identical(roc_auc(1, c(0.2)), NaN)
-  expect_identical(roc_auc("a", c(0.4)), NaN)
-  expect_identical(roc_auc(c("a", "b"), c(0.6, 0.4)), 0)
-  expect_identical(roc_auc(c("a", "b"), c(0.4, 0.6)), 1)
+  expect_identical(roc_auc(factor(c("a", "a")), probs), NaN)
+  probs <- data.frame(a = c(0.6, 0.4), b = c(0.4, 0.6))
+  expect_identical(roc_auc(factor(c("a", "b")), probs), 1)
+  probs <- data.frame(a = c(0.4, 0.6), b = c(0.6, 0.4))
+  expect_identical(roc_auc(factor(c("a", "b")), probs), 0)
 
-  expect_identical(roc_auc(rep("a", 5), rep(0.7, 5)), NaN)
-  expect_identical(roc_auc(rep("a", 5), rep(0.3, 5)), NaN)
-
+  probs <- data.frame(
+    a = c(0.2, 0.5, 0.9),
+    b = c(0.3, 0.2, 0.05),
+    c = c(0.5, 0.3, 0.05)
+  )
   expect_error(
-    roc_auc(c("a", "b", "c"), c(0.2, 0.5, 0.9)),
+    roc_auc(factor(c("a", "b", "c")), probs),
     "Area Under the Curve \\(ROC-AUC\\) is only for binary variables"
   )
 
-  expect_error(
-    roc_auc("a", c("a", "b")),
-    "observed and probabilities must have the same length"
-  )
-  expect_error(
-    roc_auc("a", NULL),
-    "observed and probabilities must have the same length"
-  )
-
-  expect_identical(roc_auc(NA, "a"), NaN)
-  expect_identical(roc_auc("a", NA), NaN)
-  expect_identical(roc_auc(NA, NA), NaN)
-  expect_identical(roc_auc(NULL, NULL), NaN)
-
   set.seed(42)
-  probs <- rnorm(100)
-  observed <- sample(c("a", "b"), 100, replace = TRUE)
+  probs <- data.frame(a = rnorm(100))
+  probs$b <- 1 - probs$a
+  observed <- factor(sample(c("a", "b"), 100, replace = TRUE))
 
   expect_equal(round(roc_auc(observed, probs), 4), 0.5269)
 })
 
 test_that("f1_score", {
-  expect_identical(f1_score("a", "a"), 1)
-  expect_identical(f1_score(1, 1), 1)
-  expect_identical(f1_score(1, 2), NaN)
-  expect_identical(f1_score("a", "b"), NaN)
-  expect_identical(round(f1_score(c("a", "b"), c("b", "b")), 4), 0.6667)
+  expect_identical(f1_score(factor(1), factor(2)), NaN)
+  expect_identical(f1_score(factor("a"), factor("b")), NaN)
+  expect_identical(
+    round(f1_score(factor(c("a", "b")), factor(c("b", "b"))), 4),
+    0.6667
+  )
 
   result <- c(NaN, 0.6667, NaN)
   names(result) <- c("a", "b", "c")
   expect_equal(
-    round(f1_score(c("a", NA, "b", "c"), c("b", "b", "b", NA)), 4),
+    round(f1_score(
+      factor(c("a", NA, "b", "c")),
+      factor(c("b", "b", "b", NA))
+    ), 4),
     result
   )
 
-  expect_identical(f1_score(rep("a", 20), rep("a", 20)), 1)
-  expect_identical(f1_score(rep("a", 20), rep("b", 20)), NaN)
+  expect_identical(f1_score(factor(rep("a", 20)), factor(rep("b", 20))), NaN)
 
   f1_scores <- f1_score(
     categorical_vars$observed,
@@ -422,17 +371,12 @@ test_that("f1_score", {
   names(result) <- c("A", "C", "B")
   expect_equal(round(f1_score(x, y), 4), result)
 
-  expect_identical(f1_score(NA, "a"), NaN)
-  expect_identical(f1_score("a", NA), NaN)
-  expect_identical(f1_score(NA, NA), NaN)
-  expect_identical(f1_score(NULL, NULL), NaN)
-
-  x <- c(rep("a", 4), rep("b", 4), rep("c", 4))
-  y <- c(
+  x <- factor(c(rep("a", 4), rep("b", 4), rep("c", 4)))
+  y <- factor(c(
     "a", "a", "b", "c",
     "a", "b", "b", "c",
     "a", "b", "b", "c"
-  )
+  ))
   precisions <- f1_score(x, y)
   result <- c(0.4444, 0.4, 0.25)
   names(result) <- c("a", "b", "c")
@@ -440,15 +384,18 @@ test_that("f1_score", {
 })
 
 test_that("pcic", {
-  expect_identical(pcic("a", "a"), 0)
-  expect_identical(pcic(1, 1), 0)
-  expect_identical(pcic(1, 2), 1)
-  expect_identical(pcic("a", "b"), 1)
-  expect_identical(pcic(c("a", "b"), c("b", "b")), 0.5)
-  expect_identical(pcic(c("a", NA, "b", "c"), c("b", "b", "b", NA)), 0.5)
+  expect_identical(pcic(factor("a"), factor("a")), 0)
+  expect_identical(pcic(factor(1), factor(1)), 0)
+  expect_identical(pcic(factor(1), factor(2)), 1)
+  expect_identical(pcic(factor("a"), factor("b")), 1)
+  expect_identical(pcic(factor(c("a", "b")), factor(c("b", "b"))), 0.5)
+  expect_identical(
+    pcic(factor(c("a", NA, "b", "c")), factor(c("b", "b", "b", NA))),
+    0.5
+  )
 
-  expect_identical(pcic(rep("a", 20), rep("a", 20)), 0)
-  expect_identical(pcic(rep("a", 20), rep("b", 20)), 1)
+  expect_identical(pcic(factor(rep("a", 20)), factor(rep("a", 20))), 0)
+  expect_identical(pcic(factor(rep("a", 20)), factor(rep("b", 20))), 1)
 
   expect_identical(
     pcic(categorical_vars$observed, categorical_vars$predicted),
@@ -469,53 +416,39 @@ test_that("pcic", {
   expect_identical(pcic(x, y), 0)
   y[c(2, 4, 5)] <- "B"
   expect_identical(pcic(x, y), 0.5)
-
-  expect_identical(pcic(NA, "a"), NaN)
-  expect_identical(pcic("a", NA), NaN)
-  expect_identical(pcic(NA, NA), NaN)
-  expect_identical(pcic(NULL, NULL), NaN)
 })
 
 test_that("brier_score", {
-  probs <- matrix(1)
-  colnames(probs) <- c("a")
+  probs <- data.frame(a = 1)
   expect_error(
-    brier_score("a", probs),
+    brier_score(factor("a"), probs),
     "probabilities must have at least two columns \\(classes\\)"
   )
-  probs <- matrix(c(1, 0), 1, 2)
+  probs <- as.data.frame(matrix(c(1, 0), 1, 2))
+  colnames(probs) <- NULL
   expect_error(
-    brier_score("a", probs),
+    brier_score(factor("a"), probs),
     "probabilities must have the classes' names as columns names"
   )
-  probs <- matrix(c(1, 0), 1, 2)
+  probs <- as.data.frame(matrix(c(1, 0), 1, 2))
   colnames(probs) <- c("a", "b")
   expect_error(
-    brier_score(c("a", "b"), probs),
+    brier_score(factor(c("a", "b")), probs),
     "observed and probabilities must have the same number of records"
   )
-  probs <- matrix(c(1, 0, 1, 0), 2, 2)
+  probs <- as.data.frame(matrix(c(1, 0, 1, 0), 2, 2))
   colnames(probs) <- c("a", "b")
   expect_error(
-    brier_score("b", probs),
+    brier_score(factor("b"), probs),
     "observed and probabilities must have the same number of records"
   )
-  probs <- matrix(c(1, 0, 1, 0, 1, 0), 3, 2)
+  probs <- as.data.frame(matrix(c(1, 0, 1, 0, 1, 0), 3, 2))
   colnames(probs) <- c("a", "b")
   expect_error(
-    brier_score(c("b", "c", "a"), probs),
+    brier_score(factor(c("b", "c", "a")), probs),
     paste0(
       "Assertion on 'observed' failed: Must be a subset of ",
-      "\\{'a','b'\\}, but is \\{'b','c','a'\\}."
-    )
-  )
-  probs <- matrix(c(0, 1), 1, 2)
-  colnames(probs) <- c("a", "b")
-  expect_error(
-    brier_score(NA, probs),
-    paste0(
-      "Assertion on 'observed' failed: Must be a subset of ",
-      "\\{'a','b'\\}, not empty"
+      "\\{'a','b'\\}, but is \\{'a','b','c'\\}."
     )
   )
 
@@ -525,9 +458,9 @@ test_that("brier_score", {
   #   (0.2 - 0)^2 + (0.8 - 1)^2
   # )
   # mean(x)
-  probs <- matrix(c(0.7, 0.3, 0.2, 0.8), 2, 2, byrow = TRUE)
+  probs <- as.data.frame(matrix(c(0.7, 0.3, 0.2, 0.8), 2, 2, byrow = TRUE))
   colnames(probs) <- c("0", "1")
-  expect_identical(brier_score(c(0, 1), probs), 0.13)
+  expect_identical(brier_score(factor(c(0, 1)), probs), 0.13)
 
   # Manual calculation
   # x <- c(
@@ -536,25 +469,25 @@ test_that("brier_score", {
   #   (0.3 - 0)^2 + (0.3 - 0)^2 + (0.4 - 1)^2
   # )
   # mean(x)
-  probs <- matrix(
+  probs <- as.data.frame(matrix(
     c(0.2, 0.3, 0.5, 0.8, 0.1, 0.1, 0.3, 0.3, 0.4),
     3,
     3,
     byrow = TRUE
-  )
+  ))
   colnames(probs) <- c("a", "b", "c")
   expect_identical(
-    round(brier_score(c("a", "a", "c"), probs), 4),
+    round(brier_score(factor(c("a", "a", "c")), probs), 4),
     0.5267
   )
 
-  probs <- matrix(c(1, 0), 1, 2)
+  probs <- as.data.frame(matrix(c(1, 0), 1, 2))
   colnames(probs) <- c("a", "b")
-  expect_identical(brier_score("a", probs), 0)
+  expect_identical(brier_score(factor("a"), probs), 0)
 
-  probs <- matrix(c(0, 1), 1, 2)
+  probs <- as.data.frame(matrix(c(0, 1), 1, 2))
   colnames(probs) <- c("a", "b")
-  expect_identical(brier_score("a", probs), 2)
+  expect_identical(brier_score(factor("a"), probs), 2)
 })
 
 test_that("mse", {

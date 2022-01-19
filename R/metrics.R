@@ -102,11 +102,7 @@ kappa_coeff <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @export
 matthews_coeff <- function(observed, predicted, na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(
-    observed,
-    predicted,
-    na.rm = na.rm
-  )
+  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
 
   if (ncol(conf_matrix) != 2) {
     stop("Matthews correlation coefficient (MCC) is only for binary variables")
@@ -157,11 +153,7 @@ sensitivity <- function(observed,
                         predicted,
                         positive_class = NULL,
                         na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(
-    observed,
-    predicted,
-    na.rm = na.rm
-  )
+  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -213,12 +205,7 @@ specificity <- function(observed,
                         predicted,
                         positive_class = NULL,
                         na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(
-    observed,
-    predicted,
-    all_classes = all_classes,
-    na.rm = na.rm
-  )
+  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -310,12 +297,7 @@ precision <- function(observed,
                       predicted,
                       positive_class = NULL,
                       na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(
-    observed,
-    predicted,
-    all_classes = all_classes,
-    na.rm = na.rm
-  )
+  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -491,7 +473,7 @@ f1_score <- function(observed,
 #'
 #' @export
 pccc <- function(observed, predicted, na.rm = TRUE) {
-    assert_same_length(observed, predicted)
+  assert_categorical_obs_pred(observed, predicted)
 
   return(mean(as.character(observed) == as.character(predicted), na.rm = na.rm))
 }
@@ -547,7 +529,8 @@ accuracy <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @export
 pcic <- function(observed, predicted, na.rm = TRUE) {
-  assert_same_length(observed, predicted)
+  assert_categorical_obs_pred(observed, predicted)
+
 
   return(mean(as.character(observed) != as.character(predicted), na.rm = na.rm))
 }
@@ -1076,51 +1059,41 @@ wrapper_loss <- function(observed,
 categorical_summary <- function(observed,
                                 predicted,
                                 probabilities = NULL,
-                                all_classes = NULL,
+                                positive_class = NULL,
                                 na.rm = TRUE) {
-  if (is.null(all_classes)) {
-    all_classes <- get_all_classes(observed, predicted)
-  }
-
-  if (length(all_classes) == 1) {
-    all_classes <- c("OtherClass", all_classes)
-  }
-
   summary <- list(
     confusion_matrix = confusion_matrix(
       observed,
       predicted,
-      all_classes = all_classes,
       na.rm = na.rm
     ),
     kappa_coeff = kappa_coeff(
       observed,
       predicted,
-      all_classes = all_classes,
       na.rm = na.rm
     ),
     sensitivity = sensitivity(
       observed,
       predicted,
-      all_classes = all_classes,
+      positive_class = positive_class,
       na.rm = na.rm
     ),
     specificity = specificity(
       observed,
       predicted,
-      all_classes = all_classes,
+      positive_class = positive_class,
       na.rm = na.rm
     ),
     precision = precision(
       observed,
       predicted,
-      all_classes = all_classes,
+      positive_class = positive_class,
       na.rm = na.rm
     ),
     f1_score = f1_score(
       observed,
       predicted,
-      all_classes = all_classes,
+      positive_class = positive_class,
       na.rm = na.rm
     ),
     accuracy = accuracy(
@@ -1130,19 +1103,18 @@ categorical_summary <- function(observed,
     )
   )
 
-  if (length(all_classes) == 2) {
+  if (ncol(summary$confusion_matrix) == 2) {
     summary$matthews_coeff <- matthews_coeff(
       observed,
       predicted,
-      all_classes = all_classes,
       na.rm = na.rm
     )
 
     if (!is.null(probabilities)) {
       summary$roc_auc <- roc_auc(
         observed,
-        probabilities[all_classes[1]],
-        positive_class = all_classes[1],
+        probabilities,
+        positive_class = positive_class,
         na.rm = na.rm
       )
     }
