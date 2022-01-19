@@ -268,7 +268,7 @@ assert_same_length <- function(x, y, x_label = vname(x), y_label = vname(y)) {
 }
 
 assert_observed_probabilities <- function(observed, probabilities) {
-  assert_factor(observed, empty.levels.ok = FALSE, min.len = 1)
+  assert_factor(observed, min.len = 1)
   assert_data_frame(probabilities)
 
   if (is_empty(observed) || is_empty(probabilities)) {

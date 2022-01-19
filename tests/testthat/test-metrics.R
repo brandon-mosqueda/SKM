@@ -324,6 +324,35 @@ test_that("roc_auc", {
   expect_equal(round(roc_auc(observed, probs), 4), 0.5269)
 })
 
+test_that("pr_auc", {
+  probs <- data.frame(a = c(0.6, 0.6), b = c(0.4, 0.4))
+  expect_identical(pr_auc(factor(c("a", "a"), c("a", "b")), probs), NaN)
+  probs <- data.frame(a = c(0.6, 0.4), b = c(0.4, 0.6))
+  expect_identical(pr_auc(factor(c("a", "b")), probs), 0)
+  probs <- data.frame(a = c(0.4, 0.6), b = c(0.6, 0.4))
+  expect_identical(pr_auc(factor(c("a", "b")), probs), 0.25)
+
+  probs <- data.frame(
+    a = c(0.2, 0.5, 0.9),
+    b = c(0.3, 0.2, 0.05),
+    c = c(0.5, 0.3, 0.05)
+  )
+  expect_error(
+    pr_auc(factor(c("a", "b", "c")), probs),
+    paste0(
+      "Precision-Recall Aure Under the Curve \\(PR-AUC\\) is only for binary, ",
+      "variables."
+    )
+  )
+
+  set.seed(42)
+  probs <- data.frame(a = rnorm(100))
+  probs$b <- 1 - probs$a
+  observed <- factor(sample(c("a", "b"), 100, replace = TRUE))
+
+  expect_equal(round(pr_auc(observed, probs), 4), 0.4688)
+})
+
 test_that("f1_score", {
   expect_identical(f1_score(factor(1), factor(2)), NaN)
   expect_identical(f1_score(factor("a"), factor("b")), NaN)

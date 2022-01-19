@@ -1,4 +1,5 @@
 #' @import checkmate
+#' @importFrom MLmetrics PRAUC
 
 #' @include validator.R
 
@@ -160,6 +161,10 @@ sensitivity <- function(observed,
   all_classes <- colnames(conf_matrix)
 
   if (length(all_classes) == 2) {
+    if (!is.null(positive_class)) {
+      all_classes <- c(setdiff(all_classes, positive_class), positive_class)
+      conf_matrix <- conf_matrix[all_classes, all_classes]
+    }
     rates <- as_tf_rates(conf_matrix)
 
     return(rates$tp / (rates$tp + rates$fn))
@@ -212,6 +217,10 @@ specificity <- function(observed,
   all_classes <- colnames(conf_matrix)
 
   if (length(all_classes) == 2) {
+    if (!is.null(positive_class)) {
+      all_classes <- c(setdiff(all_classes, positive_class), positive_class)
+      conf_matrix <- conf_matrix[all_classes, all_classes]
+    }
     rates <- as_tf_rates(conf_matrix)
 
     return(as.numeric(rates$tn / (rates$tn + rates$fp)))
@@ -304,6 +313,11 @@ precision <- function(observed,
   all_classes <- colnames(conf_matrix)
 
   if (length(all_classes) == 2) {
+    if (!is.null(positive_class)) {
+      all_classes <- c(setdiff(all_classes, positive_class), positive_class)
+      conf_matrix <- conf_matrix[all_classes, all_classes]
+    }
+
     rates <- as_tf_rates(conf_matrix)
 
     return(rates$tp / (rates$tp + rates$fp))
@@ -325,7 +339,7 @@ precision <- function(observed,
 #'
 #' @description
 #' Given the observed values and predicted probabilities values of binary data
-#' computes the ROC Area Under the Curve.
+#' computes the ROC Area Under the Curve (ROC-AUC).
 #'
 #' @inheritParams sensitivity
 #' @param observed (`factor`) The observed values. It has to have the same
@@ -351,7 +365,11 @@ precision <- function(observed,
 #' )
 #' roc_auc(
 #'   factor(c(TRUE, FALSE)),
-#'   data.frame(`TRUE` = c(0.3, 0.2), `FALSE` = c(0.7, 0.8))
+#'   data.frame(
+#'     `TRUE` = c(0.3, 0.2),
+#'     `FALSE` = c(0.7, 0.8),
+#'     check.names = FALSE
+#'   )
 #' )
 #' }
 #'
@@ -383,27 +401,68 @@ roc_auc <- function(observed,
   return(1 - U / n1 / n2)
 }
 
+#' @title Precision-Recall Area Under the Curver (PR-AUC)
+#'
+#' @description
+#' Given the observed values and predicted probabilities values of binary data
+#' computes the Precision-Recall Area Under the Curve (PR-AUC).
+#'
+#' @inheritParams roc_auc
+#'
+#' @return
+#' A single numeric value with the PR-AUC.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' pr_auc(factor(c("a", "b")), data.frame(a = c(0.2, 0.6), b = c(0.5, 0.4)))
+#' pr_auc(factor(c("a", "b")), data.frame(a = c(0.8, 0.3), b = c(0.2, 0.7)))
+#' pr_auc(
+#'   factor(c("a", "b")),
+#'   data.frame(a = c(0.2, 0.6), b = c(0.5, 0.4)),
+#'   positive_class = "b"
+#' )
+#' pr_auc(
+#'   factor(c(TRUE, FALSE)),
+#'   data.frame(
+#'     `TRUE` = c(0.3, 0.2),
+#'     `FALSE` = c(0.7, 0.8),
+#'     check.names = FALSE
+#'   )
+#' )
+#' }
+#'
+#' @export
 pr_auc <- function(observed,
                    probabilities,
-                   positive_class = levels(observed)[2],
+                   positive_class = NULL,
                    na.rm = TRUE) {
-  assert_same_length(observed, probabilities)
+  assert_observed_probabilities(observed, probabilities)
 
-  all_classes <- get_all_classes(observed, observed)
+  all_classes <- colnames(probabilities)
+  assert_positive_class(positive_class, all_classes)
 
-  if (length(all_classes) == 1) {
-    all_classes <- c("OtherClass", all_classes)
-  } else if (length(all_classes) > 2) {
-    stop("Area Under the Curve (ROC-AUC) is only for binary variables")
+  if (length(all_classes) != 2) {
+    stop(
+      "Precision-Recall Aure Under the Curve (PR-AUC) is only for binary, ",
+      "variables."
+    )
   }
 
-  observed <- factor(observed, all_classes)
-  observed <- observed == positive_class
-  n1 <- sum(!observed)
-  n2 <- sum(observed)
-  U <- sum(rank(probabilities)[!observed]) - n1 * (n1 + 1) / 2
+  if (is.null(positive_class)) {
+    positive_class <- all_classes[2]
+  }
 
-  return(1 - U / n1 / n2)
+  result <- try(
+    MLmetrics::PRAUC(
+      probabilities[[positive_class]],
+      as.integer(observed == positive_class)
+    ),
+    silent = TRUE
+  )
+
+  return(if(is.numeric(result)) result else NaN)
 }
 
 #' @title F1 score
@@ -984,11 +1043,14 @@ wrapper_loss <- function(observed,
       observed <- factor(observed, levels = tuner$responses$y$levels)
     }
 
-    if (tuner$loss_function_name == "roc_auc") {
-      positive_class <- levels(observed)[2]
-      loss <- roc_auc(
+    if (
+      tuner$loss_function_name == "roc_auc" ||
+      tuner$loss_function_name == "pr_auc"
+    ) {
+      positive_class <- tuner$responses$y$levels[2]
+      loss <- tuner$loss_function(
         observed = observed,
-        probabilities = predictions$probabilities[[positive_class]],
+        probabilities = predictions$probabilities,
         positive_class = positive_class
       )
     } else {
@@ -1117,6 +1179,13 @@ categorical_summary <- function(observed,
         positive_class = positive_class,
         na.rm = na.rm
       )
+
+      summary$pr_auc <- pr_auc(
+        observed,
+        probabilities,
+        positive_class = positive_class,
+        na.rm = na.rm
+      )
     }
   }
 
@@ -1152,6 +1221,10 @@ print.CategoricalSummary <- function(summary, digits = 4) {
 
   if (!is.null(summary$roc_auc)) {
     cat(sprintf("* ROC-AUC: %s\n", round(summary$roc_auc, digits)))
+  }
+
+  if (!is.null(summary$pr_auc)) {
+    cat(sprintf("* PR-AUC: %s\n", round(summary$pr_auc, digits)))
   }
 
   if (!is.null(summary$brier_score)) {
