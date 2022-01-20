@@ -60,20 +60,44 @@ We have included in [Appendix A](#appendix_a) some comparative examples of the e
 
 As [@sparse_kernels] points out, kernel methods transform the independent variables (inputs) using a kernel function, followed by the application of conventional machine learning techniques to the transformed data to achieve better results. Kernel methods are excellent options when dealing with complex data that shows non-linear patterns for their computational efficiency and because it can be used with any type of predictive machine. So, we have included the _kernelize_ function in SKM that can compute the same 7 kernels and their sparse versions described in [@sparse_kernels]: Linear, Polynomial, Sigmoid, Gaussian, Exponential, Arc-Cosine 1 And Arc-Cosine L. The  kernel computation is independent from the model fitting process, which allows the use of _kernelilze_ function with other packages or the machine learning algorithms implementations of SKM without kernels.
 
+TODO: ventajas de la reducción de la dimensionalidad en los kernels en general y principalmente en los sparse.
+
 In [Appendix B](#appendix_b) we have included some examples about how you can use the _kernelilze_ function of SKM with several type of data and then fit a model with it.
 
 # Evaluation metrics
 
-Evaluating models' performance is an important task of all machine learning workflow, for this reason we have included in SKM functions of the most popular metrics to evaluate models performance for both regression and classification. The regression metrics included are: Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean Squared Error (NRMSE, with 4 types of normalization), Mean Absolute Error (MAE) and Mean Arctangent Absolute Percentage Error (MAAPE). The classification metrics included are: accuracy, specificity, sensitivity, Kappa coefficient, Brier score, Matthews correlation coefficient, precision, recall, Area Under the ROC Curve (ROC-AUC) and F1 score.
+Evaluating models' performance is an important task of all machine learning workflow, for this reason we have included in SKM functions of the most popular metrics to evaluate models performance for both regression and classification. The regression metrics included are: Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean Squared Error (NRMSE, with 4 types of normalization), Mean Absolute Error (MAE) and Mean Arctangent Absolute Percentage Error (MAAPE). The classification metrics included are: accuracy, specificity, sensitivity, Kappa coefficient, Brier score, Matthews correlation coefficient, precision, recall, Area Under the ROC Curve (ROC-AUC), Precision-Recall Area Under the Curver (PR-AUC) and F1 score.
 In addition to the functions already mentioned, the wrapper functions numeric_summary and categorical_summary computes all the regression and classification metrics, respectively, in order to have a complete summary of your model's performance in a simple function.
 
-As expected, all these metrics functions work in harmony with the machine learning algorithms functions, since they use the same data format and no extra data processing is necessary when using using together. This does not limit or complicate the use of them with other packages, on the contrary, detailed documentation is provided.
+As expected, all these metrics functions work in harmony with the machine learning algorithms functions, since they use the same data format and no extra data processing is necessary when using together. This does not limit or complicate the use of them with other packages, on the contrary, detailed documentation is provided.
 
 [Appendix A](#appendix_a) and [Appendix B](#appendix_b) includes examples of some metrics functions that basically receive the observed and predicted values (or probabilities in classification) and returns a numeric value.
 
 # Installation
 
+SKM is a package developed to be used in the R ecosystem. A stable version is avaible at The Comprehensive R Archive Network (CRAN), the main repository for R packages, so you can install SKM from a R terminal with the following command.
+
+```{r cran_installation, eval = FALSE}
+install.packages("SKM")
+```
+
+As an open source project, we have published the package in a Github repository at [https://github.com/brandon-mosqueda/SKM](#https://github.com/brandon-mosqueda/snake-game) where you can find the full source code and other way of install the development version (and most updated) of the package. This development version may include correction of reported bugs, new functionalities, etc. In this repository you can also find a place to report bugs or contribute to the project. In order to install the development version you have to execute the following commands in an R terminal.
+
+```{r github_installation, eval = FALSE}
+if (!require("devtools")) {
+  install.packages("devtools")
+}
+
+devtools::install_github("brandon-mosqueda/SKM")
+```
+
 # Conclusions and future work
+
+This new package will benefit both machine learning practitioners and researchers who want to implement predictive models in a simple way. We also expect that people from different areas who are not programming experts can take advantage of the simplicity of SKM to enter to the machine learning world.
+
+It is of special interest the _kernelize_ function in SKM since this is the first package which allows the use of kernels with different machine learning algorithms as a new approach of working with complex non-linear data and high dimensional data.
+
+It is not intendend to provide a full data science solution with this new package but new machine learning algorithms can be included in future versions along more metrics functions, models benchmarking, data imputation and other data science related tools.
 
 # References
 
