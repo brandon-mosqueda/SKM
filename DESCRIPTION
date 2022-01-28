@@ -67,6 +67,7 @@ Collate:
     'generalized_boosted_machine_model.R'
     'generalized_linear_model_model.R'
     'generalized_linear_model.R'
+    'genomic_selection.R'
     'glm_bayesian_tuner.R'
     'glm_grid_tuner.R'
     'k_fold_cross_validator.R'

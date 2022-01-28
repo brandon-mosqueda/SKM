@@ -1090,3 +1090,37 @@ validate_bayesian_model <- function(x,
     unique = TRUE
   )
 }
+
+# Genomic selection --------------------------------------------------
+
+assert_gs_summary <- function(predictions, save_at, digits) {
+  assert_data_frame(
+    predictions,
+    all.missing = FALSE,
+    min.rows = 1
+  )
+
+  assert_names(
+    colnames(predictions),
+    must.include = c("Observed", "Predicted", "Env", "Line", "Fold"),
+    what = "predictions columns' names"
+  )
+
+  observed <- predictions$Observed
+  if (!is.numeric(observed) && !is.factor(observed)) {
+    stop("Both the observed and predicted columns must be numeric or factor.")
+  }
+
+  if (
+    is.factor(observed) &&
+    !all(levels(observed) %in% colnames(predictions))
+  ) {
+    stop(
+      "For categorical variables in Observed, predictions must have a column ",
+      "for each class (level) with the predicted probability."
+    )
+  }
+
+  assert_string(save_at, min.chars = 1, null.ok = TRUE)
+  assert_number(digits, lower = 0, finite = TRUE)
+}

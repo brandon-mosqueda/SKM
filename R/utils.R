@@ -1,4 +1,5 @@
 #' @importFrom reticulate py_suppress_warnings py_capture_output
+#' @importFrom data.table fwrite
 
 #' @include globals.R
 #' @include validator.R
@@ -145,6 +146,20 @@ replace_at_list <- function(original, new_values) {
   }
 
   return(original)
+}
+
+write_csv <- function(data,
+                      file,
+                      quote = FALSE,
+                      na = "NA",
+                      ...) {
+  return(fwrite(
+    data,
+    file = file,
+    quote = quote,
+    na = na,
+    ...
+  ))
 }
 
 get_cols_names <- function(x) {

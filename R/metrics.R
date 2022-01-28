@@ -5,6 +5,12 @@
 
 # For categorical data --------------------------------------------------
 
+# Get the value that appears more times. If there are more than 1
+# value that appears more times (multimodal), return the lowest value.
+mode <- function(data) {
+  return(names(sort(summary(as.factor(data)), decreasing=TRUE)[1]))
+}
+
 #' @title Confusion matrix
 #'
 #' @description
