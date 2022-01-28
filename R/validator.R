@@ -637,6 +637,11 @@ assert_cv_kfold <- function(records_number, k) {
   assert_number(k, lower = 2, upper = records_number)
 }
 
+assert_cv_kfold_strata <- function(data, k) {
+  assert_factor(data, empty.levels.ok = FALSE, all.missing = FALSE, min.len = 1)
+  assert_number(k, lower = 2, upper = length(data))
+}
+
 assert_cv_random <- function(records_number, folds_number, testing_proportion) {
   assert_number(records_number, lower = 2, finite = TRUE)
   assert_number(folds_number, lower = 1, finite = TRUE)

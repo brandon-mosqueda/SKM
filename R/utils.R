@@ -764,6 +764,18 @@ cv_kfold <- function(records_number, k = 5) {
   return(cross_validator$get_folds())
 }
 
+#' @export
+cv_kfold_strata <- function(data, k = 5) {
+  assert_cv_kfold_strata(data, k)
+  data <- droplevels(data)
+
+  cross_validator <- KFoldStrataCV$new(
+    folds_number = k,
+    data = data
+  )
+
+  return(cross_validator$get_folds())
+}
 
 #' @export
 cv_random <- function(records_number,

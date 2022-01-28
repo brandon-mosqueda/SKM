@@ -70,6 +70,7 @@ Collate:
     'glm_bayesian_tuner.R'
     'glm_grid_tuner.R'
     'k_fold_cross_validator.R'
+    'k_fold_strata_cross_validator.R'
     'random_cross_validator.R'
     'random_forest.R'
     'support_vector_machine_model.R'
