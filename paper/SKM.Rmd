@@ -75,7 +75,7 @@ As expected, all these metrics functions work in harmony with the machine learni
 
 # Installation
 
-SKM is a package developed to be used in the R ecosystem. A stable version is avaible at The Comprehensive R Archive Network (CRAN), the main repository for R packages, so you can install SKM from a R terminal with the following command.
+SKM is a package developed to be used in the R ecosystem. A stable version is avaible at The Comprehensive R Archive Network (CRAN), the main repository for R packages, so you can install SKM from an R terminal with the following command:
 
 ```{r cran_installation, eval = FALSE}
 install.packages("SKM")
@@ -95,7 +95,7 @@ devtools::install_github("brandon-mosqueda/SKM")
 
 This new package will benefit both machine learning practitioners and researchers who want to implement predictive models in a simple way. We also expect that people from different areas who are not programming experts can take advantage of the simplicity of SKM to enter to the machine learning world.
 
-It is of special interest the _kernelize_ function in SKM since this is the first package which allows the use of kernels with different machine learning algorithms as a new approach of working with complex non-linear data and high dimensional data.
+It is of special interest the _kernelize_ function in SKM since this is the first package which allows the use of kernels with different machine learning algorithms as a new approach of working with complex non-linear and high dimensional data.
 
 It is not intendend to provide a full data science solution with this new package but new machine learning algorithms can be included in future versions along more metrics functions, models benchmarking, data imputation and other data science related tools.
 
@@ -104,5 +104,159 @@ It is not intendend to provide a full data science solution with this new packag
 <div id="refs"></div>
 
 # Appendix A {#appendix_a}
+
+In this section we present the comparative implementation of the same machine learning model using mlr3, SKM and the original package.
+
+## Random forest for regression
+
+We are going to implement a random forest model using the famous iris dataset. This dataset includes the numeric variables Sepal.Length, Sepal.Width, Petal.Length and Petal.Width, and the categorical variable Species. Our model will predict the Sepal.Length variable using as predictors the remaining ones.
+
+**SKM version:**
+
+```{r skm_random_forest, eval = FALSE}
+library(SKM)
+
+set.seed(1)
+
+# Data preparation
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
+
+# Select 80% of data as training and 20% as testing
+records_number <- nrow(x)
+training_indices <- sample(records_number, records_number * 0.8)
+testing_indices <- seq(records_number)[-training_indices]
+
+# Divide data
+x_training <- x[training_indices, ]
+x_testing <- x[testing_indices, ]
+y_training <- y[training_indices]
+y_testing <- y[testing_indices]
+
+# Fit a model using Bayesian optimization for hyperparameter
+# tuning
+model <- random_forest(
+  x_training,
+  y_training,
+  trees_number = list(min = 50, max = 200),
+  sampled_x_vars_number = list(min = 0.3, max = 0.8),
+  node_size = list(min = 2, max = 20),
+  tune_type = "bayesian_optimization",
+  tune_bayes_samples_number = 5,
+  tune_bayes_iterations_number = 10
+)
+
+# Predict the testing samples
+predictions <- predict(model, x_testing)
+
+# Compute the summary of observed vs predicted
+summary <- numeric_summary(y_testing, predictions$predicted)
+summary
+#> * MSE: 0.1012
+#> * RMSE: 0.3181
+#> * NRMSE: 0.4725
+#> * MAAPE: 0.0428
+#> * MAE: 0.2338
+#> * Pearson correlation: 0.8929
+```
+
+**ml3 version:**
+
+```{r ml3_random_forest, eval = FALSE}
+# If you do not have installed mlr3 packages install them with the
+# following commands:
+# install.packages("mlr3verse")
+# devtools::install_github("mlr-org/mlr3extralearners")
+
+library(mlr3verse)
+library(mlr3extralearners)
+library(mlr3tuning)
+
+# Create the regression task with the iris dataset to predict the
+# Sepal.Length variable.
+task_iris <- as_task_regr(
+  iris,
+  target = "Sepal.Length",
+  id = "iris"
+)
+
+# Create a randomForestSRC based learner.
+learner_iris <- lrn("regr.rfsrc")
+
+# Define the terminator criteria as 15 iterations in tuning
+terminator <- trm("evals", n_evals = 15)
+
+# Define the hyperparameters characteristics
+search_space <- ps(
+  ntree = p_int(lower = 50, upper = 200),
+  mtry = p_int(lower = 1, upper = 4),
+  nodesize = p_int(lower = 2, upper = 20)
+)
+
+# Resampling (cross validation) strategy
+hout <- rsmp("holdout")
+# Set the loss function to be used during tuning
+measure <- msr("regr.mse")
+
+# Initialize a tuner
+tuner_instance <- TuningInstanceSingleCrit$new(
+  task = task_iris,
+  learner = learner_iris,
+  resampling = hout,
+  measure = measure,
+  search_space = search_space,
+  terminator = terminator
+)
+
+# Define the tuner with the tune strategy
+tuner <- tnr("grid_search", resolution = 5)
+tuner$optimize(tuner_instance)
+
+# Set the best hyperparameters combination to the learner
+learner_iris$param_set$values <-
+  tuner_instance$result_learner_param_vals
+learner_iris$train(task_iris, row_ids = training_indices)
+
+predictions <- learner_iris$predict(
+  task_iris,
+  row_ids = testing_indices
+)
+
+numeric_summary(predictions$truth, predictions$response)
+#> * MSE: 0.0993
+#> * RMSE: 0.3151
+#> * NRMSE: 0.4679
+#> * MAAPE: 0.0433
+#> * MAE: 0.2351
+#> * Pearson correlation: 0.8899
+```
+
+**randomForestSRC (original package) version:**
+
+```{r original_random_forest, eval = FALSE}
+library(randomForestSRC)
+
+data_training <- iris[training_indices, ]
+data_testing <- iris[testing_indices, ]
+
+model <- rfsrc(
+  Sepal.Length ~ .,
+  data_training,
+  ntree = 200,
+  mtry = 3,
+  nodesize = 5
+)
+predictions <- predict(model, newdata = data_testing)
+
+numeric_summary(data_testing$Sepal.Length, predictions$predicted)
+#> * MSE: 0.0916
+#> * RMSE: 0.3026
+#> * NRMSE: 0.4494
+#> * MAAPE: 0.0406
+#> * MAE: 0.2205
+#> * Pearson correlation: 0.8988
+```
+
+Note that all versions implements random forest using randomForestSRC package and the last implementation no tunining is performed.
 
 # Appendix B {#appendix_b}
