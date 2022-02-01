@@ -28,7 +28,9 @@ $^1$Facultad de Telemática, Universidad de Colima, Colima, México, $^2$Centro 
 
 \large
 
-In this paper we present a new R package for implementing 6 of the most popular machine learning algorithms with the (optional) use of sparse kernels.
+The growing increase of data have allowed that machine learning is applied in many areas. The adoption of machine learning in other areas than computing have been facilitated thanks to the development of software tools that whoever with a intermediate understanding of programming can use it. Some of these tools are complete libraries which offer solutions for different problems of data analysis but among so many utilities it can take quite some time to understand how to use it well. In this paper we present a new R package for implementing 6 of the most popular machine learning algorithms with the (optional) use of sparse kernels, this new package focuses in simplicity, it does not try to include all the available machine learning algorithms but the most important aspects of these 6 algorithms in an easy way. The other relevant contribution of this package is a function for the computation of 7 different kernels and their sparse versions which enables the creation of kernel machines without modifying the statistical machine learning algorithm, so its use is not restricted to this package only but can also be used with other packages without problems.
+
+**Keywords:** R package, machine learning, sparse kernels.
 
 \Large
 
@@ -60,7 +62,7 @@ We have included in [Appendix A](#appendix_a) some comparative examples of the e
 
 As [@sparse_kernels] points out, kernel methods transform the independent variables (inputs) using a kernel function, followed by the application of conventional machine learning techniques to the transformed data to achieve better results. Kernel methods are excellent options when dealing with complex data that shows non-linear patterns for their computational efficiency and because it can be used with any type of predictive machine. So, we have included the _kernelize_ function in SKM that can compute the same 7 kernels and their sparse versions described in [@sparse_kernels]: Linear, Polynomial, Sigmoid, Gaussian, Exponential, Arc-Cosine 1 And Arc-Cosine L. The  kernel computation is independent from the model fitting process, which allows the use of _kernelilze_ function with other packages or the machine learning algorithms implementations of SKM without kernels.
 
-TODO: ventajas de la reducción de la dimensionalidad en los kernels en general y principalmente en los sparse.
+One of the major advantages of the use of sparse kernels is data dimensionality reduction since the number of independent variables (columns) is reduced at most the size as the number of records (rows) without losing much information. This is useful when working with high dimensional data where number of columns is considerably greater than number of rows since there is less data model training is quicker.
 
 In [Appendix B](#appendix_b) we have included some examples about how you can use the _kernelilze_ function of SKM with several type of data and then fit a model with it.
 
@@ -105,9 +107,7 @@ It is not intendend to provide a full data science solution with this new packag
 
 # Appendix A {#appendix_a}
 
-In this section we present the comparative implementation of the same machine learning model using mlr3, SKM and the original package.
-
-## Random forest for regression
+In this section we present the comparative implementation of the same machine learning model using mlr3, SKM and randomForestSRC, the original package. With this example the benefits of SKM become evident because of its simplicity and code clarity.
 
 We are going to implement a random forest model using the famous iris dataset. This dataset includes the numeric variables Sepal.Length, Sepal.Width, Petal.Length and Petal.Width, and the categorical variable Species. Our model will predict the Sepal.Length variable using as predictors the remaining ones.
 
@@ -122,16 +122,20 @@ set.seed(1)
 x <- to_matrix(iris[, -1])
 y <- iris$Sepal.Length
 
-# Select 80% of data as training and 20% as testing
-records_number <- nrow(x)
-training_indices <- sample(records_number, records_number * 0.8)
-testing_indices <- seq(records_number)[-training_indices]
+# Create a fold with 80% of data as training and
+# 20% as testing
+fold <- cv_random(
+  records_number = nrow(x),
+  folds_number = 1,
+  testing_proportion = 0.2
+)
+fold <- fold[[1]]
 
 # Divide data
-x_training <- x[training_indices, ]
-x_testing <- x[testing_indices, ]
-y_training <- y[training_indices]
-y_testing <- y[testing_indices]
+x_training <- x[fold$training, ]
+x_testing <- x[fold$testing, ]
+y_training <- y[fold$training]
+y_testing <- y[fold$testing]
 
 # Fit a model using Bayesian optimization for hyperparameter
 # tuning
@@ -152,19 +156,19 @@ predictions <- predict(model, x_testing)
 # Compute the summary of observed vs predicted
 summary <- numeric_summary(y_testing, predictions$predicted)
 summary
-#> * MSE: 0.1012
-#> * RMSE: 0.3181
-#> * NRMSE: 0.4725
-#> * MAAPE: 0.0428
-#> * MAE: 0.2338
-#> * Pearson correlation: 0.8929
+#> * MSE: 0.1099
+#> * RMSE: 0.3315
+#> * NRMSE: 0.3772
+#> * MAAPE: 0.0488
+#> * MAE: 0.273
+#> * Pearson correlation: 0.9253
 ```
 
 **ml3 version:**
 
 ```{r ml3_random_forest, eval = FALSE}
-# If you do not have installed mlr3 packages install them with the
-# following commands:
+# If you do not have installed mlr3 packages install them with
+# the following commands:
 # install.packages("mlr3verse")
 # devtools::install_github("mlr-org/mlr3extralearners")
 
@@ -172,8 +176,8 @@ library(mlr3verse)
 library(mlr3extralearners)
 library(mlr3tuning)
 
-# Create the regression task with the iris dataset to predict the
-# Sepal.Length variable.
+# Create the regression task with the iris dataset to predict
+# the Sepal.Length variable.
 task_iris <- as_task_regr(
   iris,
   target = "Sepal.Length",
@@ -215,20 +219,20 @@ tuner$optimize(tuner_instance)
 # Set the best hyperparameters combination to the learner
 learner_iris$param_set$values <-
   tuner_instance$result_learner_param_vals
-learner_iris$train(task_iris, row_ids = training_indices)
+learner_iris$train(task_iris, row_ids = fold$training)
 
 predictions <- learner_iris$predict(
   task_iris,
-  row_ids = testing_indices
+  row_ids = fold$testing
 )
 
 numeric_summary(predictions$truth, predictions$response)
-#> * MSE: 0.0993
-#> * RMSE: 0.3151
-#> * NRMSE: 0.4679
-#> * MAAPE: 0.0433
-#> * MAE: 0.2351
-#> * Pearson correlation: 0.8899
+#> * MSE: 0.1098
+#> * RMSE: 0.3314
+#> * NRMSE: 0.3771
+#> * MAAPE: 0.0484
+#> * MAE: 0.2704
+#> * Pearson correlation: 0.9254
 ```
 
 **randomForestSRC (original package) version:**
@@ -236,8 +240,8 @@ numeric_summary(predictions$truth, predictions$response)
 ```{r original_random_forest, eval = FALSE}
 library(randomForestSRC)
 
-data_training <- iris[training_indices, ]
-data_testing <- iris[testing_indices, ]
+data_training <- iris[fold$training, ]
+data_testing <- iris[fold$testing, ]
 
 model <- rfsrc(
   Sepal.Length ~ .,
@@ -248,15 +252,101 @@ model <- rfsrc(
 )
 predictions <- predict(model, newdata = data_testing)
 
-numeric_summary(data_testing$Sepal.Length, predictions$predicted)
-#> * MSE: 0.0916
-#> * RMSE: 0.3026
-#> * NRMSE: 0.4494
-#> * MAAPE: 0.0406
-#> * MAE: 0.2205
-#> * Pearson correlation: 0.8988
+numeric_summary(
+  data_testing$Sepal.Length,
+  predictions$predicted
+)
+#> * MSE: 0.1094
+#> * RMSE: 0.3307
+#> * NRMSE: 0.3763
+#> * MAAPE: 0.0492
+#> * MAE: 0.2754
+#> * Pearson correlation: 0.9256
 ```
 
-Note that all versions implements random forest using randomForestSRC package and the last implementation no tunining is performed.
+Note that all versions implements random forest using under the hood the randomForestSRC package and in the last implementation no tunining is performed.
 
 # Appendix B {#appendix_b}
+
+In this section we present some examples of how to use the kernelize function in order to compute different kernels and their sparse versions. As the kernelize function receives a *data.frame* or a *matrix* and returns this data after applying the kernel as a matrix, such data can be used in conjunction with the models functions or any other package.
+
+The folowing examples are going to use the iris dataset too for simplicity but you have to keep in mind that kernels are recommended to be used with high dimensional data.
+
+```{r kernelize, eval = FALSE}
+library(SKM)
+
+set.seed(2)
+
+y <- iris$Species
+x_polynomial <- kernelize(
+  iris[, -5],
+  kernel = "polynomial",
+  degree = 3
+)
+# After kernelize, x is now a square matrix
+dim(x_polynomial)
+#> [1] 150 150
+
+x_sparse_polynomial <- kernelize(
+  iris[, -5],
+  kernel = "sparse_polynomial",
+  rows_proportion = 0.6,
+  degree = 4
+)
+# After the sparse kernel, x has at most as many columns as
+# 60% rows
+dim(x_sparse_polynomial)
+#> [1] 150  60
+
+# Now we use these new matrices to fit models
+model <- generalized_linear_model(
+  x_polynomial,
+  y,
+  alpha = 0
+)
+
+# We are going to predict the same samples used
+# in training
+predictions <- predict(model, x_polynomial)
+
+confusion_matrix(y, predictions$predicted)
+#             predicted
+# observed     setosa versicolor virginica
+#   setosa         50          0         0
+#   versicolor      0         41         9
+#   virginica       0          5        45
+
+# Now we are going to fit a deep learning model
+# using the sparse kernel matrix
+sparse_model <- deep_learning(
+  x_sparse_polynomial,
+  y,
+  epochs_number = 100,
+  learning_rate = c(0.001, 0.01),
+  layers = list(
+    # First hidden layer
+    list(
+      neurons_number = c(50, 100),
+      activation = "relu",
+      dropout = 0.2
+    ),
+    # Second hidden layer
+    list(
+      neurons_number = c(50, 100),
+      activation = "relu",
+      dropout = 0.2
+    )
+  )
+)
+
+predictions <- predict(sparse_model, x_sparse_polynomial)
+
+categorical_summary(
+  observed = y,
+  predicted = predictions$predicted,
+  probabilities = predictions$probabilities
+)
+
+```
+
+Even though in this example we only use the polynomial kernel and its sparse version, the same applies to all other available kernels, only it is necessary to specify the desired kernel.
