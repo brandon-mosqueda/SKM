@@ -32,7 +32,11 @@ GLMBayesianTuner <- R6Class(
       )
       self$current_combination <- self$current_combination + 1
 
-      model <- self$training_function(x = x, y = y, fit_params = hyperparams)
+      model <- self$training_function(
+        x = self$x,
+        y = self$y,
+        fit_params = hyperparams
+      )
       loss <- model$cvm[model$index["min", ]]
 
       if (loss < self$best_loss) {

@@ -20,7 +20,11 @@ GLMGridTuner <- R6Class(
       hyperparams$cv_folds_number <- cv_folds_number
       hyperparams$folds <- folds
 
-      model <- self$training_function(x = x, y = y, fit_params = hyperparams)
+      model <- self$training_function(
+        x = self$x,
+        y = self$y,
+        fit_params = hyperparams
+      )
       loss <- model$cvm[model$index["min", ]]
 
       if (loss < self$best_loss) {
