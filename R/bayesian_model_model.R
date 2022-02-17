@@ -38,6 +38,19 @@ BayesianModel <- R6Class(
         BAYESIAN_TRASH_DIR,
         as.numeric(Sys.time())
       )
+    },
+
+    # Methods --------------------------------------------------
+
+    # Since this model does not perform hyperparameter tuning and holds the
+    # predictions in the same model data, other predict function definition
+    # is needed.
+    predict = function(indices = NULL) {
+      if (self$is_multivariate) {
+        private$predict_multivariate(indices)
+      } else {
+        private$predict_univariate(indices)
+      }
     }
   ),
   private = list(
@@ -189,29 +202,39 @@ BayesianModel <- R6Class(
 
       return(model)
     },
-    predict_univariate = function(model,
-                                  x,
-                                  responses,
-                                  fit_params) {
-      if (is.null(fit_params$testing_indices)) {
-        stop(
-          "Error in predicting. With bayesian models you need to provide the ",
-          "testing_indices parameter when calling bayesian_model function ",
-          "in order to make predictions."
-        )
+
+    prepare_predict_indices = function(indices) {
+      if (is.null(self$fit_params$testing_indices)) {
+        if (is_empty(indices)) {
+          stop(
+            "Error in predicting. With bayesian models you need to provide ",
+            "the testing_indices parameter when calling bayesian_model ",
+            "function in order to make predictions, set some values in the ",
+            "response variable as NA or send the indices parameter in predict",
+            "function"
+          )
+        }
+      } else if (is_empty(indices)) {
+        indices <- self$fit_params$testing_indices
       }
 
-      if (is_class_response(responses$y$type)) {
-        probabilities <- model$probs
+      return(indices)
+    },
+
+    predict_univariate = function(indices) {
+      indices <- private$prepare_predict_indices(indices)
+
+      if (is_class_response(self$responses$y$type)) {
+        probabilities <- self$fitted_model$probs
         classes <- colnames(probabilities)
 
         predictions_cols <- apply(probabilities, 1, which.max)
         predictions <- classes[predictions_cols]
-        predictions <- predictions[fit_params$testing_indices]
-        predictions <- factor(predictions, levels = responses$y$levels)
+        predictions <- predictions[indices]
+        predictions <- factor(predictions, levels = self$responses$y$levels)
 
         probabilities <- as.data.frame(
-          probabilities[fit_params$testing_indices, ]
+          probabilities[indices, ]
         )
 
         predictions <- list(
@@ -219,9 +242,9 @@ BayesianModel <- R6Class(
           probabilities = probabilities
         )
       } else {
-        predictions <- model$yHat[fit_params$testing_indices]
+        predictions <- self$fitted_model$yHat[indices]
         if (is.null(predictions)) {
-          predictions <- model$ETAHat[fit_params$testing_indices]
+          predictions <- self$fitted_model$ETAHat[indices]
         }
 
         predictions <- list(predicted = predictions)
@@ -260,19 +283,18 @@ BayesianModel <- R6Class(
 
       return(model)
     },
-    predict_multivariate = function(model,
-                                    x,
-                                    responses,
-                                    fit_params) {
+    predict_multivariate = function(indices) {
+      indices <- private$prepare_predict_indices(indices)
+
       predictions <- list()
-      all_predictions <- model$yHat
+      all_predictions <- self$fitted_model$yHat
       if (is.null(all_predictions)) {
-        all_predictions <- model$ETAHat
+        all_predictions <- self$fitted_model$ETAHat
       }
 
-      all_predictions <- all_predictions[fit_params$testing_indices, ]
+      all_predictions <- all_predictions[indices, ]
 
-      for (response_name in names(responses)) {
+      for (response_name in names(self$responses)) {
         predictions[[response_name]] <- list(
           predicted = all_predictions[, response_name]
         )
@@ -306,6 +328,6 @@ BayesianModel <- R6Class(
 )
 
 #' @export
-predict.BayesianModel <- function(model) {
-  return(model$predict(NULL))
+predict.BayesianModel <- function(model, indices = NULL) {
+  return(model$predict(indices))
 }
