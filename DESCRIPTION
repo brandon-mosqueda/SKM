@@ -57,6 +57,7 @@ Collate:
     'bayesian_tuner.R'
     'cross_validator.R'
     'custom_cross_validator.R'
+    'data.R'
     'deep_learning_bayesian_tuner.R'
     'grid_tuner.R'
     'deep_learning_grid_tuner.R'
