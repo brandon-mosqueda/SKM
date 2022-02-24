@@ -1,7 +1,6 @@
 test.R
 notes.tnotes
 vscode.code-workspace
-man/
 manual_tests/
 .skm_*
 install.sh
