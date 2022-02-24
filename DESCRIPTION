@@ -37,6 +37,7 @@ Imports:
     data.table,
     foreach,
     magrittr,
+    MLmetrics,
     stats
 Collate:
     'RBO_BayesianOptimization.R'
