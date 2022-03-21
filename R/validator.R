@@ -433,7 +433,7 @@ assert_sparse_kernel <- function(kernel,
     )
 
     if (is_arc_cosine_kernel(kernel)) {
-      assert_int(arc_cosine_deep, lower = 2)
+      assert_int(arc_cosine_deep, lower = 1)
     }
 
     assert_number(rows_proportion, lower = 0.001, upper = 1)
