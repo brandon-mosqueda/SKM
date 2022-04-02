@@ -7,7 +7,7 @@
 #' @title Fit a Deep Learning Model
 #'
 #' @templateVar ClassName DeepLearningModel
-#' @templateVar XType matrix
+#' @templateVar XType `matrix`
 #' @templateVar YType `vector` or `matrix`
 #' @templateVar refFunction keras::keras_model_sequential()
 #'

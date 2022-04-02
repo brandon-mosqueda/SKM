@@ -115,6 +115,13 @@ BAYESIAN_COVARIANCE_STRUCTURE_TYPES <- c(
   "Recursive"
 )
 
+PARTIAL_LEAST_SQUARES_METHODS <- c(
+  "kernel",
+  "wide_kernel",
+  "simpls",
+  "orthogonal"
+)
+
 # Tuning --------------------------------------------------
 
 TUNE_CV_TYPES <- c("K_fold", "Random")

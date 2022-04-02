@@ -5,7 +5,7 @@
 #' @title Fit a Random Forest Model
 #'
 #' @templateVar ClassName RandomForestModel
-#' @templateVar XType matrix
+#' @templateVar XType `matrix`
 #' @templateVar YType `vector` or `data.frame`
 #' @templateVar refFunction randomForestSRC::rfsrc()
 #'

@@ -203,6 +203,7 @@ Other models:
 \code{\link{bayesian_model}()},
 \code{\link{deep_learning}()},
 \code{\link{generalized_boosted_machine}()},
+\code{\link{partial_least_squares}()},
 \code{\link{random_forest}()},
 \code{\link{support_vector_machine}()}
 }

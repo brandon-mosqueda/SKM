@@ -195,7 +195,7 @@ An object of class \code{"DeepLearningModel"} that inherits from classes
 \code{"Model"} and \code{"R6"} with the fields:
 \itemize{
 \item \code{fitted_model}: An object of class \code{\link[keras:keras_model_sequential]{keras::keras_model_sequential()}} with the model.
-\item \code{x}: The final \code{matrix} used to fit the model.
+\item \code{x}: The final \verb{\code{matrix}} used to fit the model.
 \item \code{y}: The final \code{vector} or \code{matrix} used to fit the model.
 \item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
@@ -312,6 +312,7 @@ Other models:
 \code{\link{bayesian_model}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{partial_least_squares}()},
 \code{\link{random_forest}()},
 \code{\link{support_vector_machine}()}
 }

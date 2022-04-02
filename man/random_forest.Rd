@@ -126,7 +126,7 @@ An object of class \code{"RandomForestModel"} that inherits from classes
 \code{"Model"} and \code{"R6"} with the fields:
 \itemize{
 \item \code{fitted_model}: An object of class \code{\link[randomForestSRC:rfsrc]{randomForestSRC::rfsrc()}} with the model.
-\item \code{x}: The final \code{matrix} used to fit the model.
+\item \code{x}: The final \verb{\code{matrix}} used to fit the model.
 \item \code{y}: The final \code{vector} or \code{data.frame} used to fit the model.
 \item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
@@ -229,6 +229,7 @@ Other models:
 \code{\link{deep_learning}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{partial_least_squares}()},
 \code{\link{support_vector_machine}()}
 }
 \concept{models}

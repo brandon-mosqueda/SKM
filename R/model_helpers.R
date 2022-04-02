@@ -588,3 +588,34 @@ get_bglr_matrix_param_name <- function(model) {
 
   return("X")
 }
+
+# Partial Least Squares --------------------------------------------------
+
+prepare_partial_least_squares_method <- function(method) {
+  method <- tolower(method)
+
+  if (method == "kernel") {
+    method <- "kernelpls"
+  } else if (method == "wide_kernel") {
+    method <- "widekernelpls"
+  } else if (method == "simpls") {
+    method <- "simpls"
+  } else if (method == "orthogonal") {
+    method <- "oscorespls"
+  } else {
+    stop(method, "is not a valid partial least squares method")
+  }
+
+  return(method)
+}
+
+
+get_partial_least_squares_formula <- function(responses, is_multivariate) {
+  model_formula <- "y ~ ."
+  if (is_multivariate) {
+    responses_comma <- paste0(names(responses), collapse = ", ")
+    model_formula <- sprintf("cbind(%s) ~ .", responses_comma)
+  }
+
+  return(formula(model_formula))
+}
