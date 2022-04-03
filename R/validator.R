@@ -1116,7 +1116,7 @@ validate_partial_least_squares <- function(x,
     tune_cv_type = TUNE_CV_TYPES[1],
     tune_folds_number = 3,
     tune_testing_proportion = 0.2,
-    tune_folds = 5,
+    tune_folds = NULL,
     tune_loss_function = TUNE_NUMERIC_LOSS_FUNCTIONS[1],
     tune_grid_proportion = 0.5,
     tune_bayes_samples_number = 10,
@@ -1125,9 +1125,9 @@ validate_partial_least_squares <- function(x,
     verbose = verbose
   )
 
-  assert_pls_method(kernel)
+  assert_pls_method(method)
   assert_svm_scale(scale, NCOL(x))
-  assert_number(components_num, lower = 1, upper = NCOL(x))
+  assert_number(components_num, lower = 1, upper = NCOL(x), null.ok = TRUE)
 }
 
 # Genomic selection --------------------------------------------------

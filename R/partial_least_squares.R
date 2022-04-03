@@ -10,9 +10,8 @@
 #' @templateVar refFunction pls::plsr()
 #'
 #' @description
-#' `partial_least_squares()` is a wrapper of the [pls::plsr()] function with
-#' It fits univariate models for continuous response variables and multivariate
-#' models for numeric responses only.
+#' `partial_least_squares()` is a wrapper of the [pls::plsr()] function. It fits
+#' univariate and multivariate models for numeric responses only.
 #'
 #' @template x-matrix-param
 #' @param y (`data.frame` | `vector` | `matrix`) The response (dependent)
@@ -43,7 +42,7 @@
 #' @examples
 #' \dontrun{
 #' # Fit with all default parameters
-#' model <- partial_least_squares(to_matrix(iris[, -5]), iris$Species)
+#' model <- partial_least_squares(to_matrix(iris[, -1]), iris$Sepal.Length)
 #'
 #' predictions <- predict(model, to_matrix(iris))
 #' predictions$predicted

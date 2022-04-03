@@ -2,6 +2,7 @@
 #' @importFrom pls plsr selectNcomp
 
 #' @include utils.R
+#' @include globals.R
 #' @include model.R
 #' @include model_helpers.R
 
@@ -12,16 +13,42 @@ PartialLeastSquaresModel <- R6Class(
     # Constructor --------------------------------------------------
 
     initialize = function(..., method, components_num, scale) {
-      super$initialize(..., name = "Partial Least Squares")
+      super$initialize(
+        ...,
+        name = "Partial Least Squares",
+        allow_coefficients = TRUE
+      )
 
       self$fit_params$method <- prepare_partial_least_squares_method(method)
       self$fit_params$components_num <- components_num
       self$fit_params$scale <- scale
+    },
+
+    fit = function(...) {
+      super$fit(...)
+
+      self$fit_params$components_num <- self$fitted_model$components_num
     }
   ),
   private = list(
     # Methods --------------------------------------------------
 
+    prepare_univariate_y = function() {
+      super$prepare_univariate_y()
+
+      if(!is_numeric_response(self$responses$y$type)) {
+        warning(
+          "Partial Least Squares model only accepts numeric responses, so y ",
+          "was converted to numeric"
+        )
+
+        self$y <- as.numeric(self$y)
+        self$responses$y <- list(
+          type = RESPONSE_TYPES$CONTINUOUS,
+          levels = NULL
+        )
+      }
+    },
     prepare_multivariate_y = prepare_multivariate_y_only_numeric,
     prepare_others = function() {
       self$fit_params$model_formula <- get_partial_least_squares_formula(
@@ -34,12 +61,6 @@ PartialLeastSquaresModel <- R6Class(
     },
     has_to_tune = function() return(FALSE),
 
-    fit = function(...) {
-      super$fit(...)
-
-      self$fit_params$components_num <- self$fitted_model$components_num
-    },
-
     train_univariate = function(x, y, fit_params) {
       # In this format for multivariate analysis
       data <- data.frame(y, x, check.names = FALSE)
@@ -49,7 +70,7 @@ PartialLeastSquaresModel <- R6Class(
         data = data,
         scale = fit_params$scale,
         method = fit_params$method,
-        validation = "none"
+        validation = "CV"
       )
 
       model$components_num <- fit_params$components_num

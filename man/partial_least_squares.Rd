@@ -76,9 +76,8 @@ and not taken in account in tunning nor training.
 }
 }
 \description{
-\code{partial_least_squares()} is a wrapper of the \code{\link[pls:mvr]{pls::plsr()}} function with
-It fits univariate models for continuous response variables and multivariate
-models for numeric responses only.
+\code{partial_least_squares()} is a wrapper of the \code{\link[pls:mvr]{pls::plsr()}} function. It fits
+univariate and multivariate models for numeric responses only.
 }
 \details{
 You have to consider that before tuning all columns without variance
@@ -92,7 +91,7 @@ removed. The positions of the removed records are returned in the
 \examples{
 \dontrun{
 # Fit with all default parameters
-model <- partial_least_squares(to_matrix(iris[, -5]), iris$Species)
+model <- partial_least_squares(to_matrix(iris[, -1]), iris$Sepal.Length)
 
 predictions <- predict(model, to_matrix(iris))
 predictions$predicted
