@@ -12,7 +12,7 @@ PartialLeastSquaresModel <- R6Class(
   public = list(
     # Constructor --------------------------------------------------
 
-    initialize = function(..., method, components_num, scale) {
+    initialize = function(..., method, scale) {
       super$initialize(
         ...,
         name = "Partial Least Squares",
@@ -20,14 +20,21 @@ PartialLeastSquaresModel <- R6Class(
       )
 
       self$fit_params$method <- prepare_partial_least_squares_method(method)
-      self$fit_params$components_num <- components_num
       self$fit_params$scale <- scale
     },
 
     fit = function(...) {
       super$fit(...)
 
-      self$fit_params$components_num <- self$fitted_model$components_num
+      self$fit_params$optimal_components_num <- self$fitted_model$components_num
+    },
+    predict = function(x, components_num) {
+      self$fit_params$predict_components_num <- nonull(
+        components_num,
+        self$fit_params$optimal_components_num
+      )
+
+      super$predict(x)
     }
   ),
   private = list(
@@ -65,7 +72,7 @@ PartialLeastSquaresModel <- R6Class(
       # In this format for multivariate analysis
       data <- data.frame(y, x, check.names = FALSE)
 
-      model <- plsr(
+      tune_model <- plsr(
         formula = fit_params$model_formula,
         data = data,
         scale = fit_params$scale,
@@ -73,14 +80,19 @@ PartialLeastSquaresModel <- R6Class(
         validation = "CV"
       )
 
-      model$components_num <- fit_params$components_num
-      if (is.null(model$components_num)) {
-        model$components_num <- selectNcomp(
-          model,
-          method = "onesigma",
-          plot = FALSE
-        )
-      }
+      model <- plsr(
+        formula = fit_params$model_formula,
+        data = data,
+        scale = fit_params$scale,
+        method = fit_params$method,
+        validation = "none"
+      )
+
+      model$components_num <- selectNcomp(
+        tune_model,
+        method = "onesigma",
+        plot = FALSE
+      )
 
       return(model)
     },
@@ -92,7 +104,7 @@ PartialLeastSquaresModel <- R6Class(
       predictions <- predict(
         model,
         x,
-        ncomp = model$components_num,
+        ncomp = fit_params$predict_components_num,
         type = "response"
       )
       predictions <- list(predicted = c(predictions))
@@ -108,6 +120,14 @@ PartialLeastSquaresModel <- R6Class(
     train_multivariate = function(x, y, fit_params) {
       # In this format for multivariate analysis
       data <- data.frame(y, x, check.names = FALSE)
+
+      tune_model <- plsr(
+        formula = fit_params$model_formula,
+        data = data,
+        scale = fit_params$scale,
+        method = fit_params$method,
+        validation = "CV"
+      )
 
       model <- plsr(
         formula = fit_params$model_formula,
@@ -129,7 +149,7 @@ PartialLeastSquaresModel <- R6Class(
       all_predictions <- predict(
         model,
         x,
-        ncomp = model$components_num,
+        ncomp = fit_params$predict_components_num,
         type = "response"
       )
       # The observations, the response variables and the model sizes.
@@ -157,3 +177,8 @@ PartialLeastSquaresModel <- R6Class(
     }
   )
 )
+
+#' @export
+predict.PartialLeastSquaresModel <- function(model, x, components_num = NULL) {
+  return(model$predict(x, components_num))
+}

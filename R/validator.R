@@ -1103,7 +1103,6 @@ validate_partial_least_squares <- function(x,
                                            y,
                                            is_multivariate,
                                            method,
-                                           components_num,
                                            scale,
                                            seed,
                                            verbose) {
@@ -1127,7 +1126,6 @@ validate_partial_least_squares <- function(x,
 
   assert_pls_method(method)
   assert_svm_scale(scale, NCOL(x))
-  assert_number(components_num, lower = 1, upper = NCOL(x), null.ok = TRUE)
 }
 
 # Genomic selection --------------------------------------------------

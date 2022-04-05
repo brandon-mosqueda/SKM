@@ -8,7 +8,6 @@ partial_least_squares(
   x,
   y,
   method = "kernel",
-  components_num = NULL,
   scale = FALSE,
   validate_params = TRUE,
   seed = NULL,
@@ -29,12 +28,6 @@ variables are coerced to numeric before training the model.}
 The available options are the kernel algorithm (\code{"kernel"}), the wide
 kernel algorithm (\code{"wide_kernel"}), SIMPLS (\code{"simpls"}), and the classical
 orthogonal scores algorithm (\code{"orthogonal"}). \code{"kernel"} by default.}
-
-\item{components_num}{(\code{numeric}) The number of components to include in the
-model. \code{NULL} by default which chooses the best number of components based
-on the standard error of the cross-validation residuals heuristic in
-univariate models and the maximal number of components in multivariate
-models.}
 
 \item{scale}{(\code{logical}) A logical vector indicating the variables in \code{x}
 to be scaled. If \code{scale} is of length 1, the value is recycled as many

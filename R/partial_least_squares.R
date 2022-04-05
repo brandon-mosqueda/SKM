@@ -22,11 +22,6 @@
 #'   The available options are the kernel algorithm (`"kernel"`), the wide
 #'   kernel algorithm (`"wide_kernel"`), SIMPLS (`"simpls"`), and the classical
 #'   orthogonal scores algorithm (`"orthogonal"`). `"kernel"` by default.
-#' @param components_num (`numeric`) The number of components to include in the
-#'   model. `NULL` by default which chooses the best number of components based
-#'   on the standard error of the cross-validation residuals heuristic in
-#'   univariate models and the maximal number of components in multivariate
-#'   models.
 #' @param scale (`logical`) A logical vector indicating the variables in `x`
 #'   to be scaled. If `scale` is of length 1, the value is recycled as many
 #'   times as needed. `TRUE` by default.
@@ -52,7 +47,6 @@
 partial_least_squares <- function(x, y,
 
                                   method = "kernel",
-                                  components_num = NULL,
                                   scale = FALSE,
 
                                   validate_params = TRUE,
@@ -68,7 +62,6 @@ partial_least_squares <- function(x, y,
 
       is_multivariate = is_multivariate,
       method = method,
-      components_num = components_num,
       scale = scale,
 
       seed = seed,
@@ -91,7 +84,6 @@ partial_least_squares <- function(x, y,
     y = y,
 
     method = method,
-    components_num = components_num,
     scale = scale
   )
 
