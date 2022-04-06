@@ -1,3 +1,5 @@
+#' @importFrom GPfit predict.GP
+
 #' @title Utility Computing Function
 #'
 #' @description

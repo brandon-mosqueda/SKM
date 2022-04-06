@@ -82,6 +82,7 @@ partial_least_squares <- function(x, y,
   model <- PartialLeastSquaresModel$new(
     x = x,
     y = y,
+    is_multivariate = is_multivariate,
 
     method = method,
     scale = scale

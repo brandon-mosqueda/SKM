@@ -137,7 +137,10 @@ PartialLeastSquaresModel <- R6Class(
         validation = "none"
       )
 
-      model$components_num <- model$ncomp
+      components_loss <- RMSEP(tune_model)$val[1, , ]
+      components_loss <- as.numeric(apply(components_loss, 2, sum))
+      # -1 because the intercept column (the first one) is counted
+      model$components_num <- which.min(components_loss) - 1
 
       return(model)
     },
@@ -158,8 +161,8 @@ PartialLeastSquaresModel <- R6Class(
       predictions <- list()
 
       for (response_name in names(responses)) {
-        predictions[[response]] <- list(
-          predicted = all_predictions[, response]
+        predictions[[response_name]] <- list(
+          predicted = all_predictions[, response_name]
         )
       }
 
