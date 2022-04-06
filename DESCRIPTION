@@ -36,6 +36,7 @@ Imports:
     BGLR,
     data.table,
     foreach,
+    GPfit,
     magrittr,
     MLmetrics,
     stats
@@ -43,8 +44,8 @@ Collate:
     'RBO_BayesianOptimization.R'
     'RBO_KFold.R'
     'RBO_Utility.R'
-    'RBO_Utility_Max.R'
     'RBO_Utils.R'
+    'RBO_Utility_Max.R'
     'globals.R'
     'kernels.R'
     'validator.R'

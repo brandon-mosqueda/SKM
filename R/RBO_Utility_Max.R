@@ -1,3 +1,5 @@
+#' @include RBO_Utils.R
+
 #' @title Utility Maximization Function
 #'
 #' @description

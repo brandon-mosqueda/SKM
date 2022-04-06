@@ -1,3 +1,5 @@
+#' @importFrom GPfit predict.GP
+
 #' @title Bayesian Optimization
 #'
 #' @description
