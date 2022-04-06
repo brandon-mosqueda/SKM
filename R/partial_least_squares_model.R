@@ -1,5 +1,5 @@
 #' @importFrom R6 R6Class
-#' @importFrom pls plsr selectNcomp
+#' @importFrom pls plsr selectNcomp MSEP RMSEP mvrValstats
 
 #' @include utils.R
 #' @include globals.R
