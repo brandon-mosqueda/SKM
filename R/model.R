@@ -273,8 +273,10 @@ Model <- R6Class(
 )
 
 #' @export
-predict.Model <- function(model, x) {
-  return(model$predict(x))
+predict.Model <- function(model, x, format = "list") {
+  predictions <- model$predict(x)
+
+  return(format_predictions(predictions, model$is_multivariate, format))
 }
 
 #' @export

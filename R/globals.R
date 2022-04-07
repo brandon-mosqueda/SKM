@@ -122,6 +122,8 @@ PARTIAL_LEAST_SQUARES_METHODS <- c(
   "orthogonal"
 )
 
+PREDICT_FORMAT <- c("list", "data.frame")
+
 # Tuning --------------------------------------------------
 
 TUNE_CV_TYPES <- c("K_fold", "Random")

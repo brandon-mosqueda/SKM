@@ -210,7 +210,7 @@ BayesianModel <- R6Class(
             "Error in predicting. With bayesian models you need to provide ",
             "the testing_indices parameter when calling bayesian_model ",
             "function in order to make predictions, set some values in the ",
-            "response variable as NA or send the indices parameter in predict",
+            "response variable as NA or send the indices parameter in predict ",
             "function"
           )
         }
@@ -328,6 +328,8 @@ BayesianModel <- R6Class(
 )
 
 #' @export
-predict.BayesianModel <- function(model, indices = NULL) {
-  return(model$predict(indices))
+predict.BayesianModel <- function(model, indices = NULL, format = "list") {
+  predictions <- model$predict(indices)
+
+  return(format_predictions(predictions, model$is_multivariate, format))
 }

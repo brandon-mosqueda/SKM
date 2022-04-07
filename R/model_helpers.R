@@ -162,6 +162,20 @@ is_hyperparam <- function(x) {
   return((is.list(x) || length(x) > 1) && !inherits(x, "formula"))
 }
 
+format_predictions <- function(predictions, is_multivariate, format) {
+  if (format == "data.frame") {
+    if (is_multivariate) {
+      predictions <- as.data.frame(
+        lapply(predictions, function(x) x$predicted)
+      )
+    } else {
+      warning("data.frame format is only supported in multivariate models.")
+    }
+  }
+
+  return(predictions)
+}
+
 # GBM --------------------------------------------------
 
 get_gbm_distribution <- function(response_type) {
@@ -608,7 +622,6 @@ prepare_partial_least_squares_method <- function(method) {
 
   return(method)
 }
-
 
 get_partial_least_squares_formula <- function(responses, is_multivariate) {
   model_formula <- "y ~ ."

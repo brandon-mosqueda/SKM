@@ -656,6 +656,15 @@ assert_cv_random <- function(records_number, folds_number, testing_proportion) {
   assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
 }
 
+assert_predict_format <- function(format) {
+  assert_subset_string(
+    format,
+    PREDICT_FORMAT,
+    ignore.case = TRUE,
+    len = 1
+  )
+}
+
 # Single fit functions --------------------------------------------------
 
 validate_support_vector_machine <- function(x,

@@ -150,7 +150,7 @@ GeneralizedLinearModel <- R6Class(
 
       for (response in names(responses)) {
         predictions[[response]] <- list(
-          predicted = all_predictions[, response]
+          predicted = as.numeric(all_predictions[, response])
         )
       }
 

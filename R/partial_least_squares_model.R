@@ -162,7 +162,7 @@ PartialLeastSquaresModel <- R6Class(
 
       for (response_name in names(responses)) {
         predictions[[response_name]] <- list(
-          predicted = all_predictions[, response_name]
+          predicted = as.numeric(all_predictions[, response_name])
         )
       }
 
@@ -182,6 +182,11 @@ PartialLeastSquaresModel <- R6Class(
 )
 
 #' @export
-predict.PartialLeastSquaresModel <- function(model, x, components_num = NULL) {
-  return(model$predict(x, components_num))
+predict.PartialLeastSquaresModel <- function(model,
+                                             x,
+                                             components_num = NULL,
+                                             format = "list") {
+  predictions <- model$predict(x, components_num)
+
+  return(format_predictions(predictions, model$is_multivariate, format))
 }
