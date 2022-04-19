@@ -81,7 +81,7 @@
 #' # Obtain the predicted probabilities
 #' predictions$probabilities
 #'
-#' # Tune with grid search --------------------------------------------------------
+#' # Tune with grid search -----------------------------------------------------
 #' x <- to_matrix(iris[, -1])
 #' y <- iris$Sepal.Length
 #' model <- generalized_linear_model(

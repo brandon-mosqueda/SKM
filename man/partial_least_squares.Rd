@@ -48,15 +48,10 @@ An object of class \code{"PartialLeastSquaresModel"} that inherits from classes
 \code{"Model"} and \code{"R6"} with the fields:
 \itemize{
 \item \code{fitted_model}: An object of class \code{\link[pls:mvr]{pls::plsr()}} with the model.
-\item \code{x}: The final \verb{\code{matrix}} used to fit the model.
+\item \code{x}: The final \verb{m̀atrix} used to fit the model.
 \item \code{y}: The final \code{vector} or \verb{m̀atrix} used to fit the model.
-\item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
-hyperparameters and with one more column called \code{"loss"} with the value of
-the loss function for each combination. The data is ordered with the best
-combinations at start, sometimes with the lowest values first and other
-times with the greatest values first, depending the loss function.
-\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameters with
-the best loss value (the first row in \code{hyperparams_grid}).
+\item \code{optimal_components_num}: A \code{numeric} value with the optimal number of
+components obtained with cross validation and used to fit the model.
 \item \code{execution_time}: A \code{difftime} object with the total time taken to tune and
 fit the model.
 \item \code{removed_rows}: A \code{numeric} vector with the records' indices (in the
@@ -69,13 +64,19 @@ nor training.
 }
 }
 \description{
-\code{partial_least_squares()} is a wrapper of the \code{\link[pls:mvr]{pls::plsr()}} function. It fits
-univariate and multivariate models for numeric responses only.
+\code{partial_least_squares()} is a wrapper of the \code{\link[pls:mvr]{pls::plsr()}} function to fit
+a partial least squares regression model. You can fit univariate and
+multivariate models for numeric responses only.
 }
 \details{
-You have to consider that before tuning all columns without variance
-(where all the records has the same value) are removed. Such columns
-positions are returned in the \code{removed_x_cols} field of the returned object.
+You have to consider that all columns without variance (where all
+the records has the same value) are removed. Such columns positions are
+returned in the removed_x_cols field of the returned object.
+
+This function performs random cross validation with 10 folds in order to find
+the optimal number of components to use. This optimal value is used when
+you call \code{predict} using the fitted model but you can specify other number
+of components to make the predictions.
 
 All records with missing values (\code{NA}), either in \code{x} or in \code{y} will be
 removed. The positions of the removed records are returned in the
@@ -83,16 +84,66 @@ removed. The positions of the removed records are returned in the
 }
 \examples{
 \dontrun{
-# Fit with all default parameters
-model <- partial_least_squares(to_matrix(iris[, -1]), iris$Sepal.Length)
+# Use all default hyperparameters -------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
+model <- partial_least_squares(x, y)
 
-predictions <- predict(model, to_matrix(iris))
+# Obtain the optimal number of components to use with predict
+model$optimal_components_num
+
+# Obtain the model's coefficients
+coef(model)
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
 predictions$predicted
+
+# Predict with a non optimal number of components ---------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
+model <- partial_least_squares(x, y, method = "orthogonal")
+
+# Obtain the optimal number of components to use with predict
+model$optimal_components_num
+
+# Predict using the fitted model with the optimal number of components
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
+
+# Predict using the fitted model without the optimal number of components
+predictions <- predict(model, x, components_num = 2)
+# Obtain the predicted values
+predictions$predicted
+
+# Obtain the model's coefficients
+coef(model)
+
+# Obtain the execution time taken to tune and fit the model
+model$execution_time
+
+# Multivariate analysis -----------------------------------------------------
+x <- to_matrix(iris[, -c(1, 2)])
+y <- iris[, c(1, 2)]
+model <- partial_least_squares(x, y, method = "wide_kernel")
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values of the first response variable
+predictions$Sepal.Length$predicted
+# Obtain the predicted values of the second response variable
+predictions$Sepal.Width$predicted
+
+# Obtain the predictions in a data.frame not in a list
+predictions <- predict(model, x, format = "data.frame")
+head(predictions)
 }
 
 }
 \seealso{
-\code{\link[=predict.Model]{predict.Model()}}
+\code{\link[=predict.PartialLeastSquaresModel]{predict.PartialLeastSquaresModel()}}
 
 Other models: 
 \code{\link{bayesian_model}()},

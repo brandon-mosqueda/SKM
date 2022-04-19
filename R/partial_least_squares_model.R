@@ -10,6 +10,10 @@ PartialLeastSquaresModel <- R6Class(
   classname = "PartialLeastSquaresModel",
   inherit = Model,
   public = list(
+    # Properties --------------------------------------------------
+
+    optimal_components_num = NULL,
+
     # Constructor --------------------------------------------------
 
     initialize = function(..., method, scale) {
@@ -26,12 +30,12 @@ PartialLeastSquaresModel <- R6Class(
     fit = function(...) {
       super$fit(...)
 
-      self$fit_params$optimal_components_num <- self$fitted_model$components_num
+      self$optimal_components_num <- self$fitted_model$components_num
     },
     predict = function(x, components_num) {
       self$fit_params$predict_components_num <- nonull(
         components_num,
-        self$fit_params$optimal_components_num
+        self$optimal_components_num
       )
 
       super$predict(x)
@@ -77,7 +81,9 @@ PartialLeastSquaresModel <- R6Class(
         data = data,
         scale = fit_params$scale,
         method = fit_params$method,
-        validation = "CV"
+        validation = "CV",
+        segments = 10,
+        segment.type = "random"
       )
 
       model <- plsr(
@@ -126,7 +132,9 @@ PartialLeastSquaresModel <- R6Class(
         data = data,
         scale = fit_params$scale,
         method = fit_params$method,
-        validation = "CV"
+        validation = "CV",
+        segments = 10,
+        segment.type = "random"
       )
 
       model <- plsr(

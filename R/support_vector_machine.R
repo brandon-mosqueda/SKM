@@ -95,7 +95,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'  # Use all default hyperparameters (no tuning) ----------------------------------
+#'  # Use all default hyperparameters (no tuning) ------------------------------
 #' x <- to_matrix(iris[, -5])
 #' y <- iris$Species
 #' model <- support_vector_machine(x, y)
@@ -107,7 +107,7 @@
 #' # Obtain the predicted probabilities
 #' predictions$probabilities
 #'
-#' # Tune with grid search --------------------------------------------------------
+#' # Tune with grid search -----------------------------------------------------
 #' x <- to_matrix(iris[, -1])
 #' y <- iris$Sepal.Length
 #' model <- support_vector_machine(
@@ -132,7 +132,7 @@
 #' # Obtain the predicted values
 #' predictions$predicted
 #'
-#' # Tune with Bayesian optimization --------------------------------------------------------
+#' # Tune with Bayesian optimization -------------------------------------------
 #' x <- to_matrix(iris[, -1])
 #' y <- iris$Sepal.Length
 #' model <- support_vector_machine(
