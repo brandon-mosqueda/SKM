@@ -27,7 +27,7 @@ generalized_linear_model(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-a design \code{matrix}.}
+to a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable(s). If it is a \code{data.frame} or a \code{matrix} with 2 or more columns,
@@ -48,14 +48,18 @@ is assumed.}
 
 \code{alpha = 0} is the lasso penalty, \code{alpha = 1} is the ridge penalty and \verb{0 < alpha < 1} is the elasticnet penalty. 1 by default.}
 
+\item{tune_type}{(\code{character(1)}) (case not sensitive) The type of tuning to
+perform. The options are \code{"Grid_search"} and "\code{Bayesian_optimization}".
+\code{"Grid_search"} by default.}
+
 \item{tune_folds_number}{(\code{numeric(1)}) The number of folds to tune each
-combination in the grid (k in k-fold cross validation). 5 by default.}
+hyperparameter combination (k in k-fold cross validation). 5 by default.}
 
 \item{tune_folds}{(\code{list}) Custom folds for tuning. It must be a \code{list} of
 \code{list}'s where each entry will represent a fold. Each inner \code{list} has to
 contain the fields \code{"training"} and \code{"testing"} with numeric vectors of
 indices of those entries to be used as training and testing in each fold.
-Note that when this parameter is set \code{tune_cv_type}, \code{tune_folds_number}
+Note that when this parameter is set, \code{tune_cv_type}, \code{tune_folds_number}
 and \code{tune_testing_proportion} are ignored. \code{NULL} by default.}
 
 \item{tune_loss_function}{(\code{character(1)}) (case not sensitive) The loss
@@ -66,9 +70,20 @@ variable (including binary) and \code{"f1_score"}, \code{"roc_auc"} or \code{"pr
 when \code{y} is a binary response variable. \code{NULL} by default which uses
 \code{"mse"} for numeric variables and \code{"accuracy"} for categorical variables.}
 
-\item{tune_grid_proportion}{(\code{numeric(1)}) A number > 0 and <= 1 to specify
-the proportion of combinations to sample from the grid and evaluate in
-tuning (useful when the grid is big). 1 by default.}
+\item{tune_grid_proportion}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Grid_search"}, a number between (0, 1] to specify the proportion of
+hyperparameters combinations to sample from the grid and evaluate in
+tuning (useful when the grid is big). 1 by default (full grid).}
+
+\item{tune_bayes_samples_number}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Bayesian_optimization"}, the number of initial random hyperparameters
+combinations to evalute before the Bayesian optimization process. 10 by
+default.}
+
+\item{tune_bayes_iterations_number}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Bayesian_optimization"}, the number of optimization iterations to
+evaluate after the initial random samples specified in
+\code{tune_bayes_samples_number}. 10 by default.}
 
 \item{lambdas_number}{(\code{numeric(1)}) The number of lambda values to be
 generated and evaluated in tuning. If \code{lambda} is provided, this parameter
@@ -99,7 +114,7 @@ reproducible results. \code{NULL} by default.}
 validation to tune the model. The options are \code{"K_fold"} and
 \code{"Random"}. \code{"K_fold"} by defaul.}
 
-\item{tune_testing_proportion}{(\code{numeric(1)}) A number > 0 and < 1 to
+\item{tune_testing_proportion}{(\code{numeric(1)}) A number between (0, 1) to
 specify the proportion of records to use as validation set when
 \code{tune_cv_type} is \code{"Random"}. 0.2 by default.}
 }
@@ -110,21 +125,21 @@ An object of class \code{"GeneralizedLinearModel"} that inherits from classes
 \item \code{fitted_model}: An object of class \code{\link[glmnet:glmnet]{glmnet::glmnet()}} with the model.
 \item \code{x}: The final \code{matrix} used to fit the model.
 \item \code{y}: The final \code{vector} or \code{matrix} used to fit the model.
-\item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
 hyperparameters and with one more column called \code{"loss"} with the value of
-the loss function for each combination. The grid is ordered ascendingly by
-loss value (the lower the better).
-\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameter with
-the lowest loss value (the first row in \code{hyperparams_grid}).
+the loss function for each combination. The data is ordered with the best
+combinations at start, sometimes with the lowest values first and other
+times with the greatest values first, depending the loss function.
+\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameters with
+the best loss value (the first row in \code{hyperparams_grid}).
 \item \code{execution_time}: A \code{difftime} object with the total time taken to tune and
 fit the model.
 \item \code{removed_rows}: A \code{numeric} vector with the records' indices (in the
 provided position) that were deleted and not taken in account in tunning
 nor training.
 \item \code{removed_x_cols}: A \code{numeric} vector with the columns' indices (in the
-provided position and after the design matrix creation) that were deleted
-and not taken in account in tunning nor training.
+provided positions) that were deleted and not taken in account in tunning
+nor training.
 \item \code{...}: Some other parameters for internal use.
 }
 }
@@ -135,10 +150,11 @@ It fits univariate models for continuous, count, binary and categorical
 response variables and multivariate models for numeric responses only.
 
 All the parameters marked as (\strong{tunable}) accept a vector of values with
-wich the grid is generated for tuning. The returned object contains a
-\code{data.frame} with the hyperparameter grid. In the end the best combination of
-hyperparameters is used to fit the final model, which is also returned and
-can be used to make new predictions.
+wich the grid is generated for grid search tuning or a list with the min
+and max values for bayesian optimization tuning. The returned object contains
+a \code{data.frame} with the hyperparameters combinations evaluated. In the end
+the best combination of hyperparameters is used to fit the final model, which
+is also returned and can be used to make new predictions.
 }
 \details{
 You have to consider that before tuning all columns without variance
@@ -151,22 +167,35 @@ removed. The positions of the removed records are returned in the
 
 \subsection{Tuning}{
 
-The hyperparameters grid to evaluate in tuning is generated with the
-cartesian product of all the provided values (all the posible combinations)
-in all \strong{tunable} parameters. If only one value of each \strong{tunable}
-parameter is provided no tuning is done. \code{tune_grid_proportion} allows you to
-specify the proportion of all combinations you want to sample and tune, by
-default all combinations (1) are evaluated.
-
-The tuning algorithm works as follows:
+The general tuning algorithm works as follows:
 
 \figure{tuning_algorithm.png}{Tuning algorithm}
+
+For grid search tuning, the hyperparameters grid is generated (step one in
+the algorithm) with the cartesian product of all the provided values (all the
+posible combinations) in all \strong{tunable} parameters. If only one value of
+each \strong{tunable} parameter is provided no tuning is done.
+\code{tune_grid_proportion} allows you to specify the proportion of all
+combinations you want to sample from the full grid and tune them, by default
+all combinations are evaluated.
+
+For bayesian optimization tuning, step one in the algorithm works a little
+different. At start, \code{tune_bayes_samples_number} different
+hyperparameters combinations are generated and evaluated, then
+\code{tune_bayes_iterations_number} new hyperparameters combinations are generated
+and evaluated iteratively based on the bayesian optimization algorithm, but
+this process is equivalent to that described in the general tuninig
+algorithm. Note that only the hyperparameters for which the list of min and
+max values were provided are tuned and their values fall in the specified
+boundaries.
 }
 
-Note that in univariate models with a numeric response variable \code{\link[=mse]{mse()}} (Mean
-Squared Error) is used as loss function. In univariate models with a
-categorical response variable (either binary or with more than two
-categories) \code{\link[=pcic]{pcic()}} (Proportion of Cases Incorrectly Classified) is used.
+In univariate models with a numeric response variable, Mean
+Squared Error (\code{\link[=mse]{mse()}}) is used by default as loss function. In univariate
+models with a categorical response variable, either binary or with more than
+two categories, accuracy (\code{\link[=accuracy]{accuracy()}}) is used by default. You can change
+the default loss function used in tuning with the \code{tune_loss_function}
+parameter.
 }
 \examples{
 \dontrun{

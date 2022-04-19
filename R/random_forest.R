@@ -10,10 +10,10 @@
 #' @templateVar refFunction randomForestSRC::rfsrc()
 #'
 #' @description
-#' `random_forest()` is a wrapper of the [randomForestSRC::rfsrc()] function
-#' with the ability to tune the hyperparameters (grid search) in a simple way.
-#' It fits univariate and multivariate models for numeric and/or categorical
-#' response variables.
+#' `random_forest()` is a wrapper of the [randomForestSRC::rfsrc()] function to
+#' fit a random forest model with the ability to tune the hyperparameters with
+#' grid search or bayesian optimization in a simple way. You can fit univariate
+#' or multivariate models for numeric and/or categorical response variables.
 #' @template tunable-description
 #'
 #' @template x-matrix-param
@@ -31,10 +31,10 @@
 #'   should be grown. `NULL` (ignored) by default.
 #' @param sampled_x_vars_number (`numeric`) (__tunable__) Also known as `mtry`.
 #'   Number of variables randomly selected as candidates for splitting a node.
-#'   You can specify values > 0 and <= 1 with the proportion of variables in `x`
+#'   You can specify values between (0, 1] with the proportion of variables in `x`
 #'   or directly the number of variables to use or a combination of both. `NULL`
-#'   by default (which uses `p / 3` with numeric response variables or `sqrt(p)`
-#'   otherwise, where `p` is the number of variables in `x`).
+#'   by default, which uses `p / 3` with numeric response variables or `sqrt(p)`
+#'   otherwise, where `p` is the number of variables in `x`.
 #' @template cv-tune-params
 #' @param split_rule (`character(1)`) (case not sensitive) Splitting rule. The
 #'   available options are `"mse"`, `"gini"`, `"auc"`, `"entropy"`. `NULL` by
@@ -61,15 +61,16 @@
 #' @details
 #' ## split_rule
 #'
-#' * `"mse"`: Implements weighted mean-squared error splitting for regression
-#'   analysis.
-#' * `"gini"`: Implements Gini index splitting for classification analysis.
+#' * `"mse"`: Implements weighted Mean Squared Error splitting for numeric
+#'   response variables.
+#' * `"gini"`: Implements Gini index splitting for categorical response
+#'   variables.
 #' * `"auc"`: AUC (area under the ROC curve) splitting for both two-class and
 #'   multiclass setttings. AUC splitting is appropriate for imbalanced data.
-#' * `"entropy"`: entropy splitting for classification analysis.
-#' * Multivariate analysis: When one or both regression and classification
+#' * `"entropy"`: entropy splitting for categorical response variables.
+#' * Multivariate analysis: When one or both numeric and categorical
 #'   responses are detected, a multivariate normalized composite split rule of
-#'   mean-squared error and Gini index splitting is invoked.
+#'   Mean Squared Error and Gini index splitting is invoked.
 #'
 #' @template return-model
 #'
@@ -78,30 +79,92 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Fit with all default parameters
-#' model <- random_forest(iris[, -5], iris$Species)
+#' # Use all default hyperparameters (no tuning) -------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- random_forest(x, y)
 #'
-#' # With tuning
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Tune with grid search -----------------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- random_forest(
-#'   iris[, -1],
-#'   iris$Sepal.Length,
+#'   x,
+#'   y,
 #'   trees_number = c(100, 200, 300),
 #'   node_size = c(1, 2),
-#'   node_depth = c(10, 15)
+#'   node_depth = c(10, 15),
+#'   tune_type = "grid_search",
+#'   tune_cv_type = "k_fold",
+#'   tune_folds_number = 5
 #' )
 #'
-#' predictions <- predict(model, iris)
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
 #' predictions$predicted
 #'
-#' # See the whole grid
-#' model$hyperparams_grid
-#'
-#' # Multivariate analysis
+#' # Tune with Bayesian optimization -------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- random_forest(
-#'   x = iris[, -c(1, 5)],
-#'   y = iris[, c(1, 5)],
-#'   sampled_x_vars_number = c(0.25, 0.75)
+#'   x,
+#'   y,
+#'   trees_number = list(min = 100, max = 500),
+#'   node_size = list(min = 1, max = 10),
+#'   tune_type = "bayesian_optimization",
+#'   tune_bayes_samples_number = 5,
+#'   tune_bayes_iterations_number = 5,
+#'   tune_cv_type = "random",
+#'   tune_folds_number = 4
 #' )
+#'
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Obtain the execution time taken to tune and fit the model
+#' model$execution_time
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 5)])
+#' y <- iris[, c(1, 5)]
+#' model <- random_forest(x, y, trees_number = 100)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values of the first response
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values and probabilities of the second response
+#' predictions$Species$predicted
+#' predictions$Species$probabilities
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
 #' }
 #'
 #' @export

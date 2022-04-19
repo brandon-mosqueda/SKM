@@ -17,7 +17,7 @@ partial_least_squares(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-a design \code{matrix}.}
+to a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable(s). If it is a \code{data.frame} or a \code{matrix} with 2 or more columns,
@@ -50,21 +50,21 @@ An object of class \code{"PartialLeastSquaresModel"} that inherits from classes
 \item \code{fitted_model}: An object of class \code{\link[pls:mvr]{pls::plsr()}} with the model.
 \item \code{x}: The final \verb{\code{matrix}} used to fit the model.
 \item \code{y}: The final \code{vector} or \verb{m̀atrix} used to fit the model.
-\item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
 hyperparameters and with one more column called \code{"loss"} with the value of
-the loss function for each combination. The grid is ordered ascendingly by
-loss value (the lower the better).
-\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameter with
-the lowest loss value (the first row in \code{hyperparams_grid}).
+the loss function for each combination. The data is ordered with the best
+combinations at start, sometimes with the lowest values first and other
+times with the greatest values first, depending the loss function.
+\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameters with
+the best loss value (the first row in \code{hyperparams_grid}).
 \item \code{execution_time}: A \code{difftime} object with the total time taken to tune and
 fit the model.
 \item \code{removed_rows}: A \code{numeric} vector with the records' indices (in the
 provided position) that were deleted and not taken in account in tunning
 nor training.
 \item \code{removed_x_cols}: A \code{numeric} vector with the columns' indices (in the
-provided position and after the design matrix creation) that were deleted
-and not taken in account in tunning nor training.
+provided positions) that were deleted and not taken in account in tunning
+nor training.
 \item \code{...}: Some other parameters for internal use.
 }
 }
