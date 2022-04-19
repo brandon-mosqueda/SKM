@@ -10,10 +10,11 @@
 #' @templateVar refFunction gbm::gbm.fit()
 #'
 #' @description
-#' `generalized_boosted_machine()` is a wrapper of the [gbm::gbm()] function
-#' with the ability to tune the hyperparameters with grid search or bayesian
-#' optimization in a simple way. You can fit univariate models for continuous,
-#' count, binary and categorical response variables.
+#' `generalized_boosted_machine()` is a wrapper of the [gbm::gbm()] function to
+#' fit a generalized boosted machine with the ability to tune the
+#' hyperparameters with grid search or bayesian optimization in a simple way.
+#' You can fit univariate models for continuous, count, binary and categorical
+#' response variables.
 #' @template tunable-description
 #'
 #' @template x-matrix-param
@@ -50,6 +51,7 @@
 #'   (0) relationship with the outcome. `NULL` by default.
 #' @template other-base-params
 #'
+#' @template details-no-variance
 #' @template details-remove-nas
 #' @template details-tuning
 #' @template details-uni-loss-functions
@@ -61,7 +63,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Use all default hyperparameters (no tuning) ----------------------------------
+#' # Use all default hyperparameters (no tuning) -------------------------------
 #' x <- to_matrix(iris[, -5])
 #' y <- iris$Species
 #' model <- generalized_boosted_machine(x, y)
@@ -73,7 +75,7 @@
 #' # Obtain the predicted probabilities
 #' predictions$probabilities
 #'
-#' # Tune with grid search --------------------------------------------------------
+#' # Tune with grid search -----------------------------------------------------
 #' x <- to_matrix(iris[, -1])
 #' y <- iris$Sepal.Length
 #' model <- generalized_boosted_machine(
@@ -97,7 +99,7 @@
 #' # Obtain the predicted values
 #' predictions$predicted
 #'
-#' # Tune with Bayesian optimization --------------------------------------------------------
+#' # Tune with Bayesian optimization -------------------------------------------
 #' x <- to_matrix(iris[, -1])
 #' y <- iris$Sepal.Length
 #' model <- generalized_boosted_machine(

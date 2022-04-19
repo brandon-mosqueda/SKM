@@ -33,7 +33,7 @@ random_forest(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-to a \code{matrix}.}
+a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable(s). If it is a \code{data.frame} or a \code{matrix} with 2 or more columns,

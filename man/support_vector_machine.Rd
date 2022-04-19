@@ -36,7 +36,7 @@ support_vector_machine(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-to a \code{matrix}.}
+a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable. If it is a \code{data.frame} or a \code{matrix} it must have only one
@@ -168,9 +168,10 @@ nor training.
 }
 }
 \description{
-\code{support_vector_machine()} is a wrapper of the \code{\link[e1071:svm]{e1071::svm()}} function with
-the ability to tune the hyperparameters (grid search) in a simple way. It
-fits univariate models for numeric and categorical response variables.
+\code{support_vector_machine()} is a wrapper of the \code{\link[e1071:svm]{e1071::svm()}} function to
+fit a support vector machine with the ability to tune the hyperparameters
+with grid search or bayesian optimization in a simple way. You can fit
+univariate models for numeric and categorical response variables.
 
 All the parameters marked as (\strong{tunable}) accept a vector of values with
 wich the grid is generated for grid search tuning or a list with the min
@@ -248,24 +249,71 @@ them.
 }
 \examples{
 \dontrun{
-# Fit with all default parameters
-model <- support_vector_machine(to_matrix(iris[, -5]), iris$Species)
+ # Use all default hyperparameters (no tuning) ----------------------------------
+x <- to_matrix(iris[, -5])
+y <- iris$Species
+model <- support_vector_machine(x, y)
 
-# Tune 3 hyperparameters
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
+# Obtain the predicted probabilities
+predictions$probabilities
+
+# Tune with grid search --------------------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
 model <- support_vector_machine(
-  to_matrix(iris[, -1]),
-  iris$Sepal.Length,
+  x,
+  y,
   kernel = "polynomial",
-  degree = c(3, 4, 5),
-  gamma = c(1, 2),
-  coef0 = c(0, 1, -1)
+  degree = c(1, 2),
+  gamma = c(0.1, 0.3),
+  coef0 = c(0, 1),
+  tune_type = "grid_search",
+  tune_cv_type = "k_fold",
+  tune_folds_number = 5
 )
 
-predictions <- predict(model, to_matrix(iris))
+# Obtain the whole grid with the loss values
+model$hyperparams_grid
+# Obtain the hyperparameters combination with the best loss value
+model$best_hyperparams
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
 predictions$predicted
 
-# See the whole grid
+# Tune with Bayesian optimization --------------------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
+model <- support_vector_machine(
+  x,
+  y,
+  kernel = "sigmoid",
+  gamma = list(min = 0.01, max = 0.9),
+  coef0 = list(min = 0, max = 5),
+  tune_type = "bayesian_optimization",
+  tune_bayes_samples_number = 5,
+  tune_bayes_iterations_number = 5,
+  tune_cv_type = "random",
+  tune_folds_number = 4
+)
+
+# Obtain the whole grid with the loss values
 model$hyperparams_grid
+# Obtain the hyperparameters combination with the best loss value
+model$best_hyperparams
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
+
+# Obtain the execution time taken to tune and fit the model
+model$execution_time
 }
 
 }

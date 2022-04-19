@@ -30,7 +30,7 @@ generalized_boosted_machine(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-to a \code{matrix}.}
+a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable. If it is a \code{data.frame} or a \code{matrix} it must have only one
@@ -150,10 +150,11 @@ nor training.
 }
 }
 \description{
-\code{generalized_boosted_machine()} is a wrapper of the \code{\link[gbm:gbm]{gbm::gbm()}} function
-with the ability to tune the hyperparameters with grid search or bayesian
-optimization in a simple way. You can fit univariate models for continuous,
-count, binary and categorical response variables.
+\code{generalized_boosted_machine()} is a wrapper of the \code{\link[gbm:gbm]{gbm::gbm()}} function to
+fit a generalized boosted machine with the ability to tune the
+hyperparameters with grid search or bayesian optimization in a simple way.
+You can fit univariate models for continuous, count, binary and categorical
+response variables.
 
 All the parameters marked as (\strong{tunable}) accept a vector of values with
 wich the grid is generated for grid search tuning or a list with the min
@@ -163,6 +164,10 @@ the best combination of hyperparameters is used to fit the final model, which
 is also returned and can be used to make new predictions.
 }
 \details{
+You have to consider that before tuning all columns without variance
+(where all the records has the same value) are removed. Such columns
+positions are returned in the \code{removed_x_cols} field of the returned object.
+
 All records with missing values (\code{NA}), either in \code{x} or in \code{y} will be
 removed. The positions of the removed records are returned in the
 \code{removed_rows} field of the returned object.
@@ -201,7 +206,7 @@ parameter.
 }
 \examples{
 \dontrun{
-# Use all default hyperparameters (no tuning) ----------------------------------
+# Use all default hyperparameters (no tuning) -------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
 model <- generalized_boosted_machine(x, y)
@@ -213,7 +218,7 @@ predictions$predicted
 # Obtain the predicted probabilities
 predictions$probabilities
 
-# Tune with grid search --------------------------------------------------------
+# Tune with grid search -----------------------------------------------------
 x <- to_matrix(iris[, -1])
 y <- iris$Sepal.Length
 model <- generalized_boosted_machine(
@@ -237,7 +242,7 @@ predictions <- predict(model, x)
 # Obtain the predicted values
 predictions$predicted
 
-# Tune with Bayesian optimization --------------------------------------------------------
+# Tune with Bayesian optimization -------------------------------------------
 x <- to_matrix(iris[, -1])
 y <- iris$Sepal.Length
 model <- generalized_boosted_machine(
