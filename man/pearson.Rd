@@ -4,7 +4,7 @@
 \alias{pearson}
 \title{Pearson's correlation}
 \usage{
-pearson(x, y = x, na.rm = TRUE)
+pearson(x, y = x, remove_na = TRUE)
 }
 \arguments{
 \item{x}{(\code{numeric} | \code{matrix}) The values to calculate the correlation.}
@@ -12,7 +12,7 @@ pearson(x, y = x, na.rm = TRUE)
 \item{y}{(\code{numeric} | \code{matrix}) The values to calculate the correlation with.
 the same values as \code{x} by default.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{

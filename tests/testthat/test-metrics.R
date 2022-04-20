@@ -61,6 +61,41 @@ test_that("confusion_matrix", {
   expect_identical(all(conf == true_matrix), TRUE)
 })
 
+test_that("mode", {
+  mode_result <- function(value, frequency) {
+    result <- as.character(value)
+    attr(result, "frequency") <- as.integer(frequency)
+
+    return(result)
+  }
+
+  expect_equal(mode(1), mode_result(1, 1))
+  expect_equal(mode(c(1, 2)), mode_result(c(1, 2), 1))
+  expect_equal(mode(c(1, 2, 3, 1, 1)), mode_result(1, 3))
+  expect_equal(mode(iris$Species), mode_result(levels(iris$Species), 50))
+  expect_equal(mode(c("C", "A", "C", "A")), mode_result(c("A", "C"), 2))
+
+  expect_equal(mode(NA), NULL)
+  expect_equal(mode(NA, remove_na = FALSE), mode_result(NA, 1))
+  x <- c(rep("A", 100), rep(NA, 100))
+  expect_equal(mode(x), mode_result("A", 100))
+  expect_equal(mode(x, remove_na = FALSE), mode_result(c("A", NA), 100))
+  x <- c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "C")
+  expect_equal(mode(x), mode_result(c("A", "B"), 3))
+  expect_equal(mode(x, remove_na = FALSE), mode_result(NA, 4))
+
+  x <- c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "A", "B")
+  expect_equal(mode(x, allow_multimodal = FALSE), mode_result(c("A"), 4))
+  expect_equal(
+    mode(x, allow_multimodal = FALSE, remove_na = FALSE),
+    mode_result(c("A"), 4)
+  )
+  expect_equal(
+    mode(rep("A", 10), allow_multimodal = FALSE),
+    mode_result(c("A"), 10)
+  )
+})
+
 test_that("kappa_coef", {
   expect_identical(kappa_coeff(factor(c("a", "b")), factor(c("a", "b"))), 1)
   expect_identical(
@@ -477,7 +512,7 @@ test_that("brier_score", {
     brier_score(factor(c("b", "c", "a")), probs),
     paste0(
       "Assertion on 'observed' failed: Must be a subset of ",
-      "\\{'a','b'\\}, but is \\{'a','b','c'\\}."
+      "\\{'a','b'\\}, but has additional elements \\{'c'\\}."
     )
   )
 

@@ -4,7 +4,7 @@
 \alias{roc_auc}
 \title{ROC Area Under the Curver (ROC-AUC)}
 \usage{
-roc_auc(observed, probabilities, positive_class = NULL, na.rm = TRUE)
+roc_auc(observed, probabilities, positive_class = NULL, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -20,7 +20,7 @@ taken as reference as the positive class. This parameter is only used for
 binary variables. \code{NULL} by default which uses the second class in the
 union of the classes (levels) in \code{observed} and \code{predicted}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -59,6 +59,7 @@ Other categorical_metrics:
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
 \code{\link{matthews_coeff}()},
+\code{\link{mode}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},
 \code{\link{pr_auc}()},
