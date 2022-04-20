@@ -12,7 +12,7 @@
 #' default all values with the greatest frequency are returned but you can
 #' limit the result to the first one, in lexicographical order.
 #'
-#' @param x (`vector`) A vector of values to compute the mode.
+#' @param x (`factor`) A vector of values to compute the mode.
 #' @param remove_na (`logical(1)`) Should `NA` values be removed and not
 #'   include them in the frequencies counting? `TRUE` by default.
 #' @param allow_multimodal (`logical(1)`) If there is more than one mode, should
@@ -51,10 +51,12 @@
 #'
 #' @export
 mode <- function(x, remove_na = TRUE, allow_multimodal = TRUE) {
+  assert_factor(x, min.len = 1)
+
   use_na <- "ifany"
   if (remove_na) use_na <- "no"
 
-  frequencies <- sort(table(as.factor(x), useNA = use_na), decreasing = TRUE)
+  frequencies <- sort(table(x, useNA = use_na), decreasing = TRUE)
   if (is_empty(frequencies)) return(NULL)
 
   if (allow_multimodal) {
@@ -116,6 +118,14 @@ confusion_matrix <- function(observed, predicted, remove_na = TRUE) {
 #'
 #' @inheritParams confusion_matrix
 #'
+#' @details
+#' Given a confusion matrix P, Cohen's Kappa coefficient can be computed by:
+#'
+#'     ![](kappa_coefficient.png "kappa(x) = (P_o - P_e) / (1 - P_e)")
+#'
+#' P_o is the sum of all diagonal values and P_e is the sum of all the products
+#' of row i times col i.
+#'
 #' @return
 #' A single numeric value with the Cohen's Kappa coefficient.
 #'
@@ -151,6 +161,15 @@ kappa_coeff <- function(observed, predicted, remove_na = TRUE) {
 #' Contingency Coefficient.
 #'
 #' @inheritParams confusion_matrix
+#'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#'     ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Matthews Correlation Coefficient (MCC) is computed as:
+#'
+#'     ![](matthews_coefficient.png "(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))")
 #'
 #' @return
 #' A single numeric value with the Matthews Correlation Coefficient.

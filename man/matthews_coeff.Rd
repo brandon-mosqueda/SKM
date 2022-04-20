@@ -24,6 +24,13 @@ Given the observed and predicted values of binary data computes the Matthews
 Correlation Coefficient (MCC) also known as Phi Coefficient or Mean Square
 Contingency Coefficient.
 }
+\details{
+Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
+}
+
+Matthews Correlation Coefficient (MCC) is computed as:\preformatted{![](matthews_coefficient.png "(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))")
+}
+}
 \examples{
 \dontrun{
 matthews_coeff(factor(c("a", "b")), factor(c("a", "b")))

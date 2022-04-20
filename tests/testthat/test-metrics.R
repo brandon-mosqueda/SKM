@@ -69,29 +69,29 @@ test_that("mode", {
     return(result)
   }
 
-  expect_equal(mode(1), mode_result(1, 1))
-  expect_equal(mode(c(1, 2)), mode_result(c(1, 2), 1))
-  expect_equal(mode(c(1, 2, 3, 1, 1)), mode_result(1, 3))
+  expect_equal(mode(factor(1)), mode_result(1, 1))
+  expect_equal(mode(factor(c(1, 2))), mode_result(c(1, 2), 1))
+  expect_equal(mode(factor(c(1, 2, 3, 1, 1))), mode_result(1, 3))
   expect_equal(mode(iris$Species), mode_result(levels(iris$Species), 50))
-  expect_equal(mode(c("C", "A", "C", "A")), mode_result(c("A", "C"), 2))
+  expect_equal(mode(factor(c("C", "A", "C", "A"))), mode_result(c("A", "C"), 2))
 
-  expect_equal(mode(NA), NULL)
-  expect_equal(mode(NA, remove_na = FALSE), mode_result(NA, 1))
-  x <- c(rep("A", 100), rep(NA, 100))
+  expect_equal(mode(factor(NA)), NULL)
+  expect_equal(mode(factor(NA), remove_na = FALSE), mode_result(NA, 1))
+  x <- factor(c(rep("A", 100), rep(NA, 100)))
   expect_equal(mode(x), mode_result("A", 100))
   expect_equal(mode(x, remove_na = FALSE), mode_result(c("A", NA), 100))
-  x <- c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "C")
+  x <- factor(c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "C"))
   expect_equal(mode(x), mode_result(c("A", "B"), 3))
   expect_equal(mode(x, remove_na = FALSE), mode_result(NA, 4))
 
-  x <- c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "A", "B")
+  x <- factor(c("A", "B", "A", NA, "B", "A", "B", NA, NA, NA, "A", "B"))
   expect_equal(mode(x, allow_multimodal = FALSE), mode_result(c("A"), 4))
   expect_equal(
     mode(x, allow_multimodal = FALSE, remove_na = FALSE),
     mode_result(c("A"), 4)
   )
   expect_equal(
-    mode(rep("A", 10), allow_multimodal = FALSE),
+    mode(factor(rep("A", 10)), allow_multimodal = FALSE),
     mode_result(c("A"), 10)
   )
 })

@@ -7,7 +7,7 @@
 mode(x, remove_na = TRUE, allow_multimodal = TRUE)
 }
 \arguments{
-\item{x}{(\code{vector}) A vector of values to compute the mode.}
+\item{x}{(\code{factor}) A vector of values to compute the mode.}
 
 \item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed and not
 include them in the frequencies counting? \code{TRUE} by default.}
