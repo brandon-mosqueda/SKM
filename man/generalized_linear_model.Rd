@@ -123,7 +123,7 @@ An object of class \code{"GeneralizedLinearModel"} that inherits from classes
 \code{"Model"} and \code{"R6"} with the fields:
 \itemize{
 \item \code{fitted_model}: An object of class \code{\link[glmnet:glmnet]{glmnet::glmnet()}} with the model.
-\item \code{x}: The final \code{matrix} used to fit the model.
+\item \code{x}: The final matrix used to fit the model.
 \item \code{y}: The final \code{vector} or \code{matrix} used to fit the model.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
 hyperparameters and with one more column called \code{"loss"} with the value of

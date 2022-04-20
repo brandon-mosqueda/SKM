@@ -3,7 +3,7 @@
 #' `"Model"` and `"R6"` with the fields:
 #'
 #' * `fitted_model`: An object of class [<%= refFunction %>] with the model.
-#' * `x`: The final `<%= XType %>` used to fit the model.
+#' * `x`: The final <%= XType %> used to fit the model.
 #' * `y`: The final <%= YType %> used to fit the model.
 #' * `hyperparams_grid`: A `data.frame` with all the computed combinations of
 #'   hyperparameters and with one more column called `"loss"` with the value of
