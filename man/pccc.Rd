@@ -24,6 +24,14 @@ Given the observed and predicted values of categorical data (of any number of
 classes) computes the Proportion of Correctly Classified Cases (also known as
 accuracy).
 }
+\details{
+PCCC can be computed as:\preformatted{![](pccc.png "(1 / N) * (sum(diag(confusion_matrix)))")
+}
+
+that is, the sum of the diagonal in the confusion matrix (correct
+classifications) over the total number of values in the matrix (N). An
+equivalent but more efficient method is used.
+}
 \examples{
 \dontrun{
 pccc(c("a", "b"), c("a", "b"))

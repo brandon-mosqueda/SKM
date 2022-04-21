@@ -119,7 +119,7 @@ confusion_matrix <- function(observed, predicted, remove_na = TRUE) {
 #' @inheritParams confusion_matrix
 #'
 #' @details
-#' Given a confusion matrix P, Cohen's Kappa coefficient can be computed by:
+#' Given a confusion matrix P, Cohen's Kappa coefficient is be computed by:
 #'
 #'     ![](kappa_coefficient.png "kappa(x) = (P_o - P_e) / (1 - P_e)")
 #'
@@ -217,6 +217,15 @@ matthews_coeff <- function(observed, predicted, remove_na = TRUE) {
 #'   binary variables. `NULL` by default which uses the second class in the
 #'   union of the classes (levels) in `observed` and `predicted`.
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#'     ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Sensitivity is computed as:
+#'
+#'     ![](sensitivity.png "(TP) / (TP + FN)")
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of sensitivities is returned, one per each category.
@@ -272,6 +281,15 @@ sensitivity <- function(observed,
 #' ability to predict true negatives of each available category.
 #'
 #' @inheritParams sensitivity
+#'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#'     ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Specificity is computed as:
+#'
+#'     ![](specificity.png "(TN) / (TN + FP)")
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -332,6 +350,15 @@ specificity <- function(observed,
 #'
 #' @inheritParams sensitivity
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#'     ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Recall is computed as:
+#'
+#'     ![](recall.png "(TP) / (TP + FN)")
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of recalls is returned, one per each category.
@@ -368,6 +395,15 @@ recall <- function(observed,
 #' to total predicted positives.
 #'
 #' @inheritParams sensitivity
+#'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#'     ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Precision is computed as:
+#'
+#'     ![](precision.png "(TP) / (TP + FP)")
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -557,6 +593,13 @@ pr_auc <- function(observed,
 #'
 #' @inheritParams sensitivity
 #'
+#' @details
+#' F1 score is computed as:
+#'
+#'     ![](f1_score.png "2 * ((precision * recall) / (precision + recall))")
+#'
+#' See [precision()] and [recall()] for more information.
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of F1 scores is returned, one per each category.
@@ -600,6 +643,15 @@ f1_score <- function(observed,
 #'
 #' @inheritParams confusion_matrix
 #'
+#' @details
+#' PCCC can be computed as:
+#'
+#'     ![](pccc.png "(1 / N) * (sum(diag(confusion_matrix)))")
+#'
+#' that is, the sum of the diagonal in the confusion matrix (correct
+#' classifications) over the total number of values in the matrix (N). An
+#' equivalent but more efficient method is used.
+#'
 #' @return
 #' A single numeric value with the Proportion of Correctly Classified Cases.
 #'
@@ -631,6 +683,15 @@ pccc <- function(observed, predicted, remove_na = TRUE) {
 #' classified cases).
 #'
 #' @inheritParams confusion_matrix
+#'
+#' @details
+#' Accuracy can be computed as:
+#'
+#'     ![](accuracy.png "(1 / N) * (sum(diag(confusion_matrix)))")
+#'
+#' that is, the sum of the diagonal in the confusion matrix (correct
+#' classifications) over the total number of values in the matrix (N). An
+#' equivalent but more efficient method is used.
 #'
 #' @return
 #' A single numeric value with the accuracy.
@@ -690,6 +751,16 @@ pcic <- function(observed, predicted, remove_na = TRUE) {
 #' (of at least two classes) computes the Brier Score.
 #'
 #' @inheritParams roc_auc
+#'
+#' @details
+#' Brier score is computed as:
+#'
+#'     ![](brier_score.png "(1 / N) *  sum(sum((f_{ti} - o_{ti})^2))")
+#'
+#' Where R is the number of possible classes in which the event can fall, and N
+#' the overall number of instances of all classes. f_{ti} is the predicted
+#' probability for class i. o_{ti} is 1 if it is i-th class in instant t, 0
+#' otherwise.
 #'
 #' @return
 #' A single numeric value with the Brier Score.
@@ -753,6 +824,14 @@ brier_score <- function(observed, probabilities, remove_na = TRUE) {
 #' @param remove_na (`logical(1)`) Should `NA` values be removed?. `TRUE` by
 #'   default.
 #'
+#' @details
+#' Mean Squared Error is computed as:
+#'
+#'     ![](mse.png "(1 / N) * sum((observed - predicted)^2)")
+#'
+#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
+#'
 #' @return
 #' A single numeric value with the Mean Squared Error.
 #'
@@ -788,6 +867,14 @@ mse <- function(observed, predicted, remove_na = TRUE) {
 #' Mean Squared Error.
 #'
 #' @inheritParams mse
+#'
+#' @details
+#' Root Mean Squared Error is computed as:
+#'
+#'     ![](rmse.png "sqrt((1 / N) * sum((observed - predicted)^2))")
+#'
+#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
 #'
 #' @return
 #' A single numeric value with the Root Mean Squared Error.
@@ -825,12 +912,18 @@ rmse <- function(observed, predicted, remove_na = TRUE) {
 #'   default.
 #'
 #' @details
-#' The formula is the same as [rmse()] (Root Mean Square Error) but divided by a
-#' normalization term specified in `type`:
+#' Normalized Root Mean Squared Error is computed as:
 #'
-#' * `"sd"`: Standard deviatione.
+#'     ![](nrmse.png "sqrt((1 / N) * sum((observed - predicted)^2)) / norm")
+#'
+#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' value of element i, N is the total number of elements and Y' is the
+#' normalized observed values. You can specify one of the following types of
+#' normalization with the `type` parameter:
+#'
+#' * `"sd"`: Standard deviation.
 #' * `"mean"`: Mean.
-#' * `"maxmin"` or `"range"`: The range, maximun minus minimum.
+#' * `"maxmin"` or `"range"`: Maximun minus minimum (range).
 #' * `"iqr"`: Interquantile range (Q3 - Q1).
 #'
 #' @return
@@ -893,6 +986,14 @@ nrmse <-  function(observed, predicted, type = "sd", remove_na = TRUE) {
 #'
 #' @inheritParams mse
 #'
+#' @details
+#' Mean Absolute Error is computed as:
+#'
+#'     ![](mae.png "mean(abs(observed - predicted))")
+#'
+#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
+#'
 #' @return
 #' A single numeric value with the Mean Abosolute Error.
 #'
@@ -924,6 +1025,14 @@ mae <- function(observed, predicted, remove_na = TRUE) {
 #'
 #' @inheritParams mse
 #'
+#' @details
+#' Mean Arctangent Absolute Percentage Error is computed as:
+#'
+#'     ![](maape.png "mean(atan(abs(observed - predicted) / abs(observed)))")
+#'
+#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
+#'
 #' @return
 #' A single numeric value with the Mean Arctangent Absolute Percentage Error.
 #'
@@ -954,7 +1063,7 @@ maape <- function(observed, predicted, remove_na = TRUE) {
   ))
 }
 
-#' @title Spearman's correlation
+#' @title Spearman's correlation coefficient
 #'
 #' @description
 #' Computes the Spearman's correlation.
@@ -963,6 +1072,14 @@ maape <- function(observed, predicted, remove_na = TRUE) {
 #' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
 #'   the same values as `x` by default.
 #' @inheritParams mse
+#'
+#' @details
+#' Spearman's correlation coefficient is computed as:
+#'
+#'     ![](spearman.png "cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))")
+#'
+#' where R is the rank of a variable, cov the covariance of two variables and
+#' \sigma is the standard deviation.
 #'
 #' @return
 #' A single numeric value with the Spearman's correlation.
@@ -999,7 +1116,7 @@ spearman <- function(x, y = x, remove_na = TRUE) {
   return(cor(x, y, method = "spearman", use = "everything"))
 }
 
-#' @title Pearson's correlation
+#' @title Pearson's correlation coefficient
 #'
 #' @description
 #' Computes the Pearson's correlation.
@@ -1008,6 +1125,14 @@ spearman <- function(x, y = x, remove_na = TRUE) {
 #' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
 #'   the same values as `x` by default.
 #' @inheritParams mse
+#'
+#' @details
+#' Pearson's correlation coefficient is computed as:
+#'
+#'     ![](pearson.png "cov(x, y) / (sd(x) * sd(y))")
+#'
+#' where cov is the covariance of two variables and \sigma is the standard
+#' deviation.
 #'
 #' @return
 #' A single numeric value with the Pearson's correlation.
@@ -1190,6 +1315,7 @@ wrapper_loss <- function(observed,
 #' example <- data.frame(
 #'   observed = c("a", "a", "a", "a", "b", "b", "b", "b", "c", "c", "c", "c"),
 #'   predicted = c("a", "a", "b", "c", "a", "b", "b", "c", "a", "b", "b", "c"),
+#'   # Probabilities
 #'   a = c(
 #'     0.2377, 0.2924, 0.0406, 0.1893, 0.3978, 0.1965,
 #'     0.0673, 0.2796, 0.1921, 0.2020, 0.1752, 0.3428
@@ -1206,7 +1332,7 @@ wrapper_loss <- function(observed,
 #' categorical_summary(
 #'   example$observed,
 #'   example$predicted,
-#'   example[, c("a", "b", "c")]
+#'   probabilities = example[, c("a", "b", "c")]
 #' )
 #' }
 #'

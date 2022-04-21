@@ -25,6 +25,15 @@ A single numeric value with the Brier Score.
 Given the observed values and the predicted probabilites of categorical data
 (of at least two classes) computes the Brier Score.
 }
+\details{
+Brier score is computed as:\preformatted{![](brier_score.png "(1 / N) *  sum(sum((f_\{ti\} - o_\{ti\})^2))")
+}
+
+Where R is the number of possible classes in which the event can fall, and N
+the overall number of instances of all classes. f_{ti} is the predicted
+probability for class i. o_{ti} is 1 if it is i-th class in instant t, 0
+otherwise.
+}
 \examples{
 \dontrun{
 probs <- data.frame(a = c(0.7, 0.2), b = c(0.3, 0.8))

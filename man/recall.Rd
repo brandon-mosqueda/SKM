@@ -31,6 +31,13 @@ classes) computes the recall (also known as sensitibity), the metric that
 evaluates a models ability to predict true positives of each available
 category.
 }
+\details{
+Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
+}
+
+Recall is computed as:\preformatted{![](recall.png "(TP) / (TP + FN)")
+}
+}
 \examples{
 \dontrun{
 recall(factor(c("a", "b")), factor(c("a", "b")))

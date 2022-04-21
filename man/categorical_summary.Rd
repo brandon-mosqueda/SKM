@@ -47,6 +47,7 @@ categorical_summary(c("a", "b", "a"), c("b", "a", "c"))
 example <- data.frame(
   observed = c("a", "a", "a", "a", "b", "b", "b", "b", "c", "c", "c", "c"),
   predicted = c("a", "a", "b", "c", "a", "b", "b", "c", "a", "b", "b", "c"),
+  # Probabilities
   a = c(
     0.2377, 0.2924, 0.0406, 0.1893, 0.3978, 0.1965,
     0.0673, 0.2796, 0.1921, 0.2020, 0.1752, 0.3428
@@ -63,7 +64,7 @@ example <- data.frame(
 categorical_summary(
   example$observed,
   example$predicted,
-  example[, c("a", "b", "c")]
+  probabilities = example[, c("a", "b", "c")]
 )
 }
 

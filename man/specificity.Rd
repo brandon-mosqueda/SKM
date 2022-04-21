@@ -30,6 +30,13 @@ Given the observed and predicted values of categorical data (of any number of
 classes) computes the specificity, the metric that evaluates a model's
 ability to predict true negatives of each available category.
 }
+\details{
+Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
+}
+
+Specificity is computed as:\preformatted{![](specificity.png "(TN) / (TN + FP)")
+}
+}
 \examples{
 \dontrun{
 specificity(factor(c("a", "b")), factor(c("a", "b")))

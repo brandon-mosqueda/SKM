@@ -30,6 +30,13 @@ Given the observed and predicted values of categorical data (of any number of
 classes) computes the precision, that represents the ratio of true positives
 to total predicted positives.
 }
+\details{
+Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
+}
+
+Precision is computed as:\preformatted{![](precision.png "(TP) / (TP + FP)")
+}
+}
 \examples{
 \dontrun{
 precision(factor(c("a", "b")), factor(c("a", "b")))

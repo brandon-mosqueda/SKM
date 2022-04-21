@@ -24,7 +24,7 @@ Given the observed and predicted values of categorical data (of any number of
 classes) computes the Cohen's Kappa coefficient.
 }
 \details{
-Given a confusion matrix P, Cohen's Kappa coefficient can be computed by:\preformatted{![](kappa_coefficient.png "kappa(x) = (P_o - P_e) / (1 - P_e)")
+Given a confusion matrix P, Cohen's Kappa coefficient is be computed by:\preformatted{![](kappa_coefficient.png "kappa(x) = (P_o - P_e) / (1 - P_e)")
 }
 
 P_o is the sum of all diagonal values and P_e is the sum of all the products

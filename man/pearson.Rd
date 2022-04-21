@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{pearson}
 \alias{pearson}
-\title{Pearson's correlation}
+\title{Pearson's correlation coefficient}
 \usage{
 pearson(x, y = x, remove_na = TRUE)
 }
@@ -20,6 +20,13 @@ A single numeric value with the Pearson's correlation.
 }
 \description{
 Computes the Pearson's correlation.
+}
+\details{
+Pearson's correlation coefficient is computed as:\preformatted{![](pearson.png "cov(x, y) / (sd(x) * sd(y))")
+}
+
+where cov is the covariance of two variables and \sigma is the standard
+deviation.
 }
 \examples{
 \dontrun{
