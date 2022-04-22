@@ -58,7 +58,7 @@
 #'   nor training.
 #' * `...`: Some other parameters for internal use.
 #'
-#' @seealso [predict.PartialLeastSquaresModel()]
+#' @seealso [predict.PartialLeastSquaresModel()], [coef.Model()]
 #' @family models
 #'
 #' @examples

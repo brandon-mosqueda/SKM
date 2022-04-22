@@ -352,6 +352,54 @@ predict.Model <- function(model, x, format = "list") {
   return(format_predictions(predictions, model$is_multivariate, format))
 }
 
+#' @title Model coefficients
+#'
+#' @description
+#' Extracts the model coefficients from a fitted model object.
+#'
+#' @param model (`Model`) An object of a fitted model.
+#'
+#' @details
+#' The only models you can extract the coefficients are:
+#' [generalized_linear_model()], [random_forest()], [partial_least_squares()]
+#' and [bayesian_model()].
+#'
+#' @return
+#' ## For univariate models
+#'
+#' When the response variable is a numeric response, a named vector is returned
+#' where each element maps to an element of the predictors matrix. Some models'
+#' coefficients includes an intercept too.
+#'
+#' When the response variable is categorical, including binary, a numeric matrix
+#' is returned where the columns maps to the columns of the predictors matrix
+#' and the rows corresponds to the different classes. Some models' coefficients
+#' includes an additional row with the overall coefficient.
+#'
+#' ## For multivariate models
+#'
+#' A named `list` with an element for each response variable in the fitted
+#' model. Each element contains a vector with the coefficients of each response.
+#'
+#' @examples
+#' \dontrun{
+#' # Univariate analysis -------------------------------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- random_forest(x, y)
+#'
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 2)])
+#' y <- iris[, c(1, 2)]
+#' model <- generalized_linear_model(x, y)
+#'
+#' # Obtain the models' coefficients
+#' coef(model)
+#' }
+#'
 #' @export
 coef.Model <- function(model) {
   return(model$coefficients())

@@ -143,7 +143,7 @@ head(predictions)
 
 }
 \seealso{
-\code{\link[=predict.PartialLeastSquaresModel]{predict.PartialLeastSquaresModel()}}
+\code{\link[=predict.PartialLeastSquaresModel]{predict.PartialLeastSquaresModel()}}, \code{\link[=coef.Model]{coef.Model()}}
 
 Other models: 
 \code{\link{bayesian_model}()},

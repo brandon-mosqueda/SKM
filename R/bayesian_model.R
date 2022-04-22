@@ -86,7 +86,7 @@
 #'   nor training.
 #' * `...`: Some other parameters for internal use.
 #'
-#' @seealso [predict.BayesianModel()]
+#' @seealso [predict.BayesianModel()], [coef.Model()]
 #' @family models
 #'
 #' @examples

@@ -267,7 +267,8 @@ train_random_forest <- function(x, y, fit_params) {
     nsplit = fit_params$splits_number,
     xvar.wt = fit_params$x_vars_weights,
     case.wt = fit_params$records_weights,
-    na.action = fit_params$na_action
+    na.action = fit_params$na_action,
+    importance = TRUE
   )
 
   return(model)

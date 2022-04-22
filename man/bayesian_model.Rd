@@ -175,7 +175,7 @@ head(predictions)
 
 }
 \seealso{
-\code{\link[=predict.BayesianModel]{predict.BayesianModel()}}
+\code{\link[=predict.BayesianModel]{predict.BayesianModel()}}, \code{\link[=coef.Model]{coef.Model()}}
 
 Other models: 
 \code{\link{deep_learning}()},

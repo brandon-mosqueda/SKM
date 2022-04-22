@@ -128,7 +128,7 @@ SupportVectorMachineModel <- R6Class(
           probabilities = as.data.frame(probabilities[, responses$y$levels])
         )
       } else {
-        predictions <- list(predicted = predictions)
+        predictions <- list(predicted = as.numeric(predictions))
       }
 
       return(predictions)
