@@ -32,7 +32,7 @@ Normalized Root Mean Squared Error.
 Normalized Root Mean Squared Error is computed as:\preformatted{![](nrmse.png "sqrt((1 / N) * sum((observed - predicted)^2)) / norm")
 }
 
-where y_i is the observed value of element i, \hat{y_i} is the predicted
+where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i, N is the total number of elements and Y' is the
 normalized observed values. You can specify one of the following types of
 normalization with the \code{type} parameter:

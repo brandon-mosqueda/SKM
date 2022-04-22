@@ -27,7 +27,7 @@ Mean Abosolute Error.
 Mean Absolute Error is computed as:\preformatted{![](mae.png "mean(abs(observed - predicted))")
 }
 
-where y_i is the observed value of element i, \hat{y_i} is the predicted
+where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i and N is the total number of elements.
 }
 \examples{

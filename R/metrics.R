@@ -829,7 +829,7 @@ brier_score <- function(observed, probabilities, remove_na = TRUE) {
 #'
 #'     ![](mse.png "(1 / N) * sum((observed - predicted)^2)")
 #'
-#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
 #' value of element i and N is the total number of elements.
 #'
 #' @return
@@ -873,7 +873,7 @@ mse <- function(observed, predicted, remove_na = TRUE) {
 #'
 #'     ![](rmse.png "sqrt((1 / N) * sum((observed - predicted)^2))")
 #'
-#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
 #' value of element i and N is the total number of elements.
 #'
 #' @return
@@ -916,7 +916,7 @@ rmse <- function(observed, predicted, remove_na = TRUE) {
 #'
 #'     ![](nrmse.png "sqrt((1 / N) * sum((observed - predicted)^2)) / norm")
 #'
-#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
 #' value of element i, N is the total number of elements and Y' is the
 #' normalized observed values. You can specify one of the following types of
 #' normalization with the `type` parameter:
@@ -991,7 +991,7 @@ nrmse <-  function(observed, predicted, type = "sd", remove_na = TRUE) {
 #'
 #'     ![](mae.png "mean(abs(observed - predicted))")
 #'
-#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
 #' value of element i and N is the total number of elements.
 #'
 #' @return
@@ -1030,7 +1030,7 @@ mae <- function(observed, predicted, remove_na = TRUE) {
 #'
 #'     ![](maape.png "mean(atan(abs(observed - predicted) / abs(observed)))")
 #'
-#' where y_i is the observed value of element i, \hat{y_i} is the predicted
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
 #' value of element i and N is the total number of elements.
 #'
 #' @return
@@ -1079,7 +1079,7 @@ maape <- function(observed, predicted, remove_na = TRUE) {
 #'     ![](spearman.png "cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))")
 #'
 #' where R is the rank of a variable, cov the covariance of two variables and
-#' \sigma is the standard deviation.
+#' sigma is the standard deviation.
 #'
 #' @return
 #' A single numeric value with the Spearman's correlation.
@@ -1131,7 +1131,7 @@ spearman <- function(x, y = x, remove_na = TRUE) {
 #'
 #'     ![](pearson.png "cov(x, y) / (sd(x) * sd(y))")
 #'
-#' where cov is the covariance of two variables and \sigma is the standard
+#' where cov is the covariance of two variables and sigma is the standard
 #' deviation.
 #'
 #' @return

@@ -2,6 +2,7 @@
 #' @importFrom glmnet cv.glmnet
 
 #' @include utils.R
+#' @include validator.R
 
 prepare_univariate_y <- function() {
   if (is.data.frame(self$y)) {
@@ -163,14 +164,19 @@ is_hyperparam <- function(x) {
 }
 
 format_predictions <- function(predictions, is_multivariate, format) {
+  assert_predict_format(format)
+
   if (format == "data.frame") {
     if (is_multivariate) {
-      predictions <- as.data.frame(
-        lapply(predictions, function(x) x$predicted)
-      )
-    } else {
-      warning("data.frame format is only supported in multivariate models.")
+      predictions <- as.data.frame(lapply(predictions, function(x) x$predicted))
     }
+
+    predictions <- as.data.frame(predictions)
+    names(predictions) <- replace_by_regex(
+      names(predictions),
+      "",
+      "probabilities\\."
+    )
   }
 
   return(predictions)

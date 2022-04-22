@@ -327,6 +327,57 @@ BayesianModel <- R6Class(
   )
 )
 
+#' @title Predict Bayesian model
+#'
+#' @description
+#' Obtains the predictions using a fitted model object of class `BayesianModel`.
+#'
+#' @inheritParams predict.Model
+#' @param indices (`numeric`) A numeric vector with the indices of the elements
+#'   used to fit the model you want the predictions. `NULL` by default which
+#'   uses the indices specified in `testing_indices` when the model was fitted
+#'   or those elements with `NA` values.
+#'
+#' @template return-predict
+#'
+#' @examples
+#' \dontrun{
+#' # Univariate analysis -------------------------------------------------------
+#' x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
+#' y <- iris$Species
+#' model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
+#'
+#' # Predict using the fitted model (of the specified testing indices)
+#' predictions <- predict(model)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Predict using the fitted model (with different indices)
+#' predictions <- predict(model, indices = 1:50)
+#' predictions$predicted
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- list(list(x = to_matrix(iris[, -c(1, 2)]), model = "fixed"))
+#' y <- iris[, c(1, 2)]
+#' y[c(5, 55, 105), 1] <- NA
+#' y[c(6, 66, 106), 2] <- NA
+#' model <- bayesian_model(x, y, iterations_number = 1000)
+#'
+#' # Predict using the fitted model (of the records with NA)
+#' predictions <- predict(model)
+#' # Obtain the predicted values of the first response variable
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values of the second response variable
+#' predictions$Sepal.Width$predicted
+#'
+#' # Predict using the fitted model, with different indices and data.frame
+#' # format
+#' predictions <- predict(model, indices = c(10, 20, 30), format = "data.frame")
+#' head(predictions)
+#' }
+#'
 #' @export
 predict.BayesianModel <- function(model, indices = NULL, format = "list") {
   predictions <- model$predict(indices)

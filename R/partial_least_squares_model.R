@@ -189,6 +189,88 @@ PartialLeastSquaresModel <- R6Class(
   )
 )
 
+
+#' @title Predict Partial Least Squares model
+#'
+#' @description
+#' Obtains the predictions using a fitted model object of class
+#' `PartialLeastSquaresModel`.
+#'
+#' @inheritParams predict.Model
+#' @param components_num (`numeric(1)`) A numeric value with the number of
+#'   components to use to compute the predictions. `NULL` by default which uses
+#'   the optimal number of components determined with cross validation when the
+#'   model was fitted.
+#'
+#' @return
+#' ## When `format` is `"list"`
+#'
+#' For univariate models a named `list` with the element `"predicted"` which
+#' contains the predicted values is returned.
+#'
+#' For multivariate models a named `list` is returned where there is an named
+#' element for each response variable in the fitted model. Each element of this
+#' list contains a inner `list` in the same format as described for the
+#' univariate case.
+#'
+#' ## When `format` is `"data.frame"`
+#'
+#' For univariate models a `data.frame` with the column `predicted` which
+#' contains the predicted values.
+#'
+#' For multivariate models a `data.frame` with a column for each response
+#' variable with the predicted values of each response.
+#'
+#' @examples
+#' \dontrun{
+#' # Use all default hyperparameters -------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
+#' model <- partial_least_squares(x, y)
+#'
+#' # Obtain the optimal number of components to use with predict
+#' model$optimal_components_num
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Predict with a non optimal number of components ---------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
+#' model <- partial_least_squares(x, y, method = "orthogonal")
+#'
+#' # Obtain the optimal number of components to use with predict
+#' model$optimal_components_num
+#'
+#' # Predict using the fitted model with the optimal number of components
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Predict using the fitted model without the optimal number of components
+#' predictions <- predict(model, x, components_num = 2)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 2)])
+#' y <- iris[, c(1, 2)]
+#' model <- partial_least_squares(x, y, method = "wide_kernel")
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values of the first response variable
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values of the second response variable
+#' predictions$Sepal.Width$predicted
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
+#' }
+#'
 #' @export
 predict.PartialLeastSquaresModel <- function(model,
                                              x,

@@ -26,7 +26,7 @@ Spearman's correlation coefficient is computed as:\preformatted{![](spearman.png
 }
 
 where R is the rank of a variable, cov the covariance of two variables and
-\sigma is the standard deviation.
+sigma is the standard deviation.
 }
 \examples{
 \dontrun{

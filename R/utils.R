@@ -757,7 +757,7 @@ is_numeric_loss <- function(loss_function) {
   return(loss_function %in% TUNE_NUMERIC_LOSS_FUNCTIONS)
 }
 
-is_categorial_loss <- function(loss_function) {
+is_categorical_loss <- function(loss_function) {
   return(loss_function %in% TUNE_CATEGORICAL_LOSS_FUNCTIONS)
 }
 

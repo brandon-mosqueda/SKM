@@ -27,7 +27,7 @@ Squared Error.
 Mean Squared Error is computed as:\preformatted{![](mse.png "(1 / N) * sum((observed - predicted)^2)")
 }
 
-where y_i is the observed value of element i, \hat{y_i} is the predicted
+where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i and N is the total number of elements.
 }
 \examples{
