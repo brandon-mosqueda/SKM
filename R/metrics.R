@@ -5,7 +5,7 @@
 
 # For categorical data ---------------------------------------------------------
 
-#' @title Mode
+#' @title Mathematical Mode
 #'
 #' @description
 #' Obtain the most frecuent values (mode) with the frequency from a vector. By
@@ -31,26 +31,26 @@
 #' @examples
 #' \dontrun{
 #' # Multimodal
-#' x <- mode(c("C", "A", "C", "A"))
+#' x <- math_mode(c("C", "A", "C", "A"))
 #' # Obtain the greatest frequency
 #' attr(x, "frequency")
 #'
 #' # Single mode
-#' x <- mode(c("C", "A", "C", "A"), allow_multimodal = FALSE)
+#' x <- math_mode(c("C", "A", "C", "A"), allow_multimodal = FALSE)
 #'
 #' # Multimodal
-#' x <- mode(iris$Species)
+#' x <- math_mode(iris$Species)
 #' attr(x, "frequency")
 #'
 #' values <- c("A", "B", NA, "C", "A", NA, "B")
 #' # Multimodal without NAs
-#' x <- mode(values)
+#' x <- math_mode(values)
 #' # Multimodal with NAs
-#' x <- mode(values, remove_na = FALSE)
+#' x <- math_mode(values, remove_na = FALSE)
 #' }
 #'
 #' @export
-mode <- function(x, remove_na = TRUE, allow_multimodal = TRUE) {
+math_mode <- function(x, remove_na = TRUE, allow_multimodal = TRUE) {
   assert_factor(x, min.len = 1)
 
   use_na <- "ifany"

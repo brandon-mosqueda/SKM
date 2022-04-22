@@ -50,7 +50,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
-\code{\link{mode}()},
+\code{\link{math_mode}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},
 \code{\link{pr_auc}()},
