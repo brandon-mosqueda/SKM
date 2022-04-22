@@ -24,8 +24,9 @@ Given the observed and predicted values of numeric data computes the
 Mean Abosolute Error.
 }
 \details{
-Mean Absolute Error is computed as:\preformatted{![](mae.png "mean(abs(observed - predicted))")
-}
+Mean Absolute Error is computed as:
+
+\figure{mae.png}{mean(abs(observed - predicted))}
 
 where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i and N is the total number of elements.

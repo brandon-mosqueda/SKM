@@ -25,8 +25,9 @@ classes) computes the Proportion of Correctly Classified Cases (also known as
 accuracy).
 }
 \details{
-PCCC can be computed as:\preformatted{![](pccc.png "(1 / N) * (sum(diag(confusion_matrix)))")
-}
+PCCC can be computed as:
+
+\figure{pccc.png}{(1 / N) * (sum(diag(confusion_matrix)))}
 
 that is, the sum of the diagonal in the confusion matrix (correct
 classifications) over the total number of values in the matrix (N). An

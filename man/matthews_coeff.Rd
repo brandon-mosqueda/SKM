@@ -25,11 +25,13 @@ Correlation Coefficient (MCC) also known as Phi Coefficient or Mean Square
 Contingency Coefficient.
 }
 \details{
-Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
-}
+Given the following binary confusion matrix:
 
-Matthews Correlation Coefficient (MCC) is computed as:\preformatted{![](matthews_coefficient.png "(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))")
-}
+\figure{binary_confusion_matrix.png}{Binary confusion matrix}
+
+Matthews Correlation Coefficient (MCC) is computed as:
+
+\figure{matthews_coefficient.png}{(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))}
 }
 \examples{
 \dontrun{

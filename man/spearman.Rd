@@ -22,8 +22,9 @@ A single numeric value with the Spearman's correlation.
 Computes the Spearman's correlation.
 }
 \details{
-Spearman's correlation coefficient is computed as:\preformatted{![](spearman.png "cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))")
-}
+Spearman's correlation coefficient is computed as:
+
+\figure{spearman.png}{cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))}
 
 where R is the rank of a variable, cov the covariance of two variables and
 sigma is the standard deviation.

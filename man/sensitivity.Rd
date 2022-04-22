@@ -32,11 +32,13 @@ evaluates a models ability to predict true positives of each available
 category.
 }
 \details{
-Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
-}
+Given the following binary confusion matrix:
 
-Sensitivity is computed as:\preformatted{![](sensitivity.png "(TP) / (TP + FN)")
-}
+\figure{binary_confusion_matrix.png}{Binary confusion matrix}
+
+Sensitivity is computed as:
+
+\figure{sensitivity.png}{(TP) / (TP + FN)}
 }
 \examples{
 \dontrun{

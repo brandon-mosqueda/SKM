@@ -31,11 +31,13 @@ classes) computes the precision, that represents the ratio of true positives
 to total predicted positives.
 }
 \details{
-Given the following binary confusion matrix:\preformatted{![](binary_confusion_matrix.png "Binary confusion matrix")
-}
+Given the following binary confusion matrix:
 
-Precision is computed as:\preformatted{![](precision.png "(TP) / (TP + FP)")
-}
+\figure{binary_confusion_matrix.png}{Binary confusion matrix}
+
+Precision is computed as:
+
+\figure{precision.png}{(TP) / (TP + FP)}
 }
 \examples{
 \dontrun{

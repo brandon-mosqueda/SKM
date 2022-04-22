@@ -22,8 +22,9 @@ A single numeric value with the Pearson's correlation.
 Computes the Pearson's correlation.
 }
 \details{
-Pearson's correlation coefficient is computed as:\preformatted{![](pearson.png "cov(x, y) / (sd(x) * sd(y))")
-}
+Pearson's correlation coefficient is computed as:
+
+\figure{pearson.png}{cov(x, y) / (sd(x) * sd(y))}
 
 where cov is the covariance of two variables and sigma is the standard
 deviation.

@@ -26,8 +26,9 @@ Given the observed values and the predicted probabilites of categorical data
 (of at least two classes) computes the Brier Score.
 }
 \details{
-Brier score is computed as:\preformatted{![](brier_score.png "(1 / N) *  sum(sum((f_\{ti\} - o_\{ti\})^2))")
-}
+Brier score is computed as:
+
+\figure{brier_score.png}{(1 / N) *  sum(sum((f_{ti} - o_{ti})^2))}
 
 Where R is the number of possible classes in which the event can fall, and N
 the overall number of instances of all classes. f_{ti} is the predicted

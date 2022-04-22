@@ -29,8 +29,9 @@ Given the observed and predicted values of numeric data computes the
 Normalized Root Mean Squared Error.
 }
 \details{
-Normalized Root Mean Squared Error is computed as:\preformatted{![](nrmse.png "sqrt((1 / N) * sum((observed - predicted)^2)) / norm")
-}
+Normalized Root Mean Squared Error is computed as:
+
+\figure{nrmse.png}{sqrt((1 / N) * sum((observed - predicted)^2)) / norm}
 
 where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i, N is the total number of elements and Y' is the

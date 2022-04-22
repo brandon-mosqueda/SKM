@@ -24,8 +24,9 @@ Given the observed and predicted values of numeric data computes the
 Mean Arctangent Absolute Percentage Error.
 }
 \details{
-Mean Arctangent Absolute Percentage Error is computed as:\preformatted{![](maape.png "mean(atan(abs(observed - predicted) / abs(observed)))")
-}
+Mean Arctangent Absolute Percentage Error is computed as:
+
+\figure{maape.png}{mean(atan(abs(observed - predicted) / abs(observed)))}
 
 where y_i is the observed value of element i, hat{y_i} is the predicted
 value of element i and N is the total number of elements.

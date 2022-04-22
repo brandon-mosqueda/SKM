@@ -31,8 +31,9 @@ classes) computes the F1 score, that combines the \link{precision} and \link{rec
 and it is defined as the harmonic mean of the precision and recall.
 }
 \details{
-F1 score is computed as:\preformatted{![](f1_score.png "2 * ((precision * recall) / (precision + recall))")
-}
+F1 score is computed as:
+
+\figure{f1_score.png}{2 * ((precision * recall) / (precision + recall))}
 
 See \code{\link[=precision]{precision()}} and \code{\link[=recall]{recall()}} for more information.
 }

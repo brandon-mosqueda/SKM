@@ -25,8 +25,9 @@ classes) computes the accuracy (also known as proportion of correctly
 classified cases).
 }
 \details{
-Accuracy can be computed as:\preformatted{![](accuracy.png "(1 / N) * (sum(diag(confusion_matrix)))")
-}
+Accuracy can be computed as:
+
+\figure{accuracy.png}{(1 / N) * (sum(diag(confusion_matrix)))}
 
 that is, the sum of the diagonal in the confusion matrix (correct
 classifications) over the total number of values in the matrix (N). An
