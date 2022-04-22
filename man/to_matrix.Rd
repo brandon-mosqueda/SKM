@@ -4,7 +4,7 @@
 \alias{to_matrix}
 \title{Convert data to matrix}
 \usage{
-to_matrix(x, with_intercept = FALSE, na.rm = FALSE)
+to_matrix(x, with_intercept = FALSE, remove_na = FALSE)
 }
 \arguments{
 \item{x}{(\code{any}) The object to be converted to matrix.}
@@ -12,7 +12,7 @@ to_matrix(x, with_intercept = FALSE, na.rm = FALSE)
 \item{with_intercept}{(\code{logical(1)}) Should be the \code{"(Intercept)"} column
 added at the beginning? \code{FALSE} by default.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{FALSE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{FALSE} by
 default.}
 }
 \value{

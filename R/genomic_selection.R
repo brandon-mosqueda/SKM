@@ -192,6 +192,7 @@ categorical_summarise_line <- function(predictions, digits) {
 #' # For a continuous response ------------------------------------------------
 #' set.seed(1)
 #'
+#' # Simulated data
 #' predictions <- data.frame(
 #'   Fold = rep(c("F1", "F2"), each = 24),
 #'   Env = rep(c("E1", "E2"), each = 12),
@@ -208,6 +209,7 @@ categorical_summarise_line <- function(predictions, digits) {
 #' # For a categorical response ------------------------------------------------
 #' set.seed(2)
 #'
+#' # Simulated data
 #' predictions <- data.frame(
 #'     Fold = rep(c("F1", "F2"), each = 24),
 #'     Env = rep(c("E1", "E2"), each = 12),

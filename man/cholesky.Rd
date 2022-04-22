@@ -15,5 +15,16 @@ The cholesky \code{matrix}.
 \description{
 Compute the Choleski factorization of a real symmetric positive-definite
 square matrix. If it fails, compute the Cholesky factorization of a non-real
-symmetric positive-definite square matrix
+symmetric positive-definite square matrix.
+}
+\examples{
+\dontrun{
+# Import the genomic data
+data(Maize)
+
+Cholesky <- cholesky(to_matrix(Maize$Geno[, -1]))
+dim(Cholesky)
+head(Cholesky[, 5])
+}
+
 }
