@@ -93,23 +93,6 @@ cholesky <- function(x) {
   return(result)
 }
 
-#' Get the value that appears more times. If there are more than 1
-#' value that appears more times (multimodal), return the lowest value.
-#' @export
-class_mode <- function(x, na.rm = TRUE) {
-  use_na <- if (na.rm) "no" else "always"
-  ocurrences <- sort(table(x, useNA = use_na), decreasing = TRUE)
-  mode <- names(ocurrences)[1]
-
-  if (is.numeric(x)) {
-    mode <- as.numeric(mode)
-  } else if (is.logical(x)) {
-    mode <- as.logical(mode)
-  }
-
-  return(mode)
-}
-
 # Sysmtem --------------------------------------------------
 
 #' @export
