@@ -286,7 +286,7 @@ sparse_kernel <- function(x,
 #'     ![](sigmoid_kernel.png "K(X, Y) = tanh(gamma * X^T \%*\% Y + coef0)")
 #'
 #' @return
-#' A `matrix` with the data after applied kernel.
+#' A `matrix` with the data after apply the kernel.
 #'
 #' @examples
 #' \dontrun{
