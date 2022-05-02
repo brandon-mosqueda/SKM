@@ -103,7 +103,10 @@ categorical_summarise_by_fields_line_mean <- function(predictions,
       Observed = factor(math_mode(Observed), levels = classes),
       Predicted = factor(math_mode(Predicted), levels = classes),
       # Probabilities mean
-      as.data.frame(lapply(select_at(across(), classes), mean)),
+      as.data.frame(
+        lapply(select_at(across(), classes), mean),
+        check.names = FALSE
+      ),
       .groups = "keep"
     ) %>%
 
