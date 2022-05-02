@@ -226,7 +226,7 @@ as_tf_rates <- function(confusion_matrix) {
 to_matrix <- function(x, with_intercept = FALSE, remove_na = FALSE) {
   if (is.null(x)) {
     return(NULL)
-  } else if (na.rm) {
+  } else if (remove_na) {
     x <- na.omit(x)
   }
 
@@ -254,7 +254,7 @@ to_matrix <- function(x, with_intercept = FALSE, remove_na = FALSE) {
     colnames(x) <- get_cols_names(x)
 
     current_na_state <- options()$na.action
-    if (!na.rm) {
+    if (!remove_na) {
       options(na.action = "na.pass")
     }
 
