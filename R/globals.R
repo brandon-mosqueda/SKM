@@ -132,7 +132,13 @@ GLM_CV_TYPES <- c("K_fold")
 
 TUNE_TYPES <- c("Grid_search", "Bayesian_optimization")
 
-TUNE_NUMERIC_LOSS_FUNCTIONS <- c("mse", "maape", "mae", "nrmse", "rmse")
+TUNE_NUMERIC_LOSS_FUNCTIONS <- c(
+  "mse",
+  "maape",
+  "mae",
+  "nrmse",
+  "rmse"
+)
 
 TUNE_BINARY_LOSS_FUNCTIONS <- c("f1_score", "roc_auc", "pr_auc")
 

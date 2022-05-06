@@ -100,8 +100,14 @@ categorical_summarise_by_fields_line_mean <- function(predictions,
   summary <- predictions %>%
     group_by(across(all_of(c(grouping_cols, "Line")))) %>%
     summarise(
-      Observed = factor(math_mode(Observed), levels = classes),
-      Predicted = factor(math_mode(Predicted), levels = classes),
+      Observed = factor(
+        math_mode(Observed, allow_multimodal = FALSE),
+        levels = classes
+      ),
+      Predicted = factor(
+        math_mode(Predicted, allow_multimodal = FALSE),
+        levels = classes
+      ),
       # Probabilities mean
       as.data.frame(
         lapply(select_at(across(), classes), mean),
@@ -159,8 +165,8 @@ categorical_summarise_line <- function(predictions, digits) {
   Line <- predictions %>%
     group_by(Line) %>%
     summarise(
-      Observed = math_mode(Observed),
-      Predicted = math_mode(Predicted),
+      Observed = math_mode(Observed, allow_multimodal = FALSE),
+      Predicted = math_mode(Predicted, allow_multimodal = FALSE),
       as.data.frame(lapply(select_at(across(), classes), rmean)),
       .groups = "drop"
     ) %>%
