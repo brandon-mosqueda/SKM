@@ -7,14 +7,15 @@
 #' @title Fit a Deep Learning Model
 #'
 #' @templateVar ClassName DeepLearningModel
-#' @templateVar XType matrix
+#' @templateVar XType `matrix`
 #' @templateVar YType `vector` or `matrix`
 #' @templateVar refFunction keras::keras_model_sequential()
 #'
 #' @description
 #' `deep_learning()` is a wrapper of the [keras::keras_model_sequential()]
-#' function with the ability to tune the hyperparameters (grid search) in a
-#' simple way. It fits univariate and multivariate models for numeric and/or
+#' function to fit a deep learning model with the ability to tune the
+#' hyperparameters with grid search or bayesian optimization in a simple way.
+#' You can fit univariate and multivariate models for numeric and/or
 #' categorical response variables.
 #' @template tunable-description
 #'
@@ -55,18 +56,20 @@
 #'   of the activation function to apply in this layer. The available activation
 #'   functions are `"linear"`, `"relu"`, `"elu"`, `"selu"`, `"hard_sigmoid"`,
 #'   `"sigmoid"`, `"softmax"`, `"softplus"`, `"softsign"`, `"tanh"`,
-#'   `"exponential"`. `"relu"` by default.
+#'   `"exponential"`. This hyperparameter can only be tuned with grid search
+#'   tuning, with bayesian optimization a fixed value have to be provided.
+#'   `"relu"` by default.
 #' * `"dropout"`: (`numeric`) (__tunable__) The proportion of neurons randomly
 #'   selected and set to 0 at each step during training process, which helps
 #'   prevent overfitting. 0 by default.
-#' * `"lasso_penalty"`: (`numeric`) (__tunable__) The regularization value <= 0
-#'   and <=1 for penalizing that layer with Lasso (a.k.a L1) penalty. 0 by
-#'   default (no penalty).
-#' * `"ridge_penalty"`: (`numeric`) (__tunable__) The regularization value <= 0
-#'   and <= 1 for penalizing that layer with Ridge (a.k.a L2) penalty. Note that
-#'   if both penalization params (Ridge and Lasso) are sent, the ElasticNet
-#'   penalization is implemented, that is a combination of both of them. 0 by
-#'   default (no penalty).
+#' * `"lasso_penalty"`: (`numeric`) (__tunable__) The regularization value
+#'   between \[0, 1\] for penalizing that layer with Lasso (a.k.a L1) penalty. 0
+#'   by default (no penalty).
+#' * `"ridge_penalty"`: (`numeric`) (__tunable__) The regularization value
+#'   between \[0, 1\] for penalizing that layer with Ridge (a.k.a L2) penalty.
+#'   Note that if both penalization params (Ridge and Lasso) are sent, the
+#'   ElasticNet penalization is implemented, that is a combination of both of
+#'   them. 0 by default (no penalty).
 #'
 #' You can provide as many `list`'s as you want, each of them representing a
 #' hidden layer and you do not need to provide all the parameters. If one
@@ -86,14 +89,14 @@
 #' @param output_penalties (`list`) The penalty values for the output layer. The
 #' list can contain the following two fields:
 #'
-#' * `"lasso_penalty"`: (`numeric`) (__tunable__) The regularization value <= 0
-#'   and <=1 for penalizing that layer with Lasso (a.k.a L1) penalty. 0 by
-#'   default (no penalty).
-#' * `"ridge_penalty"`: (`numeric`) (__tunable__) The regularization value <= 0
-#'   and <= 1 for penalizing that layer with Ridge (a.k.a L2) penalty. Note that
-#'   if both penalization params (Ridge and Lasso) are sent, the ElasticNet
-#'   penalization, is implemented that is a combination of both of them. 0 by
-#'   default (no penalty).
+#' * `"lasso_penalty"`: (`numeric`) (__tunable__) The regularization value
+#'   between \[0, 1\] for penalizing that layer with Lasso (a.k.a L1) penalty. 0
+#'   by default (no penalty).
+#' * `"ridge_penalty"`: (`numeric`) (__tunable__) The regularization value
+#'   between \[0, 1\] for penalizing that layer with Ridge (a.k.a L2) penalty.
+#'   Note that if both penalization params (Ridge and Lasso) are sent, the
+#'   ElasticNet penalization, is implemented that is a combination of both of
+#'   them. 0 by default (no penalty).
 #'
 #' You do not have to provide the two values, if one of them is not provided the
 #' default value is used. By default the next `list` is used:
@@ -136,11 +139,13 @@
 #' @template details-tuning
 #' @details
 #' __Important:__ Unlike the other models, when tuning deep learning models
-#' steps 6 and 7 are omit in the algorithm, instead `train` and `test` datasets
-#' are sent to `keras`, the first one to fit the model and the second one to
-#' compute the loss function at the end of each epoch, so at the end, the saved
-#' value in step 8 is the validation loss value returned by `keras` in the last
-#' epoch.
+#' steps 6 and 7 are omited in the algorithm, instead `train` and `test`
+#' datasets are sent to `keras`, the first one to fit the model and the second
+#' one to compute the loss function at the end of each epoch, so at the end, the
+#' saved value in step 8 is the validation loss value returned by `keras` in the
+#' last epoch. `tune_loss_function` parameter cannot be used in `deep_learning`
+#' function since the same loss function evaluated at each epoch and specified
+#' in `loss_function` parameter is used for tuning too.
 #'
 #' ## Last (output) layer
 #'
@@ -152,9 +157,51 @@
 #' categorical responses `"softmax"` with as many neurons as number of
 #' categories.
 #'
+#' ## Loss functions
+#'
+#' The available options of the `loss_function` parameter are:
+#'
+#' _Probabilistic losses_
+#'
+#' * `"binary_crossentropy"`
+#' * `"categorical_crossentropy"`
+#' * `"sparse_categorical_crossentropy"`
+#' * `"poisson"`
+#' * `"kl_divergence"`
+#'
+#' _Regression losses_
+#'
+#' * `"mean_squared_error"`
+#' * `"mean_absolute_error"`
+#' * `"mean_absolute_percentage_error"`
+#' * `"mean_squared_logarithmic_error"`
+#' * `"cosine_similarity"`
+#' * `"huber"`
+#' * `"log_cosh"`
+#'
+#' _Hinge losses for "maximum-margin" classification_
+#'
+#' * `"hinge"`
+#' * `"squared_hinge"`
+#' * `"categorical_hinge"`
+#'
 #' ## Platt scaling
 #'
-#' TODO
+#' It is a way of improving the training process of deep learning models that
+#' uses a calibration based on a model that is already trained and applied via
+#' a post-processing operation.
+#'
+#' After tuninig, Platt scaling calibration divides the dataset into `Training`
+#' and `Calibration` datasets, then it uses `Training` to fit the deep learning
+#' model with the best hyperparameters combination and with this model computes
+#' the predictions of the `Calibration` dataset. Finally with the predicted and
+#' true values, a linear model is fitted (observed in function of predicted),
+#' this linear model corresponds to the calibration and when a new prediction is
+#' going to be made, first the deep learning model is used and the resulting
+#' predicted value is calibrated with the linear model.
+#'
+#' Note that Platt scaling calibration only works for numeric and binary
+#' response variables of univariate models.
 #'
 #' @template return-model
 #'
@@ -163,34 +210,127 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Fit with all default parameters
-#' model <- deep_learning(to_matrix(iris[, -5]), iris$Species)
+#' # Use all default hyperparameters (no tuning) -------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- deep_learning(x, y)
 #'
-#' # With tuning
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Tune with grid search -----------------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- deep_learning(
-#'   to_matrix(iris[, -1]),
-#'   iris$Sepal.Length,
-#'   epochs_number = 10,
-#'   learning_rate = c(0.1, 0.05),
-#'   layers = list(list(neurons_number = 10, activation = "relu"))
+#'   x,
+#'   y,
+#'   epochs_number = c(10, 20),
+#'   learning_rate = c(0.001, 0.01),
+#'   layers = list(
+#'     # First hidden layer
+#'     list(neurons_number = c(10, 20)),
+#'     # Second hidden layer
+#'     list(neurons_number = c(10))
+#'   ),
+#'   tune_type = "grid_search",
+#'   tune_cv_type = "k_fold",
+#'   tune_folds_number = 5
 #' )
 #'
-#' predictions <- predict(model, to_matrix(iris[, -1]))
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
 #' predictions$predicted
 #'
-#' # See the whole grid
-#' model$hyperparams_grid
-#'
-#' # Multivariate analysis
+#' # Tune with Bayesian optimization -------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- deep_learning(
-#'   x = to_matrix(iris[, -c(1, 5)]),
-#'   y = iris[, c(1, 5)],
+#'   x,
+#'   y,
+#'   epochs_number = list(min = 10, max = 50),
+#'   learning_rate = list(min = 0.001, max = 0.5),
+#'   layers = list(
+#'     list(
+#'       neurons_number = list(min = 10, max = 20),
+#'       dropout = list(min = 0, max = 1),
+#'       activation_layer = "sigmoid"
+#'     )
+#'   ),
+#'   tune_type = "bayesian_optimization",
+#'   tune_bayes_samples_number = 5,
+#'   tune_bayes_iterations_number = 5,
+#'   tune_cv_type = "random",
+#'   tune_folds_number = 2
+#' )
+#'
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Obtain the execution time taken to tune and fit the model
+#' model$execution_time
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 5)])
+#' y <- iris[, c(1, 5)]
+#' model <- deep_learning(
+#'   x,
+#'   y,
 #'   epochs_number = 10,
 #'   layers = list(
-#'     list(neurons_number = 10, activation = "relu"),
-#'     list(neurons_number = 5, activation = "sigmoid")
-#'   )
+#'     list(
+#'       neurons_number = 50,
+#'       dropout = 0.5,
+#'       activation = "relu",
+#'       ridge_penalty = 0.5,
+#'       lasso_penalty = 0.5
+#'     )
+#'   ),
+#'   optimizer = "adadelta"
 #' )
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values of the first response
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values and probabilities of the second response
+#' predictions$Species$predicted
+#' predictions$Species$probabilities
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
+#'
+#' # With Platt scaling --------------------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
+#' model <- deep_learning(
+#'   x,
+#'   y,
+#'   with_platt_scaling = TRUE,
+#'   platt_proportion = 0.25
+#' )
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
 #' }
 #'
 #' @export

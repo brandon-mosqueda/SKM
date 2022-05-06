@@ -100,10 +100,19 @@ categorical_summarise_by_fields_line_mean <- function(predictions,
   summary <- predictions %>%
     group_by(across(all_of(c(grouping_cols, "Line")))) %>%
     summarise(
-      Observed = factor(mode(Observed), levels = classes),
-      Predicted = factor(mode(Predicted), levels = classes),
+      Observed = factor(
+        math_mode(Observed, allow_multimodal = FALSE),
+        levels = classes
+      ),
+      Predicted = factor(
+        math_mode(Predicted, allow_multimodal = FALSE),
+        levels = classes
+      ),
       # Probabilities mean
-      as.data.frame(lapply(select_at(across(), classes), mean)),
+      as.data.frame(
+        lapply(select_at(across(), classes), mean),
+        check.names = FALSE
+      ),
       .groups = "keep"
     ) %>%
 
@@ -156,8 +165,8 @@ categorical_summarise_line <- function(predictions, digits) {
   Line <- predictions %>%
     group_by(Line) %>%
     summarise(
-      Observed = mode(Observed),
-      Predicted = mode(Predicted),
+      Observed = math_mode(Observed, allow_multimodal = FALSE),
+      Predicted = math_mode(Predicted, allow_multimodal = FALSE),
       as.data.frame(lapply(select_at(across(), classes), rmean)),
       .groups = "drop"
     ) %>%
@@ -192,6 +201,7 @@ categorical_summarise_line <- function(predictions, digits) {
 #' # For a continuous response ------------------------------------------------
 #' set.seed(1)
 #'
+#' # Simulated data
 #' predictions <- data.frame(
 #'   Fold = rep(c("F1", "F2"), each = 24),
 #'   Env = rep(c("E1", "E2"), each = 12),
@@ -208,6 +218,7 @@ categorical_summarise_line <- function(predictions, digits) {
 #' # For a categorical response ------------------------------------------------
 #' set.seed(2)
 #'
+#' # Simulated data
 #' predictions <- data.frame(
 #'     Fold = rep(c("F1", "F2"), each = 24),
 #'     Env = rep(c("E1", "E2"), each = 12),

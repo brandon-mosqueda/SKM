@@ -36,7 +36,7 @@ deep_learning(
 \arguments{
 \item{x}{(\code{matrix}) The predictor (independet) variable(s). It must be a
 numeric matrix. You can use \code{\link[=to_matrix]{to_matrix()}} function to convert your data to
-a design \code{matrix}.}
+a \code{matrix}.}
 
 \item{y}{(\code{data.frame} | \code{vector} | \code{matrix}) The response (dependent)
 variable(s). If it is a \code{data.frame} or a \code{matrix} with 2 or more columns,
@@ -78,18 +78,20 @@ number of columns in \code{x}. This is combined with the values of
 of the activation function to apply in this layer. The available activation
 functions are \code{"linear"}, \code{"relu"}, \code{"elu"}, \code{"selu"}, \code{"hard_sigmoid"},
 \code{"sigmoid"}, \code{"softmax"}, \code{"softplus"}, \code{"softsign"}, \code{"tanh"},
-\code{"exponential"}. \code{"relu"} by default.
+\code{"exponential"}. This hyperparameter can only be tuned with grid search
+tuning, with bayesian optimization a fixed value have to be provided.
+\code{"relu"} by default.
 \item \code{"dropout"}: (\code{numeric}) (\strong{tunable}) The proportion of neurons randomly
 selected and set to 0 at each step during training process, which helps
 prevent overfitting. 0 by default.
-\item \code{"lasso_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value <= 0
-and <=1 for penalizing that layer with Lasso (a.k.a L1) penalty. 0 by
-default (no penalty).
-\item \code{"ridge_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value <= 0
-and <= 1 for penalizing that layer with Ridge (a.k.a L2) penalty. Note that
-if both penalization params (Ridge and Lasso) are sent, the ElasticNet
-penalization is implemented, that is a combination of both of them. 0 by
-default (no penalty).
+\item \code{"lasso_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value
+between [0, 1] for penalizing that layer with Lasso (a.k.a L1) penalty. 0
+by default (no penalty).
+\item \code{"ridge_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value
+between [0, 1] for penalizing that layer with Ridge (a.k.a L2) penalty.
+Note that if both penalization params (Ridge and Lasso) are sent, the
+ElasticNet penalization is implemented, that is a combination of both of
+them. 0 by default (no penalty).
 }
 
 You can provide as many \code{list}'s as you want, each of them representing a
@@ -102,14 +104,14 @@ default the next \code{list} is used:
 \item{output_penalties}{(\code{list}) The penalty values for the output layer. The
 list can contain the following two fields:
 \itemize{
-\item \code{"lasso_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value <= 0
-and <=1 for penalizing that layer with Lasso (a.k.a L1) penalty. 0 by
-default (no penalty).
-\item \code{"ridge_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value <= 0
-and <= 1 for penalizing that layer with Ridge (a.k.a L2) penalty. Note that
-if both penalization params (Ridge and Lasso) are sent, the ElasticNet
-penalization, is implemented that is a combination of both of them. 0 by
-default (no penalty).
+\item \code{"lasso_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value
+between [0, 1] for penalizing that layer with Lasso (a.k.a L1) penalty. 0
+by default (no penalty).
+\item \code{"ridge_penalty"}: (\code{numeric}) (\strong{tunable}) The regularization value
+between [0, 1] for penalizing that layer with Ridge (a.k.a L2) penalty.
+Note that if both penalization params (Ridge and Lasso) are sent, the
+ElasticNet penalization, is implemented that is a combination of both of
+them. 0 by default (no penalty).
 }
 
 You do not have to provide the two values, if one of them is not provided the
@@ -117,14 +119,18 @@ default value is used. By default the next \code{list} is used:
 
 \code{list( ridge_penalty = 0, lasso_penalty = 0 )}}
 
+\item{tune_type}{(\code{character(1)}) (case not sensitive) The type of tuning to
+perform. The options are \code{"Grid_search"} and "\code{Bayesian_optimization}".
+\code{"Grid_search"} by default.}
+
 \item{tune_cv_type}{(\code{character(1)}) (case not sensitive) The type of cross
 validation to tune the model. The options are \code{"K_fold"} and
 \code{"Random"}. \code{"K_fold"} by defaul.}
 
 \item{tune_folds_number}{(\code{numeric(1)}) The number of folds to tune each
-combination in the grid (k in k-fold cross validation). 5 by default.}
+hyperparameter combination (k in k-fold cross validation). 5 by default.}
 
-\item{tune_testing_proportion}{(\code{numeric(1)}) A number > 0 and < 1 to
+\item{tune_testing_proportion}{(\code{numeric(1)}) A number between (0, 1) to
 specify the proportion of records to use as validation set when
 \code{tune_cv_type} is \code{"Random"}. 0.2 by default.}
 
@@ -132,12 +138,23 @@ specify the proportion of records to use as validation set when
 \code{list}'s where each entry will represent a fold. Each inner \code{list} has to
 contain the fields \code{"training"} and \code{"testing"} with numeric vectors of
 indices of those entries to be used as training and testing in each fold.
-Note that when this parameter is set \code{tune_cv_type}, \code{tune_folds_number}
+Note that when this parameter is set, \code{tune_cv_type}, \code{tune_folds_number}
 and \code{tune_testing_proportion} are ignored. \code{NULL} by default.}
 
-\item{tune_grid_proportion}{(\code{numeric(1)}) A number > 0 and <= 1 to specify
-the proportion of combinations to sample from the grid and evaluate in
-tuning (useful when the grid is big). 1 by default.}
+\item{tune_grid_proportion}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Grid_search"}, a number between (0, 1] to specify the proportion of
+hyperparameters combinations to sample from the grid and evaluate in
+tuning (useful when the grid is big). 1 by default (full grid).}
+
+\item{tune_bayes_samples_number}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Bayesian_optimization"}, the number of initial random hyperparameters
+combinations to evalute before the Bayesian optimization process. 10 by
+default.}
+
+\item{tune_bayes_iterations_number}{(\code{numeric(1)}) Only when \code{tune_type} is
+\code{"Bayesian_optimization"}, the number of optimization iterations to
+evaluate after the initial random samples specified in
+\code{tune_bayes_samples_number}. 10 by default.}
 
 \item{optimizer}{(\code{character(1)}) (case not sensitive) Algorithm used to
 reduce the loss function and update the weights in backpropagation. The
@@ -197,35 +214,37 @@ An object of class \code{"DeepLearningModel"} that inherits from classes
 \item \code{fitted_model}: An object of class \code{\link[keras:keras_model_sequential]{keras::keras_model_sequential()}} with the model.
 \item \code{x}: The final \code{matrix} used to fit the model.
 \item \code{y}: The final \code{vector} or \code{matrix} used to fit the model.
-\item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
 \item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
 hyperparameters and with one more column called \code{"loss"} with the value of
-the loss function for each combination. The grid is ordered ascendingly by
-loss value (the lower the better).
-\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameter with
-the lowest loss value (the first row in \code{hyperparams_grid}).
+the loss function for each combination. The data is ordered with the best
+combinations at start, sometimes with the lowest values first and other
+times with the greatest values first, depending the loss function.
+\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameters with
+the best loss value (the first row in \code{hyperparams_grid}).
 \item \code{execution_time}: A \code{difftime} object with the total time taken to tune and
 fit the model.
 \item \code{removed_rows}: A \code{numeric} vector with the records' indices (in the
 provided position) that were deleted and not taken in account in tunning
 nor training.
 \item \code{removed_x_cols}: A \code{numeric} vector with the columns' indices (in the
-provided position and after the design matrix creation) that were deleted
-and not taken in account in tunning nor training.
+provided positions) that were deleted and not taken in account in tunning
+nor training.
 \item \code{...}: Some other parameters for internal use.
 }
 }
 \description{
 \code{deep_learning()} is a wrapper of the \code{\link[keras:keras_model_sequential]{keras::keras_model_sequential()}}
-function with the ability to tune the hyperparameters (grid search) in a
-simple way. It fits univariate and multivariate models for numeric and/or
+function to fit a deep learning model with the ability to tune the
+hyperparameters with grid search or bayesian optimization in a simple way.
+You can fit univariate and multivariate models for numeric and/or
 categorical response variables.
 
 All the parameters marked as (\strong{tunable}) accept a vector of values with
-wich the grid is generated for tuning. The returned object contains a
-\code{data.frame} with the hyperparameter grid. In the end the best combination of
-hyperparameters is used to fit the final model, which is also returned and
-can be used to make new predictions.
+wich the grid is generated for grid search tuning or a list with the min
+and max values for bayesian optimization tuning. The returned object contains
+a \code{data.frame} with the hyperparameters combinations evaluated. In the end
+the best combination of hyperparameters is used to fit the final model, which
+is also returned and can be used to make new predictions.
 }
 \details{
 You have to consider that before tuning all columns without variance
@@ -238,24 +257,37 @@ removed. The positions of the removed records are returned in the
 
 \subsection{Tuning}{
 
-The hyperparameters grid to evaluate in tuning is generated with the
-cartesian product of all the provided values (all the posible combinations)
-in all \strong{tunable} parameters. If only one value of each \strong{tunable}
-parameter is provided no tuning is done. \code{tune_grid_proportion} allows you to
-specify the proportion of all combinations you want to sample and tune, by
-default all combinations (1) are evaluated.
-
-The tuning algorithm works as follows:
+The general tuning algorithm works as follows:
 
 \figure{tuning_algorithm.png}{Tuning algorithm}
+
+For grid search tuning, the hyperparameters grid is generated (step one in
+the algorithm) with the cartesian product of all the provided values (all the
+posible combinations) in all \strong{tunable} parameters. If only one value of
+each \strong{tunable} parameter is provided no tuning is done.
+\code{tune_grid_proportion} allows you to specify the proportion of all
+combinations you want to sample from the full grid and tune them, by default
+all combinations are evaluated.
+
+For bayesian optimization tuning, step one in the algorithm works a little
+different. At start, \code{tune_bayes_samples_number} different
+hyperparameters combinations are generated and evaluated, then
+\code{tune_bayes_iterations_number} new hyperparameters combinations are generated
+and evaluated iteratively based on the bayesian optimization algorithm, but
+this process is equivalent to that described in the general tuninig
+algorithm. Note that only the hyperparameters for which the list of min and
+max values were provided are tuned and their values fall in the specified
+boundaries.
 }
 
 \strong{Important:} Unlike the other models, when tuning deep learning models
-steps 6 and 7 are omit in the algorithm, instead \code{train} and \code{test} datasets
-are sent to \code{keras}, the first one to fit the model and the second one to
-compute the loss function at the end of each epoch, so at the end, the saved
-value in step 8 is the validation loss value returned by \code{keras} in the last
-epoch.
+steps 6 and 7 are omited in the algorithm, instead \code{train} and \code{test}
+datasets are sent to \code{keras}, the first one to fit the model and the second
+one to compute the loss function at the end of each epoch, so at the end, the
+saved value in step 8 is the validation loss value returned by \code{keras} in the
+last epoch. \code{tune_loss_function} parameter cannot be used in \code{deep_learning}
+function since the same loss function evaluated at each epoch and specified
+in \code{loss_function} parameter is used for tuning too.
 \subsection{Last (output) layer}{
 
 By default this function selects the activation function and the number of
@@ -267,41 +299,180 @@ categorical responses \code{"softmax"} with as many neurons as number of
 categories.
 }
 
+\subsection{Loss functions}{
+
+The available options of the \code{loss_function} parameter are:
+
+\emph{Probabilistic losses}
+\itemize{
+\item \code{"binary_crossentropy"}
+\item \code{"categorical_crossentropy"}
+\item \code{"sparse_categorical_crossentropy"}
+\item \code{"poisson"}
+\item \code{"kl_divergence"}
+}
+
+\emph{Regression losses}
+\itemize{
+\item \code{"mean_squared_error"}
+\item \code{"mean_absolute_error"}
+\item \code{"mean_absolute_percentage_error"}
+\item \code{"mean_squared_logarithmic_error"}
+\item \code{"cosine_similarity"}
+\item \code{"huber"}
+\item \code{"log_cosh"}
+}
+
+\emph{Hinge losses for "maximum-margin" classification}
+\itemize{
+\item \code{"hinge"}
+\item \code{"squared_hinge"}
+\item \code{"categorical_hinge"}
+}
+}
+
 \subsection{Platt scaling}{
 
-TODO
+It is a way of improving the training process of deep learning models that
+uses a calibration based on a model that is already trained and applied via
+a post-processing operation.
+
+After tuninig, Platt scaling calibration divides the dataset into \code{Training}
+and \code{Calibration} datasets, then it uses \code{Training} to fit the deep learning
+model with the best hyperparameters combination and with this model computes
+the predictions of the \code{Calibration} dataset. Finally with the predicted and
+true values, a linear model is fitted (observed in function of predicted),
+this linear model corresponds to the calibration and when a new prediction is
+going to be made, first the deep learning model is used and the resulting
+predicted value is calibrated with the linear model.
+
+Note that Platt scaling calibration only works for numeric and binary
+response variables of univariate models.
 }
 }
 \examples{
 \dontrun{
-# Fit with all default parameters
-model <- deep_learning(to_matrix(iris[, -5]), iris$Species)
+# Use all default hyperparameters (no tuning) -------------------------------
+x <- to_matrix(iris[, -5])
+y <- iris$Species
+model <- deep_learning(x, y)
 
-# With tuning
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
+# Obtain the predicted probabilities
+predictions$probabilities
+
+# Tune with grid search -----------------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
 model <- deep_learning(
-  to_matrix(iris[, -1]),
-  iris$Sepal.Length,
-  epochs_number = 10,
-  learning_rate = c(0.1, 0.05),
-  layers = list(list(neurons_number = 10, activation = "relu"))
+  x,
+  y,
+  epochs_number = c(10, 20),
+  learning_rate = c(0.001, 0.01),
+  layers = list(
+    # First hidden layer
+    list(neurons_number = c(10, 20)),
+    # Second hidden layer
+    list(neurons_number = c(10))
+  ),
+  tune_type = "grid_search",
+  tune_cv_type = "k_fold",
+  tune_folds_number = 5
 )
 
-predictions <- predict(model, to_matrix(iris[, -1]))
+# Obtain the whole grid with the loss values
+model$hyperparams_grid
+# Obtain the hyperparameters combination with the best loss value
+model$best_hyperparams
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
 predictions$predicted
 
-# See the whole grid
-model$hyperparams_grid
-
-# Multivariate analysis
+# Tune with Bayesian optimization -------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
 model <- deep_learning(
-  x = to_matrix(iris[, -c(1, 5)]),
-  y = iris[, c(1, 5)],
+  x,
+  y,
+  epochs_number = list(min = 10, max = 50),
+  learning_rate = list(min = 0.001, max = 0.5),
+  layers = list(
+    list(
+      neurons_number = list(min = 10, max = 20),
+      dropout = list(min = 0, max = 1),
+      activation_layer = "sigmoid"
+    )
+  ),
+  tune_type = "bayesian_optimization",
+  tune_bayes_samples_number = 5,
+  tune_bayes_iterations_number = 5,
+  tune_cv_type = "random",
+  tune_folds_number = 2
+)
+
+# Obtain the whole grid with the loss values
+model$hyperparams_grid
+# Obtain the hyperparameters combination with the best loss value
+model$best_hyperparams
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
+
+# Obtain the execution time taken to tune and fit the model
+model$execution_time
+
+# Multivariate analysis -----------------------------------------------------
+x <- to_matrix(iris[, -c(1, 5)])
+y <- iris[, c(1, 5)]
+model <- deep_learning(
+  x,
+  y,
   epochs_number = 10,
   layers = list(
-    list(neurons_number = 10, activation = "relu"),
-    list(neurons_number = 5, activation = "sigmoid")
-  )
+    list(
+      neurons_number = 50,
+      dropout = 0.5,
+      activation = "relu",
+      ridge_penalty = 0.5,
+      lasso_penalty = 0.5
+    )
+  ),
+  optimizer = "adadelta"
 )
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values of the first response
+predictions$Sepal.Length$predicted
+# Obtain the predicted values and probabilities of the second response
+predictions$Species$predicted
+predictions$Species$probabilities
+
+# Obtain the predictions in a data.frame not in a list
+predictions <- predict(model, x, format = "data.frame")
+head(predictions)
+
+# With Platt scaling --------------------------------------------------------
+x <- to_matrix(iris[, -1])
+y <- iris$Sepal.Length
+model <- deep_learning(
+  x,
+  y,
+  with_platt_scaling = TRUE,
+  platt_proportion = 0.25
+)
+
+# Predict using the fitted model
+predictions <- predict(model, x)
+# Obtain the predicted values
+predictions$predicted
 }
 
 }
@@ -312,6 +483,7 @@ Other models:
 \code{\link{bayesian_model}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{partial_least_squares}()},
 \code{\link{random_forest}()},
 \code{\link{support_vector_machine}()}
 }

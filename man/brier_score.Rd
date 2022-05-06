@@ -4,7 +4,7 @@
 \alias{brier_score}
 \title{Brier Score}
 \usage{
-brier_score(observed, probabilities, na.rm = TRUE)
+brier_score(observed, probabilities, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -15,7 +15,7 @@ individual. It is required the columns names of \code{probabilities} corresponds
 to all classes (levels) in \code{observed} and that \code{probabilities} has as many
 rows as records \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -24,6 +24,16 @@ A single numeric value with the Brier Score.
 \description{
 Given the observed values and the predicted probabilites of categorical data
 (of at least two classes) computes the Brier Score.
+}
+\details{
+Brier score is computed as:
+
+\figure{brier_score.png}{(1 / N) *  sum(sum((f_{ti} - o_{ti})^2))}
+
+Where R is the number of possible classes in which the event can fall, and N
+the overall number of instances of all classes. f_{ti} is the predicted
+probability for class i. o_{ti} is 1 if it is i-th class in instant t, 0
+otherwise.
 }
 \examples{
 \dontrun{
@@ -51,6 +61,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},

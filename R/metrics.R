@@ -3,12 +3,72 @@
 
 #' @include validator.R
 
-# For categorical data --------------------------------------------------
+# For categorical data ---------------------------------------------------------
 
-# Get the value that appears more times. If there are more than 1
-# value that appears more times (multimodal), return the lowest value.
-mode <- function(data) {
-  return(names(sort(summary(as.factor(data)), decreasing=TRUE)[1]))
+#' @title Mathematical Mode
+#'
+#' @description
+#' Obtain the most frecuent values (mode) with the frequency from a vector. By
+#' default all values with the greatest frequency are returned but you can
+#' limit the result to the first one, in lexicographical order.
+#'
+#' @param x (`factor`) A vector of values to compute the mode.
+#' @param remove_na (`logical(1)`) Should `NA` values be removed and not
+#'   include them in the frequencies counting? `TRUE` by default.
+#' @param allow_multimodal (`logical(1)`) If there is more than one mode, should
+#'   all the most frequent values be returned? `TRUE` by default.
+#'
+#' @return
+#' A `character` vector with the most frequent values if `allow_multimodal` is
+#' `TRUE` or the first most frequent value (after ordering lexicographically) if
+#' `allow_multimodal` is `FALSE`.
+#'
+#' The returned vector contains the attribute `"frequency"` with an integer of
+#' the greatest frequency.
+#'
+#' @family categorical_metrics
+#'
+#' @examples
+#' \dontrun{
+#' # Multimodal
+#' x <- math_mode(c("C", "A", "C", "A"))
+#' # Obtain the greatest frequency
+#' attr(x, "frequency")
+#'
+#' # Single mode
+#' x <- math_mode(c("C", "A", "C", "A"), allow_multimodal = FALSE)
+#'
+#' # Multimodal
+#' x <- math_mode(iris$Species)
+#' attr(x, "frequency")
+#'
+#' values <- c("A", "B", NA, "C", "A", NA, "B")
+#' # Multimodal without NAs
+#' x <- math_mode(values)
+#' # Multimodal with NAs
+#' x <- math_mode(values, remove_na = FALSE)
+#' }
+#'
+#' @export
+math_mode <- function(x, remove_na = TRUE, allow_multimodal = TRUE) {
+  assert_factor(x, min.len = 1)
+
+  use_na <- "ifany"
+  if (remove_na) use_na <- "no"
+
+  frequencies <- sort(table(x, useNA = use_na), decreasing = TRUE)
+  if (is_empty(frequencies)) return(NULL)
+
+  if (allow_multimodal) {
+    frequencies <- frequencies[frequencies == frequencies[1]]
+  } else {
+    frequencies <- frequencies[1]
+  }
+
+  mode <- names(frequencies)
+  attr(mode, "frequency") <- as.integer(frequencies[1])
+
+  return(mode)
 }
 
 #' @title Confusion matrix
@@ -21,7 +81,7 @@ mode <- function(data) {
 #'   length as `predicted`.
 #' @param predicted (`factor`) The observed values. It has to have the same
 #'   length as `observed`.
-#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `TRUE` by
+#' @param remove_na (`logical(1)`) Should `NA` values be removed?. `TRUE` by
 #'   default.
 #'
 #' @return
@@ -39,14 +99,14 @@ mode <- function(data) {
 #' }
 #'
 #' @export
-confusion_matrix <- function(observed, predicted, na.rm = TRUE) {
+confusion_matrix <- function(observed, predicted, remove_na = TRUE) {
   assert_categorical_obs_pred(observed, predicted)
 
   all_classes <- union(levels(observed), levels(predicted))
   observed <- factor(observed, levels = all_classes)
   predicted <- factor(predicted, levels = all_classes)
 
-  useNA <- if (na.rm) "no" else "always"
+  useNA <- if (remove_na) "no" else "always"
   return(table(observed, predicted, useNA = useNA))
 }
 
@@ -57,6 +117,14 @@ confusion_matrix <- function(observed, predicted, na.rm = TRUE) {
 #' classes) computes the Cohen's Kappa coefficient.
 #'
 #' @inheritParams confusion_matrix
+#'
+#' @details
+#' Given a confusion matrix P, Cohen's Kappa coefficient is be computed by:
+#'
+#' ![](kappa_coefficient.png "kappa(x) = (P_o - P_e) / (1 - P_e)")
+#'
+#' P_o is the sum of all diagonal values and P_e is the sum of all the products
+#' of row i times col i.
 #'
 #' @return
 #' A single numeric value with the Cohen's Kappa coefficient.
@@ -71,8 +139,8 @@ confusion_matrix <- function(observed, predicted, na.rm = TRUE) {
 #' @family categorical_metrics
 #'
 #' @export
-kappa_coeff <- function(observed, predicted, na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
+kappa_coeff <- function(observed, predicted, remove_na = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, remove_na = remove_na)
 
   diagonal_counts <- diag(conf_matrix)
   N <- sum(conf_matrix)
@@ -94,6 +162,15 @@ kappa_coeff <- function(observed, predicted, na.rm = TRUE) {
 #'
 #' @inheritParams confusion_matrix
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#' ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Matthews Correlation Coefficient (MCC) is computed as:
+#'
+#' ![](matthews_coefficient.png "(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))")
+#'
 #' @return
 #' A single numeric value with the Matthews Correlation Coefficient.
 #'
@@ -108,8 +185,8 @@ kappa_coeff <- function(observed, predicted, na.rm = TRUE) {
 #' }
 #'
 #' @export
-matthews_coeff <- function(observed, predicted, na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
+matthews_coeff <- function(observed, predicted, remove_na = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, remove_na = remove_na)
 
   if (ncol(conf_matrix) != 2) {
     stop("Matthews correlation coefficient (MCC) is only for binary variables")
@@ -140,6 +217,15 @@ matthews_coeff <- function(observed, predicted, na.rm = TRUE) {
 #'   binary variables. `NULL` by default which uses the second class in the
 #'   union of the classes (levels) in `observed` and `predicted`.
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#' ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Sensitivity is computed as:
+#'
+#' ![](sensitivity.png "(TP) / (TP + FN)")
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of sensitivities is returned, one per each category.
@@ -159,8 +245,8 @@ matthews_coeff <- function(observed, predicted, na.rm = TRUE) {
 sensitivity <- function(observed,
                         predicted,
                         positive_class = NULL,
-                        na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
+                        remove_na = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, remove_na = remove_na)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -196,6 +282,15 @@ sensitivity <- function(observed,
 #'
 #' @inheritParams sensitivity
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#' ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Specificity is computed as:
+#'
+#' ![](specificity.png "(TN) / (TN + FP)")
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of sensitivities is returned, one per each category.
@@ -215,8 +310,8 @@ sensitivity <- function(observed,
 specificity <- function(observed,
                         predicted,
                         positive_class = NULL,
-                        na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
+                        remove_na = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, remove_na = remove_na)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -255,6 +350,15 @@ specificity <- function(observed,
 #'
 #' @inheritParams sensitivity
 #'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#' ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Recall is computed as:
+#'
+#' ![](recall.png "(TP) / (TP + FN)")
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of recalls is returned, one per each category.
@@ -274,12 +378,12 @@ specificity <- function(observed,
 recall <- function(observed,
                    predicted,
                    positive_class = NULL,
-                   na.rm = TRUE) {
+                   remove_na = TRUE) {
   return(sensitivity(
     observed,
     predicted,
     positive_class = positive_class,
-    na.rm = na.rm
+    remove_na = remove_na
   ))
 }
 
@@ -291,6 +395,15 @@ recall <- function(observed,
 #' to total predicted positives.
 #'
 #' @inheritParams sensitivity
+#'
+#' @details
+#' Given the following binary confusion matrix:
+#'
+#' ![](binary_confusion_matrix.png "Binary confusion matrix")
+#'
+#' Precision is computed as:
+#'
+#' ![](precision.png "(TP) / (TP + FP)")
 #'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
@@ -311,8 +424,8 @@ recall <- function(observed,
 precision <- function(observed,
                       predicted,
                       positive_class = NULL,
-                      na.rm = TRUE) {
-  conf_matrix <- confusion_matrix(observed, predicted, na.rm = na.rm)
+                      remove_na = TRUE) {
+  conf_matrix <- confusion_matrix(observed, predicted, remove_na = remove_na)
   assert_confusion_matrix(conf_matrix)
   assert_positive_class(positive_class, colnames(conf_matrix))
 
@@ -383,7 +496,7 @@ precision <- function(observed,
 roc_auc <- function(observed,
                     probabilities,
                     positive_class = NULL,
-                    na.rm = TRUE) {
+                    remove_na = TRUE) {
   assert_observed_probabilities(observed, probabilities)
 
   all_classes <- colnames(probabilities)
@@ -443,7 +556,7 @@ roc_auc <- function(observed,
 pr_auc <- function(observed,
                    probabilities,
                    positive_class = NULL,
-                   na.rm = TRUE) {
+                   remove_na = TRUE) {
   assert_observed_probabilities(observed, probabilities)
 
   all_classes <- colnames(probabilities)
@@ -480,6 +593,13 @@ pr_auc <- function(observed,
 #'
 #' @inheritParams sensitivity
 #'
+#' @details
+#' F1 score is computed as:
+#'
+#' ![](f1_score.png "2 * ((precision * recall) / (precision + recall))")
+#'
+#' See [precision()] and [recall()] for more information.
+#'
 #' @return
 #' For binary data a single value is returned, for more than 2 categories a
 #' vector of F1 scores is returned, one per each category.
@@ -497,18 +617,18 @@ pr_auc <- function(observed,
 f1_score <- function(observed,
                      predicted,
                      positive_class = NULL,
-                     na.rm = TRUE) {
+                     remove_na = TRUE) {
   p <- precision(
     observed,
     predicted,
     positive_class = positive_class,
-    na.rm = na.rm
+    remove_na = remove_na
   )
   r <- recall(
     observed,
     predicted,
     positive_class = positive_class,
-    na.rm = na.rm
+    remove_na = remove_na
   )
 
   return(2 * ((p * r) / (p + r)))
@@ -522,6 +642,15 @@ f1_score <- function(observed,
 #' accuracy).
 #'
 #' @inheritParams confusion_matrix
+#'
+#' @details
+#' PCCC can be computed as:
+#'
+#' ![](pccc.png "(1 / N) * (sum(diag(confusion_matrix)))")
+#'
+#' that is, the sum of the diagonal in the confusion matrix (correct
+#' classifications) over the total number of values in the matrix (N). An
+#' equivalent but more efficient method is used.
 #'
 #' @return
 #' A single numeric value with the Proportion of Correctly Classified Cases.
@@ -537,10 +666,13 @@ f1_score <- function(observed,
 #' }
 #'
 #' @export
-pccc <- function(observed, predicted, na.rm = TRUE) {
+pccc <- function(observed, predicted, remove_na = TRUE) {
   assert_categorical_obs_pred(observed, predicted)
 
-  return(mean(as.character(observed) == as.character(predicted), na.rm = na.rm))
+  return(mean(
+    as.character(observed) == as.character(predicted),
+    na.rm = remove_na
+  ))
 }
 
 #' @title Accuracy
@@ -551,6 +683,15 @@ pccc <- function(observed, predicted, na.rm = TRUE) {
 #' classified cases).
 #'
 #' @inheritParams confusion_matrix
+#'
+#' @details
+#' Accuracy can be computed as:
+#'
+#' ![](accuracy.png "(1 / N) * (sum(diag(confusion_matrix)))")
+#'
+#' that is, the sum of the diagonal in the confusion matrix (correct
+#' classifications) over the total number of values in the matrix (N). An
+#' equivalent but more efficient method is used.
 #'
 #' @return
 #' A single numeric value with the accuracy.
@@ -566,8 +707,8 @@ pccc <- function(observed, predicted, na.rm = TRUE) {
 #' }
 #'
 #' @export
-accuracy <- function(observed, predicted, na.rm = TRUE) {
-  return(pccc(observed, predicted, na.rm = na.rm))
+accuracy <- function(observed, predicted, remove_na = TRUE) {
+  return(pccc(observed, predicted, remove_na = remove_na))
 }
 
 #' @title Proportion of Incorrectly Classified Cases
@@ -593,11 +734,14 @@ accuracy <- function(observed, predicted, na.rm = TRUE) {
 #' }
 #'
 #' @export
-pcic <- function(observed, predicted, na.rm = TRUE) {
+pcic <- function(observed, predicted, remove_na = TRUE) {
   assert_categorical_obs_pred(observed, predicted)
 
 
-  return(mean(as.character(observed) != as.character(predicted), na.rm = na.rm))
+  return(mean(
+    as.character(observed) != as.character(predicted),
+    na.rm = remove_na
+  ))
 }
 
 #' @title Brier Score
@@ -607,6 +751,16 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
 #' (of at least two classes) computes the Brier Score.
 #'
 #' @inheritParams roc_auc
+#'
+#' @details
+#' Brier score is computed as:
+#'
+#' ![](brier_score.png "(1 / N) *  sum(sum((f_{ti} - o_{ti})^2))")
+#'
+#' Where R is the number of possible classes in which the event can fall, and N
+#' the overall number of instances of all classes. f_{ti} is the predicted
+#' probability for class i. o_{ti} is 1 if it is i-th class in instant t, 0
+#' otherwise.
 #'
 #' @return
 #' A single numeric value with the Brier Score.
@@ -632,14 +786,14 @@ pcic <- function(observed, predicted, na.rm = TRUE) {
 #' }
 #'
 #' @export
-brier_score <- function(observed, probabilities, na.rm = TRUE) {
+brier_score <- function(observed, probabilities, remove_na = TRUE) {
   assert_observed_probabilities(observed, probabilities)
 
-  if (!na.rm && (anyNA(observed) || anyNA(probabilities))) {
+  if (!remove_na && (anyNA(observed) || anyNA(probabilities))) {
     return(NaN)
   }
 
-  if (na.rm) {
+  if (remove_na) {
     remove_indices <- nas_indices(observed, probabilities)
 
     if (!is_empty(remove_indices)) {
@@ -667,8 +821,16 @@ brier_score <- function(observed, probabilities, na.rm = TRUE) {
 #'   length as `predicted`.
 #' @param predicted (`numeric`) The observed values. It has to have the same
 #'   length as `observed`.
-#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `TRUE` by
+#' @param remove_na (`logical(1)`) Should `NA` values be removed?. `TRUE` by
 #'   default.
+#'
+#' @details
+#' Mean Squared Error is computed as:
+#'
+#' ![](mse.png "(1 / N) * sum((observed - predicted)^2)")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
 #'
 #' @return
 #' A single numeric value with the Mean Squared Error.
@@ -689,10 +851,13 @@ brier_score <- function(observed, probabilities, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-mse <- function(observed, predicted, na.rm = TRUE) {
+mse <- function(observed, predicted, remove_na = TRUE) {
   assert_same_length(observed, predicted)
 
-  return(mean((as.numeric(observed) - as.numeric(predicted))^2, na.rm = na.rm))
+  return(mean((
+    as.numeric(observed) - as.numeric(predicted))^2,
+    na.rm = remove_na
+  ))
 }
 
 #' @title Root Mean Squared Error
@@ -702,6 +867,14 @@ mse <- function(observed, predicted, na.rm = TRUE) {
 #' Mean Squared Error.
 #'
 #' @inheritParams mse
+#'
+#' @details
+#' Root Mean Squared Error is computed as:
+#'
+#' ![](rmse.png "sqrt((1 / N) * sum((observed - predicted)^2))")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
 #'
 #' @return
 #' A single numeric value with the Root Mean Squared Error.
@@ -722,8 +895,8 @@ mse <- function(observed, predicted, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-rmse <- function(observed, predicted, na.rm = TRUE) {
-  return(sqrt(mse(observed, predicted, na.rm = na.rm)))
+rmse <- function(observed, predicted, remove_na = TRUE) {
+  return(sqrt(mse(observed, predicted, remove_na = remove_na)))
 }
 
 #' @title Normalized Root Mean Squared Error
@@ -739,12 +912,18 @@ rmse <- function(observed, predicted, na.rm = TRUE) {
 #'   default.
 #'
 #' @details
-#' The formula is the same as [rmse()] (Root Mean Square Error) but divided by a
-#' normalization term specified in `type`:
+#' Normalized Root Mean Squared Error is computed as:
 #'
-#' * `"sd"`: Standard deviatione.
+#' ![](nrmse.png "sqrt((1 / N) * sum((observed - predicted)^2)) / norm")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i, N is the total number of elements and Y' is the
+#' normalized observed values. You can specify one of the following types of
+#' normalization with the `type` parameter:
+#'
+#' * `"sd"`: Standard deviation.
 #' * `"mean"`: Mean.
-#' * `"maxmin"` or `"range"`: The range, maximun minus minimum.
+#' * `"maxmin"` or `"range"`: Maximun minus minimum (range).
 #' * `"iqr"`: Interquantile range (Q3 - Q1).
 #'
 #' @return
@@ -764,7 +943,7 @@ rmse <- function(observed, predicted, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
+nrmse <-  function(observed, predicted, type = "sd", remove_na = TRUE) {
   rmse_value <- rmse(observed, predicted)
   if (is.nan(rmse_value) || is.na(rmse_value)) {
     return(rmse_value)
@@ -775,13 +954,13 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
   divisor <- NULL
 
   if (lower_type == "sd") {
-    divisor <- sd(observed, na.rm = na.rm)
+    divisor <- sd(observed, na.rm = remove_na)
   } else if (lower_type == "mean") {
-    divisor <- mean(observed, na.rm = na.rm)
+    divisor <- mean(observed, na.rm = remove_na)
   } else if (lower_type == "maxmin" || lower_type == "range") {
-    divisor <- diff(range(observed, na.rm = na.rm))
+    divisor <- diff(range(observed, na.rm = remove_na))
   } else if (lower_type == "iqr") {
-    divisor <- diff(quantile(observed, c(0.25, 0.75), na.rm = na.rm))
+    divisor <- diff(quantile(observed, c(0.25, 0.75), na.rm = remove_na))
   } else {
     stop(sprintf(
       "{%s} is not a valid type of normalization",
@@ -807,6 +986,14 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
 #'
 #' @inheritParams mse
 #'
+#' @details
+#' Mean Absolute Error is computed as:
+#'
+#' ![](mae.png "mean(abs(observed - predicted))")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
+#'
 #' @return
 #' A single numeric value with the Mean Abosolute Error.
 #'
@@ -824,10 +1011,10 @@ nrmse <-  function(observed, predicted, type = "sd", na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-mae <- function(observed, predicted, na.rm = TRUE) {
+mae <- function(observed, predicted, remove_na = TRUE) {
   assert_same_length(observed, predicted)
 
-  return(mean(abs(observed - predicted), na.rm = na.rm))
+  return(mean(abs(observed - predicted), na.rm = remove_na))
 }
 
 #' @title Mean Arctangent Absolute Percentage Error
@@ -837,6 +1024,14 @@ mae <- function(observed, predicted, na.rm = TRUE) {
 #' Mean Arctangent Absolute Percentage Error.
 #'
 #' @inheritParams mse
+#'
+#' @details
+#' Mean Arctangent Absolute Percentage Error is computed as:
+#'
+#' ![](maape.png "mean(atan(abs(observed - predicted) / abs(observed)))")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i and N is the total number of elements.
 #'
 #' @return
 #' A single numeric value with the Mean Arctangent Absolute Percentage Error.
@@ -855,17 +1050,20 @@ mae <- function(observed, predicted, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-maape <- function(observed, predicted, na.rm = TRUE) {
+maape <- function(observed, predicted, remove_na = TRUE) {
   assert_same_length(observed, predicted)
 
   if (is.null(observed) && is.null(predicted)) {
     return(NaN)
   }
 
-  return(mean(atan(abs(observed - predicted) / abs(observed)), na.rm = na.rm))
+  return(mean(
+    atan(abs(observed - predicted) / abs(observed)),
+    na.rm = remove_na
+  ))
 }
 
-#' @title Spearman's correlation
+#' @title Spearman's correlation coefficient
 #'
 #' @description
 #' Computes the Spearman's correlation.
@@ -874,6 +1072,14 @@ maape <- function(observed, predicted, na.rm = TRUE) {
 #' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
 #'   the same values as `x` by default.
 #' @inheritParams mse
+#'
+#' @details
+#' Spearman's correlation coefficient is computed as:
+#'
+#' ![](spearman.png "cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))")
+#'
+#' where R is the rank of a variable, cov the covariance of two variables and
+#' sigma is the standard deviation.
 #'
 #' @return
 #' A single numeric value with the Spearman's correlation.
@@ -891,8 +1097,8 @@ maape <- function(observed, predicted, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-spearman <- function(x, y = x, na.rm = TRUE) {
-  if (na.rm) {
+spearman <- function(x, y = x, remove_na = TRUE) {
+  if (remove_na) {
     remove_indices <- nas_indices(x, y)
 
     if (!is_empty(remove_indices)) {
@@ -910,7 +1116,7 @@ spearman <- function(x, y = x, na.rm = TRUE) {
   return(cor(x, y, method = "spearman", use = "everything"))
 }
 
-#' @title Pearson's correlation
+#' @title Pearson's correlation coefficient
 #'
 #' @description
 #' Computes the Pearson's correlation.
@@ -919,6 +1125,14 @@ spearman <- function(x, y = x, na.rm = TRUE) {
 #' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
 #'   the same values as `x` by default.
 #' @inheritParams mse
+#'
+#' @details
+#' Pearson's correlation coefficient is computed as:
+#'
+#' ![](pearson.png "cov(x, y) / (sd(x) * sd(y))")
+#'
+#' where cov is the covariance of two variables and sigma is the standard
+#' deviation.
 #'
 #' @return
 #' A single numeric value with the Pearson's correlation.
@@ -936,8 +1150,8 @@ spearman <- function(x, y = x, na.rm = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-pearson <- function(x, y = x, na.rm = TRUE) {
-  if (na.rm) {
+pearson <- function(x, y = x, remove_na = TRUE) {
+  if (remove_na) {
     remove_indices <- nas_indices(x, y)
 
     if (!is_empty(remove_indices)) {
@@ -1101,6 +1315,7 @@ wrapper_loss <- function(observed,
 #' example <- data.frame(
 #'   observed = c("a", "a", "a", "a", "b", "b", "b", "b", "c", "c", "c", "c"),
 #'   predicted = c("a", "a", "b", "c", "a", "b", "b", "c", "a", "b", "b", "c"),
+#'   # Probabilities
 #'   a = c(
 #'     0.2377, 0.2924, 0.0406, 0.1893, 0.3978, 0.1965,
 #'     0.0673, 0.2796, 0.1921, 0.2020, 0.1752, 0.3428
@@ -1117,7 +1332,7 @@ wrapper_loss <- function(observed,
 #' categorical_summary(
 #'   example$observed,
 #'   example$predicted,
-#'   example[, c("a", "b", "c")]
+#'   probabilities = example[, c("a", "b", "c")]
 #' )
 #' }
 #'
@@ -1128,46 +1343,46 @@ categorical_summary <- function(observed,
                                 predicted,
                                 probabilities = NULL,
                                 positive_class = NULL,
-                                na.rm = TRUE) {
+                                remove_na = TRUE) {
   summary <- list(
     confusion_matrix = confusion_matrix(
       observed,
       predicted,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     kappa_coeff = kappa_coeff(
       observed,
       predicted,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     sensitivity = sensitivity(
       observed,
       predicted,
       positive_class = positive_class,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     specificity = specificity(
       observed,
       predicted,
       positive_class = positive_class,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     precision = precision(
       observed,
       predicted,
       positive_class = positive_class,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     f1_score = f1_score(
       observed,
       predicted,
       positive_class = positive_class,
-      na.rm = na.rm
+      remove_na = remove_na
     ),
     accuracy = accuracy(
       observed,
       predicted,
-      na.rm = na.rm
+      remove_na = remove_na
     )
   )
 
@@ -1175,7 +1390,7 @@ categorical_summary <- function(observed,
     summary$matthews_coeff <- matthews_coeff(
       observed,
       predicted,
-      na.rm = na.rm
+      remove_na = remove_na
     )
 
     if (!is.null(probabilities)) {
@@ -1183,14 +1398,14 @@ categorical_summary <- function(observed,
         observed,
         probabilities,
         positive_class = positive_class,
-        na.rm = na.rm
+        remove_na = remove_na
       )
 
       summary$pr_auc <- pr_auc(
         observed,
         probabilities,
         positive_class = positive_class,
-        na.rm = na.rm
+        remove_na = remove_na
       )
     }
   }
@@ -1199,7 +1414,7 @@ categorical_summary <- function(observed,
     summary$brier_score <- brier_score(
       observed,
       probabilities = probabilities,
-      na.rm = na.rm
+      remove_na = remove_na
     )
   }
 
@@ -1297,14 +1512,14 @@ print.CategoricalSummary <- function(summary, digits = 4) {
 #' @family numeric_metrics
 #'
 #' @export
-numeric_summary <- function(observed, predicted, na.rm = TRUE) {
+numeric_summary <- function(observed, predicted, remove_na = TRUE) {
   summary <- list(
-    mse = mse(observed, predicted, na.rm = na.rm),
-    rmse = rmse(observed, predicted, na.rm = na.rm),
-    nrmse = nrmse(observed, predicted, na.rm = na.rm),
-    maape = maape(observed, predicted, na.rm = na.rm),
-    mae = mae(observed, predicted, na.rm = na.rm),
-    pearson = pearson(observed, predicted, na.rm = na.rm)
+    mse = mse(observed, predicted, remove_na = remove_na),
+    rmse = rmse(observed, predicted, remove_na = remove_na),
+    nrmse = nrmse(observed, predicted, remove_na = remove_na),
+    maape = maape(observed, predicted, remove_na = remove_na),
+    mae = mae(observed, predicted, remove_na = remove_na),
+    pearson = pearson(observed, predicted, remove_na = remove_na)
   )
 
   class(summary) <- "NumericSummary"

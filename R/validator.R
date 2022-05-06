@@ -502,7 +502,6 @@ assert_svm_class_weights <- function(class_weights) {
   }
 }
 
-
 assert_random_forest_na_action <- function(na_action) {
   assert_string(na_action)
 
@@ -632,6 +631,15 @@ assert_output_penalties <- function(output_penalties, tune_type) {
   }
 }
 
+assert_pls_method <- function(method) {
+  assert_subset_string(
+    method,
+    PARTIAL_LEAST_SQUARES_METHODS,
+    ignore.case = TRUE,
+    len = 1
+  )
+}
+
 assert_cv_kfold <- function(records_number, k) {
   assert_number(records_number, lower = 2, finite = TRUE)
   assert_number(k, lower = 2, upper = records_number)
@@ -646,6 +654,15 @@ assert_cv_random <- function(records_number, folds_number, testing_proportion) {
   assert_number(records_number, lower = 2, finite = TRUE)
   assert_number(folds_number, lower = 1, finite = TRUE)
   assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+}
+
+assert_predict_format <- function(format) {
+  assert_subset_string(
+    format,
+    PREDICT_FORMAT,
+    ignore.case = TRUE,
+    len = 1
+  )
 }
 
 # Single fit functions --------------------------------------------------
@@ -1089,6 +1106,35 @@ validate_bayesian_model <- function(x,
     any.missing = FALSE,
     unique = TRUE
   )
+}
+
+validate_partial_least_squares <- function(x,
+                                           y,
+                                           is_multivariate,
+                                           method,
+                                           scale,
+                                           seed,
+                                           verbose) {
+  assert_base_params(
+    x = x,
+    y = y,
+    is_multivariate = is_multivariate,
+    expect_x_matrix = TRUE,
+    tune_type = TUNE_TYPES[1],
+    tune_cv_type = TUNE_CV_TYPES[1],
+    tune_folds_number = 3,
+    tune_testing_proportion = 0.2,
+    tune_folds = NULL,
+    tune_loss_function = TUNE_NUMERIC_LOSS_FUNCTIONS[1],
+    tune_grid_proportion = 0.5,
+    tune_bayes_samples_number = 10,
+    tune_bayes_iterations_number = 10,
+    seed = seed,
+    verbose = verbose
+  )
+
+  assert_pls_method(method)
+  assert_svm_scale(scale, NCOL(x))
 }
 
 # Genomic selection --------------------------------------------------

@@ -4,7 +4,7 @@
 \alias{kappa_coeff}
 \title{Cohen's Kappa coefficient}
 \usage{
-kappa_coeff(observed, predicted, na.rm = TRUE)
+kappa_coeff(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{factor}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -22,6 +22,14 @@ A single numeric value with the Cohen's Kappa coefficient.
 \description{
 Given the observed and predicted values of categorical data (of any number of
 classes) computes the Cohen's Kappa coefficient.
+}
+\details{
+Given a confusion matrix P, Cohen's Kappa coefficient is be computed by:
+
+\figure{kappa_coefficient.png}{kappa(x) = (P_o - P_e) / (1 - P_e)}
+
+P_o is the sum of all diagonal values and P_e is the sum of all the products
+of row i times col i.
 }
 \examples{
 \dontrun{
@@ -38,6 +46,7 @@ Other categorical_metrics:
 \code{\link{categorical_summary}()},
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},

@@ -4,16 +4,16 @@
 \alias{to_data_frame}
 \title{Convert data to data.frame}
 \usage{
-to_data_frame(x, na.rm = FALSE)
+to_data_frame(x, remove_na = FALSE)
 }
 \arguments{
 \item{x}{(\code{any}) The object to be converted to \code{data.frame}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{FALSE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{FALSE} by
 default.}
 }
 \value{
-A matrix.
+A \code{data.frame}.
 }
 \description{
 Given an object convert it to \code{data.frame}.

@@ -4,7 +4,7 @@
 \alias{maape}
 \title{Mean Arctangent Absolute Percentage Error}
 \usage{
-maape(observed, predicted, na.rm = TRUE)
+maape(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{numeric}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{numeric}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -22,6 +22,14 @@ A single numeric value with the Mean Arctangent Absolute Percentage Error.
 \description{
 Given the observed and predicted values of numeric data computes the
 Mean Arctangent Absolute Percentage Error.
+}
+\details{
+Mean Arctangent Absolute Percentage Error is computed as:
+
+\figure{maape.png}{mean(atan(abs(observed - predicted) / abs(observed)))}
+
+where y_i is the observed value of element i, hat{y_i} is the predicted
+value of element i and N is the total number of elements.
 }
 \examples{
 \dontrun{

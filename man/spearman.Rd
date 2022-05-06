@@ -2,9 +2,9 @@
 % Please edit documentation in R/metrics.R
 \name{spearman}
 \alias{spearman}
-\title{Spearman's correlation}
+\title{Spearman's correlation coefficient}
 \usage{
-spearman(x, y = x, na.rm = TRUE)
+spearman(x, y = x, remove_na = TRUE)
 }
 \arguments{
 \item{x}{(\code{numeric} | \code{matrix}) The values to calculate the correlation.}
@@ -12,7 +12,7 @@ spearman(x, y = x, na.rm = TRUE)
 \item{y}{(\code{numeric} | \code{matrix}) The values to calculate the correlation with.
 the same values as \code{x} by default.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -20,6 +20,14 @@ A single numeric value with the Spearman's correlation.
 }
 \description{
 Computes the Spearman's correlation.
+}
+\details{
+Spearman's correlation coefficient is computed as:
+
+\figure{spearman.png}{cov(rank(x), rank(y)) / (sd(rank(x)) * sd(rank(y)))}
+
+where R is the rank of a variable, cov the covariance of two variables and
+sigma is the standard deviation.
 }
 \examples{
 \dontrun{

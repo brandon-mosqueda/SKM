@@ -4,7 +4,7 @@
 \alias{nrmse}
 \title{Normalized Root Mean Squared Error}
 \usage{
-nrmse(observed, predicted, type = "sd", na.rm = TRUE)
+nrmse(observed, predicted, type = "sd", remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{numeric}) The observed values. It has to have the same
@@ -18,7 +18,7 @@ use. The options are \code{"sd"}, \code{"mean"}, \code{"maxmin"} (or \code{"rang
 \code{"iqr"} (for more information, see Details section below). \code{"sd"} by
 default.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -29,12 +29,18 @@ Given the observed and predicted values of numeric data computes the
 Normalized Root Mean Squared Error.
 }
 \details{
-The formula is the same as \code{\link[=rmse]{rmse()}} (Root Mean Square Error) but divided by a
-normalization term specified in \code{type}:
+Normalized Root Mean Squared Error is computed as:
+
+\figure{nrmse.png}{sqrt((1 / N) * sum((observed - predicted)^2)) / norm}
+
+where y_i is the observed value of element i, hat{y_i} is the predicted
+value of element i, N is the total number of elements and Y' is the
+normalized observed values. You can specify one of the following types of
+normalization with the \code{type} parameter:
 \itemize{
-\item \code{"sd"}: Standard deviatione.
+\item \code{"sd"}: Standard deviation.
 \item \code{"mean"}: Mean.
-\item \code{"maxmin"} or \code{"range"}: The range, maximun minus minimum.
+\item \code{"maxmin"} or \code{"range"}: Maximun minus minimum (range).
 \item \code{"iqr"}: Interquantile range (Q3 - Q1).
 }
 }

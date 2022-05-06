@@ -61,11 +61,21 @@ cholesky_no_definite <- function(G, tolerance = 1e-10) {
 #' @description
 #' Compute the Choleski factorization of a real symmetric positive-definite
 #' square matrix. If it fails, compute the Cholesky factorization of a non-real
-#' symmetric positive-definite square matrix
+#' symmetric positive-definite square matrix.
 #'
 #' @param x (`matrix`) The data to compute the cholesky.
 #'
 #' @return The cholesky `matrix`.
+#'
+#' @examples
+#' \dontrun{
+#' # Import the genomic data
+#' data(Maize)
+#'
+#' Cholesky <- cholesky(to_matrix(Maize$Geno[, -1]))
+#' dim(Cholesky)
+#' head(Cholesky[, 5])
+#' }
 #'
 #' @export
 cholesky <- function(x) {
@@ -81,23 +91,6 @@ cholesky <- function(x) {
   colnames(result) <- data_names
 
   return(result)
-}
-
-#' Get the value that appears more times. If there are more than 1
-#' value that appears more times (multimodal), return the lowest value.
-#' @export
-class_mode <- function(x, na.rm = TRUE) {
-  use_na <- if (na.rm) "no" else "always"
-  ocurrences <- sort(table(x, useNA = use_na), decreasing = TRUE)
-  mode <- names(ocurrences)[1]
-
-  if (is.numeric(x)) {
-    mode <- as.numeric(mode)
-  } else if (is.logical(x)) {
-    mode <- as.logical(mode)
-  }
-
-  return(mode)
 }
 
 # Sysmtem --------------------------------------------------
@@ -199,7 +192,7 @@ as_tf_rates <- function(confusion_matrix) {
 #' @param x (`any`) The object to be converted to matrix.
 #' @param with_intercept (`logical(1)`) Should be the `"(Intercept)"` column
 #'   added at the beginning? `FALSE` by default.
-#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `FALSE` by
+#' @param remove_na (`logical(1)`) Should `NA` values be removed?. `FALSE` by
 #'   default.
 #'
 #' @details
@@ -230,10 +223,10 @@ as_tf_rates <- function(confusion_matrix) {
 #' }
 #'
 #' @export
-to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
+to_matrix <- function(x, with_intercept = FALSE, remove_na = FALSE) {
   if (is.null(x)) {
     return(NULL)
-  } else if (na.rm) {
+  } else if (remove_na) {
     x <- na.omit(x)
   }
 
@@ -261,7 +254,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
     colnames(x) <- get_cols_names(x)
 
     current_na_state <- options()$na.action
-    if (!na.rm) {
+    if (!remove_na) {
       options(na.action = "na.pass")
     }
 
@@ -283,7 +276,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 #' Given an object convert it to `data.frame`.
 #'
 #' @param x (`any`) The object to be converted to `data.frame`.
-#' @param na.rm (`logical(1)`) Should `NA` values be removed?. `FALSE` by
+#' @param remove_na (`logical(1)`) Should `NA` values be removed?. `FALSE` by
 #'   default.
 #'
 #' @details
@@ -301,7 +294,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 #' For all the columns a name is assigned if they has no one.
 #'
 #' @return
-#' A matrix.
+#' A `data.frame`.
 #'
 #' @examples
 #' \dontrun{
@@ -312,7 +305,7 @@ to_matrix <- function(x, with_intercept = FALSE, na.rm = FALSE) {
 #' }
 #'
 #' @export
-to_data_frame <- function(x, na.rm = FALSE) {
+to_data_frame <- function(x, remove_na = FALSE) {
   x <- as.data.frame(x, check.names = FALSE)
 
   x[] <- lapply(x, function(x) {
@@ -321,7 +314,7 @@ to_data_frame <- function(x, na.rm = FALSE) {
 
   colnames(x) <- get_cols_names(x)
 
-  if (na.rm) {
+  if (remove_na) {
     x <- na.omit(x)
   }
 
@@ -757,7 +750,7 @@ is_numeric_loss <- function(loss_function) {
   return(loss_function %in% TUNE_NUMERIC_LOSS_FUNCTIONS)
 }
 
-is_categorial_loss <- function(loss_function) {
+is_categorical_loss <- function(loss_function) {
   return(loss_function %in% TUNE_CATEGORICAL_LOSS_FUNCTIONS)
 }
 
@@ -767,6 +760,46 @@ need_invert_loss <- function(loss_function) {
 
 # Cross validation --------------------------------------------------
 
+#' @title K-fold cross validation folds generation
+#'
+#' @description
+#' Generates folds for the classic k-fold cross validation where k mutually
+#' exclusive folds are generated and the training phase is done using k − 1
+#' folds and the testing with the remaining one, which ensures all individuals
+#' are part of the testing once.
+#'
+#' @param records_number (`numeric(1)`) The expected number of elements to be
+#'   included in the folds.
+#' @param k (`numeric(1)`) The number of folds. 5 by default.
+#'
+#' @return
+#' A `list` with `k` elements where each element is a named `list` with the
+#' elements `training` wich includes the indices of those records to be part of
+#' the training set and `testing` wich includes the indices of those records to
+#' be part of the testing set. Training and testing sets of each fold are
+#' exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' folds <- cv_kfold(10, 5)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' folds[[2]]$training
+#' folds[[2]]$testing
+#'
+#' folds <- cv_kfold(100, 30)
+#' # List with indices of training and testing of fold 1
+#' folds[[1]]
+#' # List with indices of training and testing of fold 2
+#' folds[[2]]
+#' folds[[3]]
+#' # ...
+#' folds[[30]]
+#' }
+#'
 #' @export
 cv_kfold <- function(records_number, k = 5) {
   assert_cv_kfold(records_number, k)
@@ -779,6 +812,54 @@ cv_kfold <- function(records_number, k = 5) {
   return(cross_validator$get_folds())
 }
 
+#' @title Stratified K-fold cross validation folds generation
+#'
+#' @description
+#' Generates folds for the stratified k-fold cross validation where k mutually
+#' exclusive folds are generated and the training phase is done using k − 1
+#' folds and the testing with the remaining one, which ensures all individuals
+#' are part of the testing once. Given a categorical variable this type of cross
+#' validation ensures each fold contains the same proportion of elements of each
+#' class, so it is a good option for balanced folds.
+#'
+#' @param data (`factor`) The categorical data considered to stratify the folds.
+#' @param k (`numeric(1)`) The number of folds. 5 by default.
+#'
+#' @return
+#' A `list` with `k` elements where each element is a named `list` with the
+#' elements `training` wich includes the indices of those records to be part of
+#' the training set and `testing` wich includes the indices of those records to
+#' be part of the testing set. Training and testing sets of each fold are
+#' exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' data <- factor(c(rep("A", 10), rep("B", 20), rep("C", 30)))
+#' folds <- cv_kfold_strata(data, 5)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' # Verify fold 1 is balanced in training
+#' table(data[folds[[1]]$training])
+#' # Verify fold 1 is balanced in testing
+#' table(data[folds[[1]]$testing])
+#' #' # Verify fold 2 is balanced in training
+#' table(data[folds[[2]]$training])
+#' # Verify fold 2 is balanced in testing
+#' table(data[folds[[2]]$testing])
+#'
+#' folds <- cv_kfold_strata(iris$Species, 30)
+#' # List with indices of training and testing of fold 1
+#' folds[[1]]
+#' # List with indices of training and testing of fold 2
+#' folds[[2]]
+#' folds[[3]]
+#' # ...
+#' folds[[30]]
+#' }
+#'
 #' @export
 cv_kfold_strata <- function(data, k = 5) {
   assert_cv_kfold_strata(data, k)
@@ -792,6 +873,49 @@ cv_kfold_strata <- function(data, k = 5) {
   return(cross_validator$get_folds())
 }
 
+#' @title Random cross validation folds generation
+#'
+#' @description
+#' Generates folds for cross validation where you specify the number of folds
+#' and the proportion of testing. In each fold a sample without replacement of
+#' the specified proportion of testing individuals is taken to be the testing
+#' set and all the remaining ones to be the training set.
+#'
+#' @param records_number (`numeric(1)`) The expected number of elements to be
+#'   included in the folds.
+#' @param folds_number (`numeric(1)`) The number of folds. 5 by default.
+#' @param testing_proportion (`numeric(1)`) The proportion of elements to be
+#'   included in the testing set in each fold. 0.2 by default.
+#'
+#' @return
+#' A `list` with `folds_number` elements where each element is a named `list`
+#' with the elements `training` wich includes the indices of those records to be
+#' part of the training set and `testing` wich includes the indices of those
+#' records to be part of the testing set. Training and testing sets of each fold
+#' are exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' folds <- cv_random(10, 5, 0.2)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' folds[[2]]$training
+#' folds[[2]]$testing
+#'
+#' # Generates 30 folds with 30 elements in testing set
+#' folds <- cv_kfold(100, 30, 0.3)
+#' # List with indices of training and testing of fold 1
+#' folds[[1]]
+#' # List with indices of training and testing of fold 2
+#' folds[[2]]
+#' folds[[3]]
+#' # ...
+#' folds[[30]]
+#' }
+#'
 #' @export
 cv_random <- function(records_number,
                       folds_number = 5,

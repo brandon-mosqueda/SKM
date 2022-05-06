@@ -11,9 +11,9 @@
 #'
 #' @description
 #' `bayesian_model()` is a wrapper of the [BGLR::BGLR()] and
-#' [BGLR::Multitrait()] functions. It fits univariate models for numeric and
-#' categorical response variables and multivariate models for numeric responses
-#' only.
+#' [BGLR::Multitrait()] functions to fit a Bayesian regresssion model. You can
+#' fit univariate models for numeric and categorical response variables and
+#' multivariate models for numeric responses only.
 #'
 #' @param x (`list`) The predictor (independent) variable(s). It is expected a
 #'   `list` with nested `list`'s where each inner `list` is named and represents
@@ -66,29 +66,85 @@
 #' the records' indices to be used as testing (`testing_indices`). All records
 #' with `NA` values in `y` are considered as part of testing set too.
 #' After fitting the model, the predicted values can be obtained with the
-#' `predict` function, with no more parameter than the model.
+#' `predict` function, with no more parameter than the model, see Examples
+#' section below for more information.
 #'
-#' @template return-model
+#' @return
+#' An object of class `"BayesianModel"` that inherits from classes
+#' `"Model"` and `"R6"` with the fields:
 #'
-#' @seealso [predict.BayesianModel()]
+#' * `fitted_model`: An object of class [BGLR::BGLR()] with the model.
+#' * `x`: The final `list` used to fit the model.
+#' * `y`: The final `vector` or `matrix` used to fit the model.
+#' * `execution_time`: A `difftime` object with the total time taken to tune and
+#'   fit the model.
+#' * `removed_rows`: A `numeric` vector with the records' indices (in the
+#'   provided position) that were deleted and not taken in account in tunning
+#'   nor training.
+#' * `removed_x_cols`: A `numeric` vector with the columns' indices (in the
+#'   provided positions) that were deleted and not taken in account in tunning
+#'   nor training.
+#' * `...`: Some other parameters for internal use.
+#'
+#' @seealso [predict.BayesianModel()], [coef.Model()]
 #' @family models
 #'
 #' @examples
 #' \dontrun{
-#' # Fit with all default parameters
+#' # Use all default hyperparameters ----------------------------------------------
 #' x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
-#' model <- bayesian_model(x, iris$Species, testing_indices = 1:50)
-#' predictions <- predict(model)
+#' y <- iris$Species
+#' model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
 #'
-#' # Multivariate analysis
-#' x <- list(list(x = to_matrix(iris[, -c(1, 5)]), model = "BRR"))
-#' y <- iris[, c(1, 5)]
-#' model <- bayesian_model(
-#'   x = x,
-#'   y = y,
-#'   iterations_number = 100,
-#'   burn_in = 50
+#' # Obtain the model's coefficients
+#' coef(model)
+#'
+#' # Predict using the fitted model (of the specified testing indices)
+#' predictions <- predict(model)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Obtain the predict values of custom individuals ------------------------------
+#' x <- list(
+#'   list(x = to_matrix(iris$Species), model = "fixed"),
+#'   list(x = to_matrix(iris[, c(3, 4)]), model = "bayes_a")
 #' )
+#' y <- iris$Sepal.Length
+#' y[c(5, 10, 15, 60, 80, 120, 130)] <- NA
+#' model <- bayesian_model(
+#'   x,
+#'   y,
+#'   iterations_number = 2000,
+#'   burn_in = 500
+#' )
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Obtain the Predicted values of custom individuals using the fitted model
+#' predictions <- predict(model, indices = 1:100)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Multivariate analysis --------------------------------------------------------
+#' x <- list(list(x = to_matrix(iris[, -c(1, 2)]), model = "fixed"))
+#' y <- iris[, c(1, 2)]
+#' model <- bayesian_model(x, y, iterations_number = 2000)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, indices = 1:50)
+#' # Obtain the predicted values of the first response variable
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values of the second response variable
+#' predictions$Sepal.Width$predicted
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, indices = 1:50, format = "data.frame")
+#' head(predictions)
 #' }
 #'
 #' @export

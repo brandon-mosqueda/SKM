@@ -4,7 +4,7 @@
 \alias{rmse}
 \title{Root Mean Squared Error}
 \usage{
-rmse(observed, predicted, na.rm = TRUE)
+rmse(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{numeric}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{numeric}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -22,6 +22,14 @@ A single numeric value with the Root Mean Squared Error.
 \description{
 Given the observed and predicted values of numeric data computes the Root
 Mean Squared Error.
+}
+\details{
+Root Mean Squared Error is computed as:
+
+\figure{rmse.png}{sqrt((1 / N) * sum((observed - predicted)^2))}
+
+where y_i is the observed value of element i, hat{y_i} is the predicted
+value of element i and N is the total number of elements.
 }
 \examples{
 \dontrun{

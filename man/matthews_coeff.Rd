@@ -4,7 +4,7 @@
 \alias{matthews_coeff}
 \title{Matthews Correlation Coefficient (MCC)}
 \usage{
-matthews_coeff(observed, predicted, na.rm = TRUE)
+matthews_coeff(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{factor}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -23,6 +23,15 @@ A single numeric value with the Matthews Correlation Coefficient.
 Given the observed and predicted values of binary data computes the Matthews
 Correlation Coefficient (MCC) also known as Phi Coefficient or Mean Square
 Contingency Coefficient.
+}
+\details{
+Given the following binary confusion matrix:
+
+\figure{binary_confusion_matrix.png}{Binary confusion matrix}
+
+Matthews Correlation Coefficient (MCC) is computed as:
+
+\figure{matthews_coefficient.png}{(TN x TP - FN x FP) / (sqrt((TP + FP)(TP + FN)(TN + FP)(TN + FN)))}
 }
 \examples{
 \dontrun{
@@ -41,6 +50,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},
 \code{\link{pr_auc}()},

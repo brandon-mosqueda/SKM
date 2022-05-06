@@ -4,7 +4,7 @@
 \alias{pcic}
 \title{Proportion of Incorrectly Classified Cases}
 \usage{
-pcic(observed, predicted, na.rm = TRUE)
+pcic(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{factor}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -41,6 +41,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pr_auc}()},

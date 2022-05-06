@@ -11,8 +11,9 @@
 #'
 #' @description
 #' `generalized_linear_model()` is a wrapper of the [glmnet::glmnet()] function
-#' with the ability to tune the hyperparameters (grid search) in a simple way.
-#' It fits univariate models for continuous, count, binary and categorical
+#' to fit a generalized linear model with the ability to tune the
+#' hyperparameters with grid search or bayesian optimization in a simple way.
+#' You can fit univariate models for continuous, count, binary and categorical
 #' response variables and multivariate models for numeric responses only.
 #' @template tunable-description
 #'
@@ -52,6 +53,10 @@
 #' @template details-no-variance
 #' @template details-remove-nas
 #' @template details-tuning
+#' @details
+#' For efficiency tunning is made using the [glmnet::cv.glmnet()] function which
+#' uses k-fold cross validation, so `tune_cv_type` and `tune_testing_proportion`
+#' parameters are not included in this function.
 #' @template details-uni-loss-functions
 #'
 #' @template return-model
@@ -61,29 +66,85 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Fit with all default parameters
-#' model <- generalized_linear_model(to_matrix(iris[, -5]), iris$Species)
+#' # Use all default hyperparameters (no tuning) -------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- generalized_linear_model(x, y)
 #'
-#' # With tuning
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Tune with grid search -----------------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- generalized_linear_model(
-#'   to_matrix(iris[, -1]),
-#'   iris$Sepal.Length,
-#'   alpha = c(0, 0.5, 1),
-#'   lambdas_number = 10
+#'   x,
+#'   y,
+#'   alpha = c(0, 0.3, 0.6, 1),
+#'   tune_type = "grid_search",
+#'   tune_folds_number = 5
 #' )
 #'
-#' predictions <- predict(model, to_matrix(iris[, -1]))
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
 #' predictions$predicted
 #'
-#' # See the whole grid
-#' model$hyperparams_grid
-#'
-#' # Multivariate analysis
+#' # Tune with Bayesian optimization -------------------------------------------
+#' x <- to_matrix(iris[, -1])
+#' y <- iris$Sepal.Length
 #' model <- generalized_linear_model(
-#'   x = to_matrix(iris[, -c(1, 5)]),
-#'   y = iris[, c(1, 5)],
-#'   lambdas = c(0.1, 0.2, 0.3, 0.4)
+#'   x,
+#'   y,
+#'   alpha = list(min = 0, max = 1),
+#'   tune_type = "bayesian_optimization",
+#'   tune_bayes_samples_number = 5,
+#'   tune_bayes_iterations_number = 5
 #' )
+#'
+#' # Obtain the whole grid with the loss values
+#' model$hyperparams_grid
+#' # Obtain the hyperparameters combination with the best loss value
+#' model$best_hyperparams
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#'
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Obtain the execution time taken to tune and fit the model
+#' model$execution_time
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 2)])
+#' y <- iris[, c(1, 2)]
+#' model <- generalized_linear_model(x, y, alpha = 1)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values of the first response variable
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values of the second response variable
+#' predictions$Sepal.Width$predicted
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
 #' }
 #'
 #' @export

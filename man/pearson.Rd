@@ -2,9 +2,9 @@
 % Please edit documentation in R/metrics.R
 \name{pearson}
 \alias{pearson}
-\title{Pearson's correlation}
+\title{Pearson's correlation coefficient}
 \usage{
-pearson(x, y = x, na.rm = TRUE)
+pearson(x, y = x, remove_na = TRUE)
 }
 \arguments{
 \item{x}{(\code{numeric} | \code{matrix}) The values to calculate the correlation.}
@@ -12,7 +12,7 @@ pearson(x, y = x, na.rm = TRUE)
 \item{y}{(\code{numeric} | \code{matrix}) The values to calculate the correlation with.
 the same values as \code{x} by default.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -20,6 +20,14 @@ A single numeric value with the Pearson's correlation.
 }
 \description{
 Computes the Pearson's correlation.
+}
+\details{
+Pearson's correlation coefficient is computed as:
+
+\figure{pearson.png}{cov(x, y) / (sd(x) * sd(y))}
+
+where cov is the covariance of two variables and sigma is the standard
+deviation.
 }
 \examples{
 \dontrun{

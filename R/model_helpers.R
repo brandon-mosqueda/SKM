@@ -2,6 +2,7 @@
 #' @importFrom glmnet cv.glmnet
 
 #' @include utils.R
+#' @include validator.R
 
 prepare_univariate_y <- function() {
   if (is.data.frame(self$y)) {
@@ -162,6 +163,25 @@ is_hyperparam <- function(x) {
   return((is.list(x) || length(x) > 1) && !inherits(x, "formula"))
 }
 
+format_predictions <- function(predictions, is_multivariate, format) {
+  assert_predict_format(format)
+
+  if (format == "data.frame") {
+    if (is_multivariate) {
+      predictions <- as.data.frame(lapply(predictions, function(x) x$predicted))
+    }
+
+    predictions <- as.data.frame(predictions)
+    names(predictions) <- replace_by_regex(
+      names(predictions),
+      "",
+      "probabilities\\."
+    )
+  }
+
+  return(predictions)
+}
+
 # GBM --------------------------------------------------
 
 get_gbm_distribution <- function(response_type) {
@@ -247,7 +267,8 @@ train_random_forest <- function(x, y, fit_params) {
     nsplit = fit_params$splits_number,
     xvar.wt = fit_params$x_vars_weights,
     case.wt = fit_params$records_weights,
-    na.action = fit_params$na_action
+    na.action = fit_params$na_action,
+    importance = TRUE
   )
 
   return(model)
@@ -587,4 +608,34 @@ get_bglr_matrix_param_name <- function(model) {
   }
 
   return("X")
+}
+
+# Partial Least Squares --------------------------------------------------
+
+prepare_partial_least_squares_method <- function(method) {
+  method <- tolower(method)
+
+  if (method == "kernel") {
+    method <- "kernelpls"
+  } else if (method == "wide_kernel") {
+    method <- "widekernelpls"
+  } else if (method == "simpls") {
+    method <- "simpls"
+  } else if (method == "orthogonal") {
+    method <- "oscorespls"
+  } else {
+    stop(method, "is not a valid partial least squares method")
+  }
+
+  return(method)
+}
+
+get_partial_least_squares_formula <- function(responses, is_multivariate) {
+  model_formula <- "y ~ ."
+  if (is_multivariate) {
+    responses_comma <- paste0(names(responses), collapse = ", ")
+    model_formula <- sprintf("cbind(%s) ~ .", responses_comma)
+  }
+
+  return(formula(model_formula))
 }

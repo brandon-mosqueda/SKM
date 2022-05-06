@@ -4,7 +4,7 @@
 \alias{specificity}
 \title{Specificity}
 \usage{
-specificity(observed, predicted, positive_class = NULL, na.rm = TRUE)
+specificity(observed, predicted, positive_class = NULL, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -18,7 +18,7 @@ taken as reference as the positive class. This parameter is only used for
 binary variables. \code{NULL} by default which uses the second class in the
 union of the classes (levels) in \code{observed} and \code{predicted}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -29,6 +29,15 @@ vector of sensitivities is returned, one per each category.
 Given the observed and predicted values of categorical data (of any number of
 classes) computes the specificity, the metric that evaluates a model's
 ability to predict true negatives of each available category.
+}
+\details{
+Given the following binary confusion matrix:
+
+\figure{binary_confusion_matrix.png}{Binary confusion matrix}
+
+Specificity is computed as:
+
+\figure{specificity.png}{(TN) / (TN + FP)}
 }
 \examples{
 \dontrun{
@@ -48,6 +57,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},

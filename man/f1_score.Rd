@@ -4,7 +4,7 @@
 \alias{f1_score}
 \title{F1 score}
 \usage{
-f1_score(observed, predicted, positive_class = NULL, na.rm = TRUE)
+f1_score(observed, predicted, positive_class = NULL, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -18,7 +18,7 @@ taken as reference as the positive class. This parameter is only used for
 binary variables. \code{NULL} by default which uses the second class in the
 union of the classes (levels) in \code{observed} and \code{predicted}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -29,6 +29,13 @@ vector of F1 scores is returned, one per each category.
 Given the observed and predicted values of categorical data (of any number of
 classes) computes the F1 score, that combines the \link{precision} and \link{recall},
 and it is defined as the harmonic mean of the precision and recall.
+}
+\details{
+F1 score is computed as:
+
+\figure{f1_score.png}{2 * ((precision * recall) / (precision + recall))}
+
+See \code{\link[=precision]{precision()}} and \code{\link[=recall]{recall()}} for more information.
 }
 \examples{
 \dontrun{
@@ -45,6 +52,7 @@ Other categorical_metrics:
 \code{\link{categorical_summary}()},
 \code{\link{confusion_matrix}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},

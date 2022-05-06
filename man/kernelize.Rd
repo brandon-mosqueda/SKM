@@ -45,7 +45,7 @@ kernels and their \code{"Sparse_"} versions. 0 by default.}
 \code{"Sparse_Polynomial"}  kernels. 3 by default.}
 }
 \value{
-A \code{matrix} with the data after applied kernel.
+A \code{matrix} with the data after apply the kernel.
 }
 \description{
 Apply a kernel to your data.

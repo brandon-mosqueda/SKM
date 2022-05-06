@@ -87,29 +87,22 @@ An object of class \code{"BayesianModel"} that inherits from classes
 \item \code{fitted_model}: An object of class \code{\link[BGLR:BGLR]{BGLR::BGLR()}} with the model.
 \item \code{x}: The final \code{list} used to fit the model.
 \item \code{y}: The final \code{vector} or \code{matrix} used to fit the model.
-\item \code{hyperparams}: A \code{list} with all the provided hyperparameters.
-\item \code{hyperparams_grid}: A \code{data.frame} with all the computed combinations of
-hyperparameters and with one more column called \code{"loss"} with the value of
-the loss function for each combination. The grid is ordered ascendingly by
-loss value (the lower the better).
-\item \code{best_hyperparams}: A \code{list} with the combination of hyperparameter with
-the lowest loss value (the first row in \code{hyperparams_grid}).
 \item \code{execution_time}: A \code{difftime} object with the total time taken to tune and
 fit the model.
 \item \code{removed_rows}: A \code{numeric} vector with the records' indices (in the
 provided position) that were deleted and not taken in account in tunning
 nor training.
 \item \code{removed_x_cols}: A \code{numeric} vector with the columns' indices (in the
-provided position and after the design matrix creation) that were deleted
-and not taken in account in tunning nor training.
+provided positions) that were deleted and not taken in account in tunning
+nor training.
 \item \code{...}: Some other parameters for internal use.
 }
 }
 \description{
 \code{bayesian_model()} is a wrapper of the \code{\link[BGLR:BGLR]{BGLR::BGLR()}} and
-\code{\link[BGLR:Multitrait]{BGLR::Multitrait()}} functions. It fits univariate models for numeric and
-categorical response variables and multivariate models for numeric responses
-only.
+\code{\link[BGLR:Multitrait]{BGLR::Multitrait()}} functions to fit a Bayesian regresssion model. You can
+fit univariate models for numeric and categorical response variables and
+multivariate models for numeric responses only.
 }
 \details{
 Since \link{BGLR} functions works a little different than other most common R
@@ -119,34 +112,76 @@ predictions you have to provide the whole data (for training and testing) and
 the records' indices to be used as testing (\code{testing_indices}). All records
 with \code{NA} values in \code{y} are considered as part of testing set too.
 After fitting the model, the predicted values can be obtained with the
-\code{predict} function, with no more parameter than the model.
+\code{predict} function, with no more parameter than the model, see Examples
+section below for more information.
 }
 \examples{
 \dontrun{
-# Fit with all default parameters
+# Use all default hyperparameters ----------------------------------------------
 x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
-model <- bayesian_model(x, iris$Species, testing_indices = 1:50)
-predictions <- predict(model)
+y <- iris$Species
+model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
 
-# Multivariate analysis
-x <- list(list(x = to_matrix(iris[, -c(1, 5)]), model = "BRR"))
-y <- iris[, c(1, 5)]
-model <- bayesian_model(
-  x = x,
-  y = y,
-  iterations_number = 100,
-  burn_in = 50
+# Obtain the model's coefficients
+coef(model)
+
+# Predict using the fitted model (of the specified testing indices)
+predictions <- predict(model)
+# Obtain the predicted values
+predictions$predicted
+# Obtain the predicted probabilities
+predictions$probabilities
+
+# Obtain the predict values of custom individuals ------------------------------
+x <- list(
+  list(x = to_matrix(iris$Species), model = "fixed"),
+  list(x = to_matrix(iris[, c(3, 4)]), model = "bayes_a")
 )
+y <- iris$Sepal.Length
+y[c(5, 10, 15, 60, 80, 120, 130)] <- NA
+model <- bayesian_model(
+  x,
+  y,
+  iterations_number = 2000,
+  burn_in = 500
+)
+
+# Predict using the fitted model
+predictions <- predict(model)
+# Obtain the predicted values
+predictions$predicted
+
+# Obtain the Predicted values of custom individuals using the fitted model
+predictions <- predict(model, indices = 1:100)
+# Obtain the predicted values
+predictions$predicted
+
+# Multivariate analysis --------------------------------------------------------
+x <- list(list(x = to_matrix(iris[, -c(1, 2)]), model = "fixed"))
+y <- iris[, c(1, 2)]
+model <- bayesian_model(x, y, iterations_number = 2000)
+
+# Predict using the fitted model
+predictions <- predict(model, indices = 1:50)
+# Obtain the predicted values of the first response variable
+predictions$Sepal.Length$predicted
+# Obtain the predicted values of the second response variable
+predictions$Sepal.Width$predicted
+
+# Obtain the predictions in a data.frame not in a list
+predictions <- predict(model, indices = 1:50, format = "data.frame")
+head(predictions)
 }
 
 }
 \seealso{
-\code{\link[=predict.BayesianModel]{predict.BayesianModel()}}
+\code{\link[=predict.BayesianModel]{predict.BayesianModel()}}, \code{\link[=coef.Model]{coef.Model()}}
 
 Other models: 
 \code{\link{deep_learning}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{partial_least_squares}()},
 \code{\link{random_forest}()},
 \code{\link{support_vector_machine}()}
 }

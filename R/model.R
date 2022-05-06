@@ -272,11 +272,134 @@ Model <- R6Class(
   )
 )
 
+#' @title Predict model
+#'
+#' @description
+#' Obtains the predictions using a fitted model object.
+#'
+#' @param model (`Model`) An object of a fitted model.
+#' @param x (`matrix`) The predictor variables to be used to compute the
+#'   predictions. It has to be in the same format provided when fitting the
+#'   model.
+#' @param format (`character(1)`) The expected format of the predictions. The
+#'   available options are `"list"` and `"data.frame"`. `"data.frame"` is more
+#'   useful with multivariate models if you want in a tabular structure the
+#'   predicted values. See Value section below for more information. `"list"`
+#'   by default.
+#'
+#' @return
+#' ## When `format` is `"list"`
+#'
+#' For univariate models a named `list` with the element `"predicted"` which
+#' contains the predicted values is returned. For categorical variables the
+#' returned `list` includes the element `"probabilities"` too with a
+#' `data.frame` of the predicted probabilities of each class.
+#'
+#' For multivariate models a named `list` is returned where there is an named
+#' element for each response variable in the fitted model. Each element of this
+#' list contains a inner `list` in the same format as described for the
+#' univariate case, so for categorical variables, a `data.frame` with the
+#' predicted probabilities is included too.
+#'
+#' ## When `format` is `"data.frame"`
+#'
+#' For univariate models a `data.frame` with the column `predicted` which
+#' contains the predicted values. For categorical variables, a column for each
+#' class with the predicted probability of this class is included too.
+#'
+#' For multivariate models a `data.frame` with a column for each response
+#' variable with the predicted values of each response.
+#'
+#' @examples
+#' \dontrun{
+#' # Univariate analysis -------------------------------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- random_forest(x, y)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values
+#' predictions$predicted
+#' # Obtain the predicted probabilities
+#' predictions$probabilities
+#'
+#' # Predict using the fitted model with data.frame format
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 2)])
+#' y <- iris[, c(1, 2)]
+#' model <- generalized_linear_model(x, y)
+#'
+#' # Predict using the fitted model
+#' predictions <- predict(model, x)
+#' # Obtain the predicted values of the first response variable
+#' predictions$Sepal.Length$predicted
+#' # Obtain the predicted values of the second response variable
+#' predictions$Sepal.Width$predicted
+#'
+#' # Obtain the predictions in a data.frame not in a list
+#' predictions <- predict(model, x, format = "data.frame")
+#' head(predictions)
+#' }
+#'
 #' @export
-predict.Model <- function(model, x) {
-  return(model$predict(x))
+predict.Model <- function(model, x, format = "list") {
+  predictions <- model$predict(x)
+
+  return(format_predictions(predictions, model$is_multivariate, format))
 }
 
+#' @title Model coefficients
+#'
+#' @description
+#' Extracts the model coefficients from a fitted model object.
+#'
+#' @param model (`Model`) An object of a fitted model.
+#'
+#' @details
+#' The only models you can extract the coefficients are:
+#' [generalized_linear_model()], [random_forest()], [partial_least_squares()]
+#' and [bayesian_model()].
+#'
+#' @return
+#' ## For univariate models
+#'
+#' When the response variable is a numeric response, a named vector is returned
+#' where each element maps to an element of the predictors matrix. Some models'
+#' coefficients includes an intercept too.
+#'
+#' When the response variable is categorical, including binary, a numeric matrix
+#' is returned where the columns maps to the columns of the predictors matrix
+#' and the rows corresponds to the different classes. Some models' coefficients
+#' includes an additional row with the overall coefficient.
+#'
+#' ## For multivariate models
+#'
+#' A named `list` with an element for each response variable in the fitted
+#' model. Each element contains a vector with the coefficients of each response.
+#'
+#' @examples
+#' \dontrun{
+#' # Univariate analysis -------------------------------------------------------
+#' x <- to_matrix(iris[, -5])
+#' y <- iris$Species
+#' model <- random_forest(x, y)
+#'
+#' # Obtain the variables importance
+#' coef(model)
+#'
+#' # Multivariate analysis -----------------------------------------------------
+#' x <- to_matrix(iris[, -c(1, 2)])
+#' y <- iris[, c(1, 2)]
+#' model <- generalized_linear_model(x, y)
+#'
+#' # Obtain the models' coefficients
+#' coef(model)
+#' }
+#'
 #' @export
 coef.Model <- function(model) {
   return(model$coefficients())

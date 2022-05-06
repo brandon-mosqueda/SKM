@@ -34,6 +34,7 @@ Imports:
     keras,
     tensorflow,
     BGLR,
+    pls,
     data.table,
     foreach,
     GPfit,
@@ -47,9 +48,9 @@ Collate:
     'RBO_Utils.R'
     'RBO_Utility_Max.R'
     'globals.R'
+    'utils.R'
     'kernels.R'
     'validator.R'
-    'utils.R'
     'model_helpers.R'
     'metrics.R'
     'tuner.R'
@@ -75,6 +76,8 @@ Collate:
     'glm_grid_tuner.R'
     'k_fold_cross_validator.R'
     'k_fold_strata_cross_validator.R'
+    'partial_least_squares_model.R'
+    'partial_least_squares.R'
     'random_cross_validator.R'
     'random_forest.R'
     'support_vector_machine_model.R'

@@ -9,7 +9,7 @@ categorical_summary(
   predicted,
   probabilities = NULL,
   positive_class = NULL,
-  na.rm = TRUE
+  remove_na = TRUE
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ individual. It is required the columns names of \code{probabilities} corresponds
 to all classes (levels) in \code{observed} and that \code{probabilities} has as many
 rows as records \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -47,6 +47,7 @@ categorical_summary(c("a", "b", "a"), c("b", "a", "c"))
 example <- data.frame(
   observed = c("a", "a", "a", "a", "b", "b", "b", "b", "c", "c", "c", "c"),
   predicted = c("a", "a", "b", "c", "a", "b", "b", "c", "a", "b", "b", "c"),
+  # Probabilities
   a = c(
     0.2377, 0.2924, 0.0406, 0.1893, 0.3978, 0.1965,
     0.0673, 0.2796, 0.1921, 0.2020, 0.1752, 0.3428
@@ -63,7 +64,7 @@ example <- data.frame(
 categorical_summary(
   example$observed,
   example$predicted,
-  example[, c("a", "b", "c")]
+  probabilities = example[, c("a", "b", "c")]
 )
 }
 
@@ -75,6 +76,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},

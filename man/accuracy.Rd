@@ -4,7 +4,7 @@
 \alias{accuracy}
 \title{Accuracy}
 \usage{
-accuracy(observed, predicted, na.rm = TRUE)
+accuracy(observed, predicted, remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{factor}) The observed values. It has to have the same
@@ -13,7 +13,7 @@ length as \code{predicted}.}
 \item{predicted}{(\code{factor}) The observed values. It has to have the same
 length as \code{observed}.}
 
-\item{na.rm}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
+\item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
 }
 \value{
@@ -23,6 +23,15 @@ A single numeric value with the accuracy.
 Given the observed and predicted values of categorical data (of any number of
 classes) computes the accuracy (also known as proportion of correctly
 classified cases).
+}
+\details{
+Accuracy can be computed as:
+
+\figure{accuracy.png}{(1 / N) * (sum(diag(confusion_matrix)))}
+
+that is, the sum of the diagonal in the confusion matrix (correct
+classifications) over the total number of values in the matrix (N). An
+equivalent but more efficient method is used.
 }
 \examples{
 \dontrun{
@@ -40,6 +49,7 @@ Other categorical_metrics:
 \code{\link{confusion_matrix}()},
 \code{\link{f1_score}()},
 \code{\link{kappa_coeff}()},
+\code{\link{math_mode}()},
 \code{\link{matthews_coeff}()},
 \code{\link{pccc}()},
 \code{\link{pcic}()},
