@@ -94,10 +94,13 @@ PartialLeastSquaresModel <- R6Class(
         validation = "none"
       )
 
-      model$components_num <- selectNcomp(
-        tune_model,
-        method = "onesigma",
-        plot = FALSE
+      model$components_num <- max(
+        selectNcomp(
+          tune_model,
+          method = "onesigma",
+          plot = FALSE
+        ),
+        1
       )
 
       return(model)
@@ -148,7 +151,7 @@ PartialLeastSquaresModel <- R6Class(
       components_loss <- RMSEP(tune_model)$val[1, , ]
       components_loss <- as.numeric(apply(components_loss, 2, sum))
       # -1 because the intercept column (the first one) is counted
-      model$components_num <- which.min(components_loss) - 1
+      model$components_num <- max(which.min(components_loss) - 1, 1)
 
       return(model)
     },
