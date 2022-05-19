@@ -1063,6 +1063,14 @@ maape <- function(observed, predicted, remove_na = TRUE) {
   ))
 }
 
+nmaape <- function(observed, predicted, remove_na = TRUE) {
+  return(
+    maape(observed, predicted, remove_na = remove_na) /
+    # Normalization with respect of the max value
+    (pi / 2)
+  )
+}
+
 #' @title Spearman's correlation coefficient
 #'
 #' @description
@@ -1179,7 +1187,7 @@ multivariate_loss <- function(observed, predicted, responses) {
 
     loss_function <- pcic
     if (is_numeric_response(response_type)) {
-      loss_function <- maape
+      loss_function <- nmaape
     }
     current_value <- loss_function(
       observed[, response_name],
