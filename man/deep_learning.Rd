@@ -351,7 +351,6 @@ response variables of univariate models.
 }
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters (no tuning) -------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
@@ -473,8 +472,6 @@ model <- deep_learning(
 predictions <- predict(model, x)
 # Obtain the predicted values
 predictions$predicted
-}
-
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}

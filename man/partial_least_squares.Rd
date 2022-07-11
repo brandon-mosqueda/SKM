@@ -83,7 +83,6 @@ removed. The positions of the removed records are returned in the
 \code{removed_rows} field of the returned object.
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters -------------------------------------------
 x <- to_matrix(iris[, -1])
 y <- iris$Sepal.Length
@@ -139,8 +138,6 @@ predictions$Sepal.Width$predicted
 # Obtain the predictions in a data.frame not in a list
 predictions <- predict(model, x, format = "data.frame")
 head(predictions)
-}
-
 }
 \seealso{
 \code{\link[=predict.PartialLeastSquaresModel]{predict.PartialLeastSquaresModel()}}, \code{\link[=coef.Model]{coef.Model()}}

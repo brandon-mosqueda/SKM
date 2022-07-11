@@ -248,8 +248,7 @@ them.
 }
 }
 \examples{
-\dontrun{
- # Use all default hyperparameters (no tuning) ------------------------------
+# Use all default hyperparameters (no tuning) ------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
 model <- support_vector_machine(x, y)
@@ -314,8 +313,6 @@ predictions$predicted
 
 # Obtain the execution time taken to tune and fit the model
 model$execution_time
-}
-
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}

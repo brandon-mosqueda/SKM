@@ -223,7 +223,6 @@ Mean Squared Error and Gini index splitting is invoked.
 }
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters (no tuning) -------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
@@ -310,8 +309,6 @@ predictions$Species$probabilities
 # Obtain the predictions in a data.frame not in a list
 predictions <- predict(model, x, format = "data.frame")
 head(predictions)
-}
-
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}, \code{\link[=coef.Model]{coef.Model()}}

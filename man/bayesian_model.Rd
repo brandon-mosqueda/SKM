@@ -116,7 +116,6 @@ After fitting the model, the predicted values can be obtained with the
 section below for more information.
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters ----------------------------------------------
 x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
 y <- iris$Species
@@ -171,8 +170,6 @@ predictions$Sepal.Width$predicted
 # Obtain the predictions in a data.frame not in a list
 predictions <- predict(model, indices = 1:50, format = "data.frame")
 head(predictions)
-}
-
 }
 \seealso{
 \code{\link[=predict.BayesianModel]{predict.BayesianModel()}}, \code{\link[=coef.Model]{coef.Model()}}

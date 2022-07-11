@@ -205,7 +205,6 @@ the default loss function used in tuning with the \code{tune_loss_function}
 parameter.
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters (no tuning) -------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
@@ -269,8 +268,6 @@ predictions$predicted
 
 # Obtain the execution time taken to tune and fit the model
 model$execution_time
-}
-
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}
