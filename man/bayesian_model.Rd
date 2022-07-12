@@ -116,7 +116,6 @@ After fitting the model, the predicted values can be obtained with the
 section below for more information.
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters ----------------------------------------------
 x <- list(list(x = to_matrix(iris[, -5]), model = "BRR"))
 y <- iris$Species
@@ -171,8 +170,71 @@ predictions$Sepal.Width$predicted
 # Obtain the predictions in a data.frame not in a list
 predictions <- predict(model, indices = 1:50, format = "data.frame")
 head(predictions)
+
+# Genomic selection ------------------------------------------------------------
+data(Maize)
+
+# Data preparation of G
+Line <- model.matrix(~ 0 + Line, data = Maize$Pheno)
+Env <- model.matrix(~ 0 + Env, data = Maize$Pheno)
+# Compute cholesky without the first column (Line)
+Geno <- cholesky(Maize$Geno[, -1])
+# G matrix
+LineGeno <- Line \%*\% Geno
+
+# Identify the model
+X <- list(
+  Env = list(x = Env, model = "FIXED"),
+  LinexGeno = list(x = LineGeno, model = "BRR")
+)
+y <- Maize$Pheno$Y
+
+# Set seed for reproducible results
+set.seed(2022)
+folds <- cv_kfold(records_number = nrow(LineGeno), k = 5)
+
+Predictions <- data.frame()
+
+# Model training and predictions
+for (i in seq_along(folds)) {
+  cat("*** Fold:", i, "***\n")
+  fold <- folds[[i]]
+
+  # Model training
+  model <- bayesian_model(
+    x = X,
+    y = y,
+    testing_indices = fold$testing,
+    iterations_number = 1000,
+    burn_in = 500
+  )
+
+  # Prediction of testing set
+  predictions <- predict(model)
+
+  # Predictions for the i-th fold
+  FoldPredictions <- data.frame(
+    Fold = i,
+    Line = Maize$Pheno$Line[fold$testing],
+    Env = Maize$Pheno$Env[fold$testing],
+    Observed = y[fold$testing],
+    Predicted = predictions$predicted
+  )
+  Predictions <- rbind(Predictions, FoldPredictions)
 }
 
+head(Predictions)
+# Compute the summary of all predictions
+summaries <- gs_summaries(Predictions)
+
+# Summaries by Line
+head(summaries$line)
+
+# Summaries by Environment
+summaries$env
+
+# Summaries by Fold
+summaries$fold
 }
 \seealso{
 \code{\link[=predict.BayesianModel]{predict.BayesianModel()}}, \code{\link[=coef.Model]{coef.Model()}}

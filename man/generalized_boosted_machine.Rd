@@ -205,7 +205,6 @@ the default loss function used in tuning with the \code{tune_loss_function}
 parameter.
 }
 \examples{
-\dontrun{
 # Use all default hyperparameters (no tuning) -------------------------------
 x <- to_matrix(iris[, -5])
 y <- iris$Species
@@ -269,8 +268,94 @@ predictions$predicted
 
 # Obtain the execution time taken to tune and fit the model
 model$execution_time
+
+# Genomic selection ------------------------------------------------------------
+data(Maize)
+
+# Data preparation of G
+Line <- model.matrix(~ 0 + Line, data = Maize$Pheno)
+# Compute cholesky without the first column (Line)
+Geno <- cholesky(Maize$Geno[, -1])
+# G matrix
+X <- Line \%*\% Geno
+y <- Maize$Pheno$Y
+
+# Set seed for reproducible results
+set.seed(2022)
+folds <- cv_kfold(records_number = nrow(X), k = 5)
+
+Predictions <- data.frame()
+Hyperparams <- data.frame()
+
+# Model training and predictions
+for (i in seq_along(folds)) {
+  cat("*** Fold:", i, "***\n")
+  fold <- folds[[i]]
+
+  # Identify the training and testing sets
+  X_training <- X[fold$training, ]
+  X_testing <- X[fold$testing, ]
+  y_training <- y[fold$training]
+  y_testing <- y[fold$testing]
+
+  # Model training
+  model <- generalized_boosted_machine(
+    x = X_training,
+    y = y_training,
+
+    # Specify the hyperparameters
+    trees_number = c(30, 50, 80),
+    node_size = c(5, 10, 15),
+    max_depth = 5,
+    shrinkage = c(0.001, 0.01, 0.1),
+    tune_type = "grid_search",
+    tune_cv_type = "k_fold",
+    tune_folds_number = 5,
+
+    # In this example the iterations wont be shown
+    verbose = FALSE
+  )
+
+  # Prediction of testing set
+  predictions <- predict(model, X_testing)
+
+  # Predictions for the i-th fold
+  FoldPredictions <- data.frame(
+    Fold = i,
+    Line = Maize$Pheno$Line[fold$testing],
+    Env = Maize$Pheno$Env[fold$testing],
+    Observed = y_testing,
+    Predicted = predictions$predicted
+  )
+  Predictions <- rbind(Predictions, FoldPredictions)
+
+  # Hyperparams
+  HyperparamsFold <- model$hyperparams_grid \%>\%
+    mutate(Fold = i)
+  Hyperparams <- rbind(Hyperparams, HyperparamsFold)
+
+  # Best hyperparams of the model
+  cat("*** Optimal hyperparameters: ***\n")
+  print(model$best_hyperparams)
 }
 
+head(Predictions)
+# Compute the summary of all predictions
+summaries <- gs_summaries(Predictions)
+
+# Summaries by Line
+head(summaries$line)
+
+# Summaries by Environment
+summaries$env
+
+# Summaries by Fold
+summaries$fold
+
+# First rows of Hyperparams
+head(Hyperparams)
+# Last rows of Hyperparams
+tail(Hyperparams)
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}
