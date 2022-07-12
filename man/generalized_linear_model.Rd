@@ -282,6 +282,91 @@ predictions$Sepal.Width$predicted
 # Obtain the predictions in a data.frame not in a list
 predictions <- predict(model, x, format = "data.frame")
 head(predictions)
+
+# Genomic selection ------------------------------------------------------------
+data(Wheat)
+
+# Data preparation of G
+Line <- model.matrix(~ 0 + Line, data = Wheat$Pheno)
+# Compute cholesky without the first column (Line)
+Geno <- cholesky(Wheat$Geno[, -1])
+# G matrix
+X <- Line \%*\% Geno
+y <- Wheat$Pheno$Y
+
+# Set seed for reproducible results
+set.seed(2022)
+folds <- cv_random(
+  records_number = nrow(X),
+  folds_number = 5,
+  testing_proportion = 0.3
+)
+
+Predictions <- data.frame()
+Hyperparams <- data.frame()
+
+# Model training and predictions
+for (i in seq_along(folds)) {
+  cat("*** Fold:", i, "***\n")
+  fold <- folds[[i]]
+
+  # Identify the training and testing sets
+  X_training <- X[fold$training, ]
+  X_testing <- X[fold$testing, ]
+  y_training <- y[fold$training]
+  y_testing <- y[fold$testing]
+
+  # Model training
+  model <- generalized_linear_model(
+    x = X_training,
+    y = y_training,
+
+    # Specify the hyperparameters
+    alpha = c(0, 0.25, 0.50, 0.75, 1),
+    lambdas_number = 100,
+    tune_type = "grid_search"
+  )
+
+  # Prediction of testing set
+  predictions <- predict(model, X_testing)
+
+  # Predictions for the i-th fold
+  FoldPredictions <- data.frame(
+    Fold = i,
+    Line = Wheat$Pheno$Line[fold$testing],
+    Env = Wheat$Pheno$Env[fold$testing],
+    Observed = y_testing,
+    Predicted = predictions$predicted
+  )
+  Predictions <- rbind(Predictions, FoldPredictions)
+
+  # Hyperparams
+  HyperparamsFold <- model$hyperparams_grid \%>\%
+    mutate(Fold = i)
+  Hyperparams <- rbind(Hyperparams, HyperparamsFold)
+
+  # Best hyperparams of the model
+  cat("*** Optimal hyperparameters: ***\n")
+  print(model$best_hyperparams)
+}
+
+head(Predictions)
+# Compute the summary of all predictions
+summaries <- gs_summaries(Predictions)
+
+# Summaries by Line
+head(summaries$line)
+
+# Summaries by Environment
+summaries$env
+
+# Summaries by Fold
+summaries$fold
+
+# First rows of Hyperparams
+head(Hyperparams)
+# Last rows of Hyperparams
+tail(Hyperparams)
 }
 \seealso{
 \code{\link[=predict.Model]{predict.Model()}}, \code{\link[=coef.Model]{coef.Model()}}
