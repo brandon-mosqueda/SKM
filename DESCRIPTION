@@ -10,10 +10,26 @@ Authors@R: c(person(
               given = "Brandon Alejandro",
               family = "Mosqueda González",
               role = c("aut", "cre"),
-              email = "brandon-mosqueda@posteo.net"))
+              email = "brandon-mosqueda@posteo.net"),
+             person(
+              given = "Abel",
+              family = "Palafox González",
+              role = c("aut")),
+             person(
+              given = "Abelardo",
+              family = "Montesinos López",
+              role = c("aut"),
+              email = "aml_uach2004@hotmail.com"),
+             person(
+              given = "José",
+              family = "Crossa",
+              role = c("aut"),
+              email = "j.crossa@cgiar.org"))
 Description: Provides a simple and uniform way of implementing some of the most
   powerful machine learning models with sparse kernels options for general
   purpose.
+Maintainer: Brandon Alejandro Mosqueda González <brandon-mosqueda@posteo.net>
+Date: 2022-6-3
 Depends: R (>= 3.5.0)
 License: LGPL-3
 Encoding: UTF-8
@@ -82,5 +98,3 @@ Collate:
     'random_forest.R'
     'support_vector_machine_model.R'
     'support_vector_machine.R'
-Author: Osval Antonio Montesinos López [aut],
-        Brandon Alejandro Mosqueda González [aut]
