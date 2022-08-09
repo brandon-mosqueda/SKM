@@ -59,7 +59,6 @@ BayesianModel <- R6Class(
     prepare_multivariate_y = prepare_multivariate_y_only_numeric,
     prepare_x = function() {
       for (i in 1:length(self$x)) {
-        self$x[[i]]$x <- remove_no_variance_cols(to_matrix(self$x[[i]]$x))
         self$x[[i]]$model <- prepare_bayesian_model(self$x[[i]]$model)
       }
 
