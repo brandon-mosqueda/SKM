@@ -133,6 +133,16 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+#' @export
+echo <- function(string, ...) {
+  cat(sprintf(string, ...))
+}
+
+#' @export
+echonl <- function(string, ...) {
+  echo(paste0(string, "\n"), ...)
+}
+
 replace_at_list <- function(original, new_values) {
   for (field in names(new_values)) {
     original[[field]] <- new_values[[field]]
@@ -332,7 +342,7 @@ remove_no_variance_cols <- function(x) {
   names(zero_variances_cols) <- NULL
 
   if (!is_empty(zero_variances_cols)) {
-    x <- x[, -zero_variances_cols]
+    x <- x[, -zero_variances_cols, drop = FALSE]
     attr(x, "removed_cols") <- zero_variances_cols
   }
 
@@ -359,7 +369,7 @@ close_all_devices <- function() {
 
 #' @export
 shead <- function(x, n = 5) {
-  return(x[1:min(n, nrow(x)), 1:min(n, ncol(x))])
+  return(x[1:min(n, nrow(x)), 1:min(n, ncol(x)), drop = FALSE])
 }
 
 #' @export
