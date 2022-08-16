@@ -394,6 +394,7 @@ get_records <- function(x, indices) {
   }
 }
 
+#' @export
 which_is_na <- function(x) {
   if (has_dims(x)) {
     indices <- which(is.na(x), arr.ind = TRUE)
