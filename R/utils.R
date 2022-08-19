@@ -133,14 +133,16 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
-#' @export
-echo <- function(string, ...) {
-  cat(sprintf(string, ...))
+round_df <- function(Data, digits) {
+  return(
+    Data %>%
+      dplyr::mutate_if(is.numeric, ~ round(., digits = digits))
+  )
 }
 
 #' @export
-echonl <- function(string, ...) {
-  echo(paste0(string, "\n"), ...)
+symmetric_diff <- function(x, y) {
+  return(union(setdiff(x, y), setdiff(y, x)))
 }
 
 replace_at_list <- function(original, new_values) {
@@ -151,9 +153,10 @@ replace_at_list <- function(original, new_values) {
   return(original)
 }
 
+#' @export
 write_csv <- function(data,
                       file,
-                      quote = FALSE,
+                      quote = "auto",
                       na = "NA",
                       ...) {
   return(fwrite(
