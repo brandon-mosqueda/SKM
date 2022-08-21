@@ -133,6 +133,7 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+#' @export
 round_df <- function(Data, digits) {
   return(
     Data %>%
