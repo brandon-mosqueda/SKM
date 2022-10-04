@@ -639,3 +639,15 @@ get_partial_least_squares_formula <- function(responses, is_multivariate) {
 
   return(formula(model_formula))
 }
+
+# GS radial --------------------------------------------------
+
+format_predictors <- function(predictors) {
+  names(predictors) <- tolower(names(predictors))
+
+  for (predictor in names(predictors)) {
+    predictors[[predictor]] <- prepare_bayesian_model(predictors[[predictor]])
+  }
+
+  return(predictors)
+}

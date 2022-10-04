@@ -1270,7 +1270,12 @@ validate_gs_radial <- function(is_multivariate,
                                verbose) {
   assert_lines(lines)
   assert_envs(envs)
+  assert_same_length(lines, envs)
   assert_y(y, is_multivariate)
+  assert_same_length(lines, y)
+  if (anyNA(y)) {
+    stop("y must not contain NA values")
+  }
   assert_geno_markers(Geno, Markers, lines)
   assert_predictors(predictors, is_multivariate)
 
