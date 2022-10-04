@@ -160,3 +160,7 @@ RESPONSE_TYPES <- list(
   BINARY = "binary",
   CATEGORICAL = "categorical"
 )
+
+# Genomic selection --------------------------------------------------
+
+GS_PREDICTORS <- c("Line", "Env", "EnvxLine")

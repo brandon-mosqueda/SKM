@@ -6,7 +6,12 @@
 
 # Checkmate extension --------------------------------------------------
 
-checkSubsetString <- function(x, choices, empty.ok, ignore.case, len) {
+checkSubsetString <- function(x,
+                              choices,
+                              empty.ok,
+                              unique,
+                              ignore.case,
+                              len) {
   if (length(x) == 0L) {
     if (!empty.ok) {
       return(sprintf(
@@ -36,6 +41,10 @@ checkSubsetString <- function(x, choices, empty.ok, ignore.case, len) {
     return(paste0("Must be a character, not ", typeof(x)))
   }
 
+  if (unique && any(duplicated(x))) {
+    return("Must have unique values")
+  }
+
   if (ignore.case) {
     if (!all(tolower(x) %in% tolower(choices))) {
       return(sprintf(
@@ -61,12 +70,13 @@ assert_subset_string <- function(x,
                                  choices,
                                  ignore.case=FALSE,
                                  empty.ok=TRUE,
+                                 unique=FALSE,
                                  len=NULL,
                                  label=vname(x)) {
   if (missing(x)) {
     stop(sprintf("Argument '%s' is missing", label))
   }
-  res <- checkSubsetString(x, choices, empty.ok, ignore.case, len)
+  res <- checkSubsetString(x, choices, empty.ok, unique, ignore.case, len)
   makeAssertion(x, res, label, NULL)
 }
 
@@ -665,6 +675,67 @@ assert_predict_format <- function(format) {
   )
 }
 
+assert_lines <- function(lines) {
+  if (!is.factor(lines) && !is.character(lines)) {
+    stop("lines must be a factor or character vector")
+  }
+  lines <- as.character(lines)
+
+  assert_character(as.character(lines), any.missing = FALSE, min.len = 1)
+}
+
+assert_envs <- function(envs) {
+  if (!is.factor(envs) && !is.character(envs)) {
+    stop("envs must be a factor or character vector")
+  }
+  envs <- as.character(envs)
+
+  assert_character(envs, any.missing = FALSE, min.len = 1)
+}
+
+assert_geno_markers <- function(Geno, Markers, lines) {
+  if (is.null(Geno) & is.null(Markers)) {
+    stop("Geno and Markers cannot both be NULL, you must provide one of them")
+  }
+
+  unique_lines <- as.character(unique(lines))
+  unique_lines_num <- length(unique_lines)
+
+  if (!is.null(Geno)) {
+    assert_matrix(
+      Geno,
+      any.missing = FALSE,
+      min.rows = unique_lines_num,
+      min.cols = unique_lines_num
+    )
+    assert_names(rownames(Geno), must.include = unique_lines)
+    assert_names(colnames(Geno), must.include = unique_lines)
+  } else {
+    assert_matrix(
+      Markers,
+      any.missing = FALSE,
+      min.rows = unique_lines_num,
+      min.cols = 1
+    )
+    assert_names(rownames(Markers), must.include = unique_lines)
+  }
+}
+
+assert_predictors <- function(predictors, is_multivariate) {
+  assert_list(predictors, any.missing = FALSE, min.len = 1)
+  assert_subset_string(
+    names(predictors),
+    GS_PREDICTORS,
+    ignore.case = TRUE,
+    empty.ok = FALSE,
+    unique = TRUE
+  )
+
+  for (model in predictors) {
+    assert_bayesian_model(model, is_multivariate)
+  }
+}
+
 # Single fit functions --------------------------------------------------
 
 validate_support_vector_machine <- function(x,
@@ -1169,4 +1240,86 @@ assert_gs_summary <- function(predictions, save_at, digits) {
 
   assert_string(save_at, min.chars = 1, null.ok = TRUE)
   assert_number(digits, lower = 0, finite = TRUE)
+}
+
+validate_gs_radial <- function(is_multivariate,
+                               lines,
+                               envs,
+                               y,
+                               Geno,
+                               Markers,
+                               predictors,
+
+                               rho,
+                               iterations_number,
+                               burn_in,
+                               thinning,
+                               testing_indices,
+
+                               tune_type,
+                               tune_cv_type,
+                               tune_folds_number,
+                               tune_testing_proportion,
+                               tune_folds,
+                               tune_loss_function,
+                               tune_grid_proportion,
+                               tune_bayes_samples_number,
+                               tune_bayes_iterations_number,
+
+                               seed,
+                               verbose) {
+  assert_lines(lines)
+  assert_envs(envs)
+  assert_y(y, is_multivariate)
+  assert_geno_markers(Geno, Markers, lines)
+  assert_predictors(predictors, is_multivariate)
+
+  assert_tune_cv(
+    tune_type = tune_type,
+    tune_cv_type = tune_cv_type,
+    tune_folds_number = tune_folds_number,
+    tune_testing_proportion = tune_testing_proportion,
+    tune_folds = tune_folds,
+    x_nrows = length(lines),
+    tune_loss_function = tune_loss_function,
+    tune_grid_proportion = tune_grid_proportion,
+    tune_bayes_samples_number = tune_bayes_samples_number,
+    tune_bayes_iterations_number = tune_bayes_iterations_number
+  )
+
+  if (is_bayesian_tuner(tune_type)) {
+    assert_bounds(rho)
+  } else {
+    assert_numeric(rho, finite = TRUE, any.missing = FALSE)
+  }
+
+  assert_numeric(
+    testing_indices,
+    lower = 1,
+    upper = length(lines),
+    null.ok = TRUE,
+    any.missing = FALSE,
+    unique = TRUE
+  )
+  assert_numeric(
+    iterations_number,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+  assert_numeric(
+    burn_in,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+  assert_numeric(
+    thinning,
+    lower = 1,
+    finite = TRUE,
+    any.missing = FALSE
+  )
+
+  assert_seed(seed)
+  assert_verbose(verbose)
 }
