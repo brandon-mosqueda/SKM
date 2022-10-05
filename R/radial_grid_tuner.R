@@ -12,6 +12,9 @@ RadialGridTuner <- R6Class(
     Pheno = NULL,
     y = NULL,
     geno_preparator = NULL,
+    iterations_number = NULL,
+    burn_in = NULL,
+    thinning = NULL,
 
     # Methods --------------------------------------------------
 
