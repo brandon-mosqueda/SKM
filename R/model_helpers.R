@@ -3,6 +3,8 @@
 
 #' @include utils.R
 #' @include validator.R
+#' @include kernels.R
+#' @include bayesian_model.R
 
 prepare_univariate_y <- function() {
   if (is.data.frame(self$y)) {
@@ -650,4 +652,88 @@ format_predictors <- function(predictors) {
   }
 
   return(predictors)
+}
+
+prepare_eta <- function(Pheno, geno_preparator, rho, predictors) {
+  eta <- list()
+
+  # Line predictors is always included
+  Line <- model.matrix(~ 0 + Line, Pheno)
+
+  GenoKernel <- radial_kernel_rho(
+    x1 = geno_preparator$Geno,
+    x2 = geno_preparator$Geno,
+    rho = rho
+  )
+  GenoLine <- Line %*% GenoKernel %*% t(Line)
+
+  eta$Line <- list(x = GenoLine, model = predictors$line)
+
+  Env <- model.matrix(~ 0 + Env, Pheno)
+  Env <- Env %*% t(Env) / ncol(Env)
+
+  if (!is.null(predictors$env)) {
+    eta$Env <- list(x = Env, model = predictors$env)
+  }
+
+  if (!is.null(predictors$envxline)) {
+    EnvGenoLine <- Env * GenoLine
+    eta$EnvxLine <- list(x = EnvGenoLine, model = predictors$envxline)
+  }
+
+  return(eta)
+}
+
+radial_tuner_initialize <- function(...,
+                                    Pheno,
+                                    y,
+                                    geno_preparator,
+                                    predictors) {
+  super$initialize(
+    ...,
+    x = Pheno,
+    y = y,
+    training_function = NULL,
+    predict_function = NULL
+  )
+
+  self$Pheno <- Pheno
+  self$y <- y
+  self$geno_preparator <- geno_preparator
+
+  new_order <- order(self$Pheno$Env, self$Pheno$Line)
+  self$Pheno <- self$Pheno[new_order, ]
+  self$y <- get_records(self$y, new_order)
+
+  unique_sorted_lines <- sort(unique(as.character(Pheno$Line)))
+  self$geno_preparator$preprocess(unique_sorted_lines)
+}
+
+radial_eval_one_fold <- function(fold, combination) {
+  ETA <- prepare_eta(Pheno, geno_preparator, combination$rho)
+  y_na <- self$y
+  y_testing <- get_records(self$y, fold$testing)
+  if (has_dims(y_na)) {
+    y_na[fold$testing, , drop = NA] <- NA
+  } else {
+    y_na[fold$testing] <- NA
+  }
+
+  model <- bayesian_model(
+    x = ETA,
+    y = y_na,
+    iterations_number = combination$iterations_number,
+    burn_in = combination$burn_in,
+    thinning = combination$thinning,
+    verbose = FALSE
+  )
+  predictions <- predict(model, fold$testing)$predicted
+
+  loss <- wrapper_loss(
+    observed = y_testing,
+    predictions = predictions,
+    tuner = self
+  )
+
+  return(loss)
 }

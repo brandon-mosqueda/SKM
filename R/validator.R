@@ -723,6 +723,7 @@ assert_geno_markers <- function(Geno, Markers, lines) {
 
 assert_predictors <- function(predictors, is_multivariate) {
   assert_list(predictors, any.missing = FALSE, min.len = 1)
+
   assert_subset_string(
     names(predictors),
     GS_PREDICTORS,
@@ -730,6 +731,10 @@ assert_predictors <- function(predictors, is_multivariate) {
     empty.ok = FALSE,
     unique = TRUE
   )
+
+  if (!("line" %in% tolower(names(predictors)))) {
+    stop("Line is required always in the predictors list")
+  }
 
   for (model in predictors) {
     assert_bayesian_model(model, is_multivariate)
@@ -1273,9 +1278,6 @@ validate_gs_radial <- function(is_multivariate,
   assert_same_length(lines, envs)
   assert_y(y, is_multivariate)
   assert_same_length(lines, y)
-  if (anyNA(y)) {
-    stop("y must not contain NA values")
-  }
   assert_geno_markers(Geno, Markers, lines)
   assert_predictors(predictors, is_multivariate)
 

@@ -47,6 +47,16 @@ radial_kernel <- function(x1, x2 = x1, gamma = 1) {
   ))
 }
 
+radial_kernel_rho <- function(x1, x2 = x1, rho = 0.5) {
+  return(exp(log(rho) *
+    outer(
+      1:nrow(x1 <- as.matrix(x1)),
+      1:ncol(x2 <- t(x2)),
+      Vectorize(function(i, j) l2norm(x1[i, ] - x2[, j])^2)
+    )
+  ))
+}
+
 #' @export
 polynomial_kernel <- function(x1, x2 = x1, gamma = 1, coef0 = 0, degree = 3) {
   return((gamma * (as.matrix(x1) %*% t(x2)) + coef0)^degree)
