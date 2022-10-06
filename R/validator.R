@@ -696,6 +696,8 @@ assert_envs <- function(envs) {
 assert_geno_markers <- function(Geno, Markers, lines) {
   if (is.null(Geno) & is.null(Markers)) {
     stop("Geno and Markers cannot both be NULL, you must provide one of them")
+  } else if (!is.null(Geno) & !is.null(Markers)) {
+    stop("Only Geno or Markers must be provided and not both of them")
   }
 
   unique_lines <- as.character(unique(lines))

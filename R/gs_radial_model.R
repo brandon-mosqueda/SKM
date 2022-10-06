@@ -25,24 +25,27 @@ GSRadialModel <- R6Class(
     initialize = function(...,
                           lines,
                           envs,
-                          rho) {
+                          Geno,
+                          Markers,
+                          predictors,
+                          rho,
+                          tune_type) {
       super$initialize(
         ...,
         x = NULL,
+        tune_type = tune_type,
         covariance_structure = NULL,
         records_weights = NULL,
-        response_groups = NULL,
-        name = "Radial Bayesian Model",
-        allow_coefficients = TRUE,
-        is_x_matrix = FALSE
+        response_groups = NULL
       )
 
+      self$name <- "Radial Bayesian Model"
       self$Pheno <- tibble(Line = lines, Env = envs)
 
       if (is.null(Geno)) {
-        self$geno_preparator <- MarkersPreparator(Markers)
+        self$geno_preparator <- MarkersPreparator$new(Markers)
       } else {
-        self$geno_preparator <- GenoPreparator(Geno)
+        self$geno_preparator <- GenoPreparator$new(Geno)
       }
       self$predictors <- format_predictors(predictors)
 
@@ -50,16 +53,8 @@ GSRadialModel <- R6Class(
       if (is_bayesian_tuner(self$tuner_class)) {
         self$fit_params$rho <- format_bayes_hyperparam(self$fit_params$rho)
       }
-    },
 
-    # Methods --------------------------------------------------
-
-    predict = function(indices = NULL) {
-      if (self$is_multivariate) {
-        private$predict_multivariate(indices)
-      } else {
-        private$predict_univariate(indices)
-      }
+      self$tuner_class <- get_tuner(sprintf("radial_%s", tune_type))
     }
   ),
   private = list(
@@ -82,26 +77,36 @@ GSRadialModel <- R6Class(
       }
     },
     get_hyperparams = function() {
-      return(list(rho = self$rho))
+      return(list(rho = self$fit_params$rho))
     },
 
-    has_to_tune = has_to_tune,
+    has_to_tune = function() {return(is_hyperparam(self$fit_params$rho))},
     tune = function() {
       if (private$has_to_tune()) {
         PhenoTune <- self$Pheno
         GenoTune <- self$Geno
         y_tune <- self$y
+        geno_tune_preparator <- self$geno_preparator$clone()
 
-        if (!is_empty(self$testing_indices)) {
-          PhenoTune <- droplevels(get_records(PhenoTune, -self$testing_indices))
-          y_tune <- droplevels(get_records(y_tune, -self$testing_indices))
-          geno_tune_preparator <- self$geno_preparator$clone()
+        if (!is_empty(self$fit_params$testing_indices)) {
+          PhenoTune <- droplevels(get_records(
+            PhenoTune,
+            -self$fit_params$testing_indices
+          ))
+          y_tune <- get_records(
+            y_tune,
+            -self$fit_params$testing_indices
+          )
         }
 
         hyperparams <- private$get_hyperparams()
 
         tuner <- self$tuner_class$new(
-          y = self$y,
+          Pheno = PhenoTune,
+          y = y_tune,
+          geno_preparator = geno_tune_preparator,
+          predictors = self$predictors,
+
           responses = self$responses,
           is_multivariate = self$is_multivariate,
           hyperparams = hyperparams,
@@ -114,7 +119,11 @@ GSRadialModel <- R6Class(
           grid_proportion = self$tune_grid_proportion,
 
           iterations_number = self$tune_bayes_iterations_number,
-          samples_number = self$tune_bayes_samples_number
+          samples_number = self$tune_bayes_samples_number,
+
+          model_iterations_number = self$fit_params$iterations_number,
+          burn_in = self$fit_params$burn_in,
+          thinning = self$fit_params$thinning
         )
 
         tuner$tune()
@@ -125,6 +134,10 @@ GSRadialModel <- R6Class(
         self$hyperparams_grid <- data.frame()
         self$best_hyperparams <- list()
       }
+    },
+
+    train = function(...) {
+      super$train(..., predictors = self$predictors)
     },
 
     train_univariate = train_radial_bayes,

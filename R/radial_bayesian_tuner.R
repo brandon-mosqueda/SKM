@@ -1,5 +1,6 @@
 #' @importFrom R6 R6Class
 
+#' @include utils.R
 #' @include model_helpers.R
 #' @include bayesian_tuner.R
 
@@ -11,8 +12,9 @@ RadialBayesianTuner <- R6Class(
 
     Pheno = NULL,
     y = NULL,
+    predictors = NULL,
     geno_preparator = NULL,
-    iterations_number = NULL,
+    model_iterations_number = NULL,
     burn_in = NULL,
     thinning = NULL,
 
