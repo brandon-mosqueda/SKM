@@ -3,6 +3,8 @@
 
 #' @include utils.R
 #' @include validator.R
+#' @include kernels.R
+#' @include bayesian_model.R
 
 prepare_univariate_y <- function() {
   if (is.data.frame(self$y)) {
@@ -106,6 +108,10 @@ get_tuner <- function(type) {
     tuner <- GLMGridTuner
   } else if (type == "glm_bayesian_optimization") {
     tuner <- GLMBayesianTuner
+  } else if (type == "radial_grid_search") {
+    tuner <- RadialGridTuner
+  } else if (type == "radial_bayesian_optimization") {
+    tuner <- RadialBayesianTuner
   } else {
     stop(sprintf(
       "{%s} is not a valid type of tuning",
@@ -125,6 +131,16 @@ is_bayesian_tuner <- function(tuner) {
     tuner$classname == "BayesianTuner" ||
     tuner$classname == "DeepLearningBayesianTuner"
   )
+}
+
+has_to_tune <- function() {
+  for (hyperparam in self$fit_params) {
+    if (is_hyperparam(hyperparam)) {
+      return(TRUE)
+    }
+  }
+
+  return(FALSE)
 }
 
 format_bayes_hyperparam <- function(hyperparam, is_int = FALSE) {
@@ -638,4 +654,157 @@ get_partial_least_squares_formula <- function(responses, is_multivariate) {
   }
 
   return(formula(model_formula))
+}
+
+# GS radial --------------------------------------------------
+
+format_predictors <- function(predictors) {
+  names(predictors) <- tolower(names(predictors))
+
+  for (predictor in names(predictors)) {
+    predictors[[predictor]] <- tolower(predictors[[predictor]])
+  }
+
+  return(predictors)
+}
+
+prepare_eta <- function(Pheno, geno_preparator, rho, predictors, raise_to_rho) {
+  eta <- list()
+
+  # Line predictors is always included
+  Line <- model.matrix(~ 0 + Line, Pheno)
+
+  kernel_rho <- exp(1)
+  if (!raise_to_rho) {
+    kernel_rho <- rho
+  }
+  GenoKernel <- radial_kernel_rho(
+    x1 = geno_preparator$Geno,
+    x2 = geno_preparator$Geno,
+    rho = kernel_rho
+  )
+  # Only in tunning the matrix has to be raised to rho
+  if (raise_to_rho) {
+    GenoKernel <- GenoKernel^rho
+  }
+  GenoLine <- Line %*% GenoKernel %*% t(Line)
+
+  eta$Line <- list(x = GenoLine, model = predictors$line)
+
+  Env <- model.matrix(~ 0 + Env, Pheno)
+  Env <- Env %*% t(Env) / ncol(Env)
+
+  if (!is.null(predictors$env)) {
+    eta$Env <- list(x = Env, model = predictors$env)
+  }
+
+  if (!is.null(predictors$envxline)) {
+    EnvGenoLine <- Env * GenoLine
+    eta$EnvxLine <- list(x = EnvGenoLine, model = predictors$envxline)
+  }
+
+  return(eta)
+}
+
+radial_tuner_initialize <- function(...,
+                                    model_iterations_number,
+                                    burn_in,
+                                    thinning,
+                                    Pheno,
+                                    y,
+                                    geno_preparator,
+                                    predictors) {
+  super$initialize(
+    ...,
+    x = Pheno,
+    y = y,
+    training_function = NULL,
+    predict_function = NULL
+  )
+
+  self$predictors <- predictors
+  self$model_iterations_number <- model_iterations_number
+  self$burn_in <- burn_in
+  self$thinning <- thinning
+
+  self$Pheno <- Pheno
+  self$y <- y
+  self$geno_preparator <- geno_preparator
+
+  new_order <- order(self$Pheno$Env, self$Pheno$Line)
+  self$Pheno <- self$Pheno[new_order, ]
+  self$y <- get_records(self$y, new_order)
+
+  unique_sorted_lines <- sort(unique(as.character(Pheno$Line)))
+  self$geno_preparator$preprocess(unique_sorted_lines)
+}
+
+radial_eval_one_fold <- function(fold, combination) {
+  ETA <- prepare_eta(
+    self$Pheno,
+    self$geno_preparator,
+    combination$rho,
+    self$predictors,
+    raise_to_rho = TRUE
+  )
+  y_na <- self$y
+  y_testing <- get_records(self$y, fold$testing)
+  if (has_dims(y_na)) {
+    y_na[fold$testing, ] <- NA
+  } else {
+    y_na[fold$testing] <- NA
+  }
+
+  model <- bayesian_model(
+    x = ETA,
+    y = y_na,
+    iterations_number = self$model_iterations_number,
+    burn_in = self$burn_in,
+    thinning = self$thinning,
+    verbose = FALSE
+  )
+  predictions <- predict(model, fold$testing)
+
+  loss <- wrapper_loss(
+    observed = y_testing,
+    predictions = predictions,
+    tuner = self
+  )
+
+  return(loss)
+}
+
+# This function access self parameters because it is not used in tuner
+train_radial_bayes <- function(x, y, fit_params, predictors) {
+  new_order <- order(self$Pheno$Env, self$Pheno$Line)
+  self$Pheno <- self$Pheno[new_order, ]
+  self$y <- get_records(self$y, new_order)
+
+  # Fit params contains optimal rho
+  ETA <- prepare_eta(
+    Pheno = self$Pheno,
+    geno_preparator = self$geno_preparator,
+    rho = fit_params$rho,
+    predictors = predictors,
+    raise_to_rho = FALSE
+  )
+  y_na <- self$y
+  if (!is_empty(self$testing_indices)) {
+    if (self$is_multivariate) {
+      y_na[self$testing_indices, ] <- NA
+    } else {
+      y_na[self$testing_indices] <- NA
+    }
+  }
+
+  model <- bayesian_model(
+    x = ETA,
+    y = y_na,
+    iterations_number = self$fit_params$iterations_number,
+    burn_in = self$fit_params$burn_in,
+    thinning = self$fit_params$thinning,
+    verbose = FALSE
+  )
+
+  return(model)
 }

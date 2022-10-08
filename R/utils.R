@@ -1,5 +1,5 @@
 #' @importFrom reticulate py_suppress_warnings py_capture_output
-#' @importFrom data.table fwrite
+#' @importFrom data.table fwrite fread
 
 #' @include globals.R
 #' @include validator.R
@@ -133,6 +133,7 @@ is_empty_dir <- function(directory) {
 
 # Utilities --------------------------------------------------
 
+#' @export
 round_df <- function(Data, digits) {
   return(
     Data %>%
@@ -159,11 +160,30 @@ write_csv <- function(data,
                       quote = "auto",
                       na = "NA",
                       ...) {
-  return(fwrite(
+  fwrite(
     data,
     file = file,
     quote = quote,
     na = na,
+    ...
+  )
+
+  return(data)
+}
+
+#' @export
+read_csv <- function(file,
+                     skip = "__auto__",
+                     na_strings = "NA",
+                     strings_as_factors = FALSE,
+                     check_names = FALSE,
+                     ...) {
+  return(fread(
+    file = file,
+    skip = skip,
+    na.strings = na_strings,
+    stringsAsFactors = strings_as_factors,
+    check.names = check_names,
     ...
   ))
 }

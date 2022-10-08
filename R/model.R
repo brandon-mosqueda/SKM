@@ -186,15 +186,7 @@ Model <- R6Class(
         )
       }
     },
-    has_to_tune = function() {
-      for (hyperparam in self$fit_params) {
-        if (is_hyperparam(hyperparam)) {
-          return(TRUE)
-        }
-      }
-
-      return(FALSE)
-    },
+    has_to_tune = has_to_tune,
     get_hyperparams = function() {
       hyperparams <- list()
 
