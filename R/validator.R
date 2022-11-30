@@ -656,7 +656,7 @@ assert_cv_kfold <- function(records_number, k) {
 }
 
 assert_cv_kfold_strata <- function(data, k) {
-  assert_factor(data, empty.levels.ok = FALSE, all.missing = FALSE, min.len = 1)
+  assert_vector(data, any.missing = FALSE, min.len = 1)
   assert_number(k, lower = 2, upper = length(data))
 }
 
@@ -664,6 +664,38 @@ assert_cv_random <- function(records_number, folds_number, testing_proportion) {
   assert_number(records_number, lower = 2, finite = TRUE)
   assert_number(folds_number, lower = 1, finite = TRUE)
   assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+}
+
+assert_cv_random_strata <- function(data, folds_number, testing_proportion) {
+  assert_vector(data, any.missing = FALSE, min.len = 1)
+  assert_number(folds_number, lower = 1, finite = TRUE)
+  assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+}
+
+assert_cv_random_line <- function(lines, folds_number, testing_proportion) {
+  assert_character(lines, any.missing = FALSE, min.len = 1)
+  assert_number(folds_number, lower = 1, finite = TRUE)
+  assert_number(testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
+}
+
+assert_cv_one_env_out <- function(envs, envs_proportion, folds_per_env) {
+  assert_character(envs, any.missing = FALSE, min.len = 1)
+  assert_number(folds_number, lower = 1, finite = TRUE)
+  assert_number(testing_proportion, lower = 1e-3, upper = 1)
+}
+
+assert_cv_leve_one_group_out <- function(x) {
+  assert_vector(x, any.missing = FALSE, min.len = 2)
+  if (lunique(x) < 2) {
+    stop("x only contains data of one group, minimum two groups are required")
+  }
+}
+
+assert_cv_na <- function(x) {
+  assert_vector(x, min.len = 2, all.missing = FALSE)
+  if (any(!is.na(x))) {
+    stop("For NA cross validation you have to include some NA observations")
+  }
 }
 
 assert_predict_format <- function(format) {
