@@ -2,6 +2,7 @@
 #' @include validator.R
 #' @include gs_radial_model.R
 
+#' @export
 gs_radial <- function(lines,
                       envs,
                       y,
