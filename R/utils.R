@@ -93,7 +93,7 @@ cholesky <- function(x) {
   return(result)
 }
 
-# Sysmtem --------------------------------------------------
+# System --------------------------------------------------
 
 #' @export
 is_windows_os <- function() {
@@ -415,6 +415,15 @@ get_records <- function(x, indices) {
   } else {
     return(x[indices])
   }
+}
+
+#' @export
+sample_prop <- function(x, proportion, with_replace = FALSE) {
+  if (proportion > 1 & !with_replace) {
+    stop("When proportion > 1, with_replace have to be TRUE")
+  }
+
+  return(sample(x, length(x) * proportion))
 }
 
 #' @export
@@ -967,6 +976,132 @@ cv_random <- function(records_number,
   )
 
   return(cross_validator$get_folds())
+}
+
+#' @export
+cv_random_strata <- function(data,
+                             folds_number = 5,
+                             testing_proportion = 0.2) {
+  assert_cv_random_strata(data, folds_number, testing_proportion)
+
+  groups <- unique(data)
+  records <- seq_along(data)
+
+  folds <- list()
+  groups_indices <- list()
+
+  for (group in groups) {
+    groups_indices[[group]] <- which(data == group)
+  }
+
+  for (fold_number in seq(folds_number)) {
+    current_fold <- list(testing = c())
+
+    for (group in groups) {
+      current_fold$testing <- c(
+        current_fold$testing,
+        sample_prop(
+          groups_indices[[group]],
+          testing_proportion
+        )
+      )
+    }
+
+    current_fold$training <- records[-current_fold$testing]
+
+    folds <- append(folds, list(current_fold))
+  }
+
+  return(folds)
+}
+
+#' @export
+cv_leve_one_group_out <- function(data) {
+  assert_cv_leve_one_group_out(data)
+
+  groups <- unique(data)
+  records <- seq_along(data)
+
+  folds <- list()
+
+  for (group in groups) {
+    current_fold <- list()
+    current_fold$testing <- which(data == group)
+    current_fold$training <- records[-current_fold$testing]
+
+    folds <- append(folds, list(current_fold))
+  }
+
+  return(folds)
+}
+
+#' @export
+cv_random_line <- function(lines, folds_number = 5, testing_proportion = 0.2) {
+  assert_cv_random_line(
+    lines = lines,
+    folds_number = folds_number,
+    testing_proportion = testing_proportion
+  )
+
+  unique_lines <- unique(lines)
+  testing_lines_num <- round(length(unique_lines) * testing_proportion)
+  records <- seq_along(lines)
+
+  folds <- list()
+
+  for (fold_num in seq(folds_number)) {
+    testing_lines <- sample(unique_lines, testing_lines_num)
+    current_fold <- list()
+    current_fold$testing <- which(lines %in% testing_lines)
+    current_fold$training <- records[-current_fold$testing]
+
+    folds[[fold_num]] <- current_fold
+  }
+
+  return(folds)
+}
+
+#' @export
+cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
+  assert_cv_one_env_out(envs, envs_proportion, folds_per_env)
+
+  unique_envs <- unique(envs)
+  records <- seq_along(envs)
+
+  folds <- list()
+
+  for (env in envs) {
+    env_indices <- which(envs == env)
+
+    if (envs_proportion == 1) {
+      current_fold <- list()
+
+      current_fold$testing <- env_indices
+      current_fold$training <- records[-env_indices]
+
+      folds <- list(folds, list(current_fold))
+    } else {
+      for (i in seq(folds_per_env)) {
+        current_fold <- list()
+        current_fold$testing <- sample_prop(env_indices, envs_proportion)
+        current_fold$training <- records[-current_fold$testing]
+
+        folds <- list(folds, list(current_fold))
+      }
+    }
+  }
+
+  return(folds)
+}
+
+#' @export
+cv_na <- function(x) {
+  assert_cv_na(x)
+
+  folds <- list(list(testing = which(is.na(x))))
+  folds$training <- seq_along(x)[-folds[[1]]$testing]
+
+  return(folds)
 }
 
 # Randomness --------------------------------------------------

@@ -419,6 +419,9 @@ deep_learning_eval_one_fold <- function(fold, combination) {
     y_testing = y_testing
   )
 
+  keras::k_clear_session()
+  tensorflow::tf$compat$v1$keras$backend$get_session()$close()
+
   return(model$validation_loss)
 }
 
