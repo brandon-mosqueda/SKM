@@ -224,21 +224,11 @@ BayesianModel <- R6Class(
       indices <- private$prepare_predict_indices(indices)
 
       if (is_class_response(self$responses$y$type)) {
-        probabilities <- self$fitted_model$probs
-        classes <- colnames(probabilities)
+        probabilities <- as.data.frame(self$fitted_model$probs[indices, ])
 
-        predictions_cols <- apply(probabilities, 1, which.max)
-        predictions <- classes[predictions_cols]
-        predictions <- predictions[indices]
-        predictions <- factor(predictions, levels = self$responses$y$levels)
-
-        probabilities <- as.data.frame(
-          probabilities[indices, ]
-        )
-
-        predictions <- list(
-          predicted = predictions,
-          probabilities = probabilities
+        predictions <- predict_class(
+          probabilities,
+          self$responses$y
         )
       } else {
         predictions <- self$fitted_model$yHat[indices]

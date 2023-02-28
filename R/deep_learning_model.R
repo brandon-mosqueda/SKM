@@ -419,12 +419,17 @@ DeepLearningModel <- R6Class(
                                   fit_params) {
       if (is_class_response(responses$y$type)) {
         probabilities <- predict(model, x, batch_size = fit_params$batch_size)
-
-        predictions <- predict_class(
-          probabilities = as.data.frame(probabilities),
+        probabilities <- format_tensorflow_probabilities(
+          probabilities = probabilities,
           response_type = responses$y$type,
           levels = responses$y$levels
         )
+
+        if (is_binary_response(responses$y$type)) {
+          names(responses$y$thresholds) <- responses$y$levels
+        }
+
+        predictions <- predict_class(probabilities, responses$y)
       } else {
         predictions <- predict_numeric(predict(model, x))
       }
@@ -578,11 +583,13 @@ DeepLearningModel <- R6Class(
         if (is_class_response(responses[[name]]$type)) {
           probabilities <- all_predictions[, cols_names]
 
-          predictions[[name]] <- predict_class(
-            probabilities = as.data.frame(probabilities),
+          probabilities <- format_tensorflow_probabilities(
+            probabilities = probabilities,
             response_type = responses[[name]]$type,
             levels = responses[[name]]$levels
           )
+
+          predictions[[name]] <- predict_class(probabilities, responses[[name]])
         } else {
           predictions[[name]] <- predict_numeric(all_predictions[, cols_names])
         }

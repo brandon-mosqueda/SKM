@@ -21,6 +21,19 @@ prepare_univariate_y <- function() {
     type = get_response_type(self$y),
     levels = levels(self$y)
   )
+
+  if (is_binary_response(self$responses$y$type)) {
+    self$responses$y$thresholds <- as.list(table(self$y) / length(self$y))
+  } else if (is_categorical_response(self$responses$y$type)) {
+    thresholds <- rep(
+      1 / length(self$responses$y$levels),
+      length(self$responses$y$levels)
+    )
+    names(thresholds) <- self$responses$y$levels
+    thresholds <- as.list(thresholds)
+
+    self$responses$y$thresholds <- thresholds
+  }
 }
 
 prepare_multivariate_y <- function() {
@@ -36,6 +49,21 @@ prepare_multivariate_y <- function() {
       type = get_response_type(self$y[[col_name]]),
       levels = levels(self$y[[col_name]])
     )
+
+    if (is_binary_response(self$responses[[col_name]]$type)) {
+      self$responses[[col_name]]$thresholds <- as.list(
+        table(self$y[[col_name]]) / nrow(self$y)
+      )
+    } else if (is_categorical_response(self$responses[[col_name]]$type)) {
+      thresholds <- rep(
+        1 / length(self$responses[[col_name]]$levels),
+        length(self$responses[[col_name]]$levels)
+      )
+      names(thresholds) <- self$responses[[col_name]]$levels
+      thresholds <- as.list(thresholds)
+
+      self$responses[[col_name]]$thresholds <- thresholds
+    }
   }
 }
 
@@ -196,6 +224,31 @@ format_predictions <- function(predictions, is_multivariate, format) {
   }
 
   return(predictions)
+}
+
+predict_class <- function(probabilities, response_info) {
+  levels <- response_info$levels
+
+  if (is_binary_response(response_info$type)) {
+    first_class <- levels[1]
+    second_class <- levels[2]
+
+    predicted <- ifelse(
+      # The class with less elements has the higher probability
+      probabilities[[first_class]] >= response_info$thresholds[[first_class]],
+      first_class,
+      second_class
+    )
+  } else {
+    predicted <- apply(probabilities, 1, which.max)
+    predicted <- levels[predicted]
+  }
+
+  return(list(
+    predicted = factor(predicted, levels = levels),
+    probabilities = probabilities,
+    thresholds = response_info$thresholds
+  ))
 }
 
 # GBM --------------------------------------------------
@@ -542,29 +595,18 @@ prepare_y_to_deep_learning <- function(y, response_type) {
   return(y)
 }
 
-predict_class <- function(probabilities, response_type, levels) {
-  if (is_binary_response(response_type)) {
-    # With binary responses, probabilities is a vector that refers to level 2
-    predictions <- levels[as.integer(probabilities > 0.5) + 1]
+format_tensorflow_probabilities <- function(probabilities,
+                                            response_type,
+                                            levels) {
+  probabilities <- as.data.frame(probabilities)
 
+  if (is_binary_response(response_type)) {
     probabilities <- cbind(1 - probabilities, probabilities)
-  } else if (is_categorical_response(response_type)) {
-    predictions <- apply(probabilities, 1, which.max)
-    predictions <- levels[predictions]
-  } else {
-    stop(sprintf(
-      "{%s} is not a class response type",
-      set_collapse(response_type)
-    ))
   }
 
-  predictions <- factor(predictions, levels = levels)
   colnames(probabilities) <- levels
 
-  return(list(
-    predicted = predictions,
-    probabilities = probabilities
-  ))
+  return(probabilities)
 }
 
 predict_numeric <- function(predictions) {
