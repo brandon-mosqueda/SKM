@@ -120,13 +120,9 @@ SupportVectorMachineModel <- R6Class(
 
       if (is_class_response(responses$y$type)) {
         probabilities <- attr(predictions, "probabilities")
-        attr(predictions, "probabilities") <- NULL
-        names(predictions) <- NULL
+        probabilities <- as.data.frame(probabilities[, responses$y$levels])
 
-        predictions <- list(
-          predicted = predictions,
-          probabilities = as.data.frame(probabilities[, responses$y$levels])
-        )
+        predictions <- predict_class(probabilities, responses$y)
       } else {
         predictions <- list(predicted = as.numeric(predictions))
       }

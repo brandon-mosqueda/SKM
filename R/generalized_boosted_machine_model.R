@@ -120,28 +120,17 @@ GeneralizedBoostedMachineModel <- R6Class(
         all = TRUE
       )
 
-      if (is_binary_response(responses$y$type)) {
-        # Predictions are only the probabilities of being 1 (response level 2)
-        probabilities <- cbind(1 - predictions, predictions)
-        colnames(probabilities) <- responses$y$levels
-        predictions <- responses$y$levels[as.integer(predictions > 0.5) + 1]
-        predictions <- factor(predictions, levels = responses$y$levels)
+      if (is_class_response(responses$y$type)) {
+        if (is_binary_response(responses$y$type)) {
+          # Predictions are only the probabilities of being 1 (response level 2)
+          probabilities <- cbind(1 - predictions, predictions)
+          colnames(probabilities) <- responses$y$levels
+          probabilities <- as.data.frame(probabilities)
+        } else {
+          probabilities <- as.data.frame(predictions[, , 1])
+        }
 
-        predictions <- list(
-          predicted = predictions,
-          probabilities = as.data.frame(probabilities)
-        )
-      } else if (is_class_response(responses$y$type)) {
-        probabilities <- as.data.frame(predictions[, , 1])
-        classes <- colnames(predictions)
-
-        predictions <- classes[apply(predictions, 1, which.max)]
-        predictions <- factor(predictions, levels = responses$y$levels)
-
-        predictions <- list(
-          predicted = predictions,
-          probabilities = probabilities
-        )
+        predictions <- predict_class(probabilities, responses$y)
       } else {
         predictions <- list(predicted = predictions)
       }

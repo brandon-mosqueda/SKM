@@ -88,7 +88,6 @@ GeneralizedLinearModel <- R6Class(
                                   responses,
                                   fit_params) {
       if (is_class_response(responses$y$type)) {
-        predictions <- predict(model, x, type = "class", s = "lambda.min")
         probabilities <- predict(model, x, type = "response", s = "lambda.min")
 
         if (is_binary_response(responses$y$type)) {
@@ -99,17 +98,13 @@ GeneralizedLinearModel <- R6Class(
           probabilities <- probabilities[, , 1]
         }
 
-        predictions <- factor(c(predictions), levels = responses$y$levels)
-
-        return(list(
-          predicted = predictions,
-          probabilities = as.data.frame(probabilities)
-        ))
+        predictions <- predict_class(as.data.frame(probabilities), responses$y)
       } else {
-        predicted <- c(predict(model, x, type = "response", s = "lambda.min"))
-
-        return(list(predicted = predicted))
+        predictions <- c(predict(model, x, type = "response", s = "lambda.min"))
+        predictions <- list(predicted = predictions)
       }
+
+      return(predictions)
     },
     coefficients_univariate = function() {
       if (is_categorical_response(self$responses$y$type)) {
