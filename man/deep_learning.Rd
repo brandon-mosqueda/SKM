@@ -10,8 +10,8 @@ deep_learning(
   learning_rate = 0.001,
   epochs_number = 500,
   batch_size = 32,
-  layers = list(list(neurons_number = 50, neurons_proportion = NULL, activation =
-    "relu", dropout = 0, ridge_penalty = 0, lasso_penalty = 0)),
+  layers = list(list(neurons_number = 50, neurons_proportion = NULL, activation = "relu",
+    dropout = 0, ridge_penalty = 0, lasso_penalty = 0)),
   output_penalties = list(ridge_penalty = 0, lasso_penalty = 0),
   tune_type = "Grid_search",
   tune_cv_type = "K_fold",
