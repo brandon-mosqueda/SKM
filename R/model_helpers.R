@@ -22,17 +22,8 @@ prepare_univariate_y <- function() {
     levels = levels(self$y)
   )
 
-  if (is_binary_response(self$responses$y$type)) {
+  if (is_class_response(self$responses$y$type)) {
     self$responses$y$thresholds <- as.list(table(self$y) / length(self$y))
-  } else if (is_categorical_response(self$responses$y$type)) {
-    thresholds <- rep(
-      1 / length(self$responses$y$levels),
-      length(self$responses$y$levels)
-    )
-    names(thresholds) <- self$responses$y$levels
-    thresholds <- as.list(thresholds)
-
-    self$responses$y$thresholds <- thresholds
   }
 }
 
@@ -50,19 +41,10 @@ prepare_multivariate_y <- function() {
       levels = levels(self$y[[col_name]])
     )
 
-    if (is_binary_response(self$responses[[col_name]]$type)) {
+    if (is_class_response(self$responses[[col_name]]$type)) {
       self$responses[[col_name]]$thresholds <- as.list(
         table(self$y[[col_name]]) / nrow(self$y)
       )
-    } else if (is_categorical_response(self$responses[[col_name]]$type)) {
-      thresholds <- rep(
-        1 / length(self$responses[[col_name]]$levels),
-        length(self$responses[[col_name]]$levels)
-      )
-      names(thresholds) <- self$responses[[col_name]]$levels
-      thresholds <- as.list(thresholds)
-
-      self$responses[[col_name]]$thresholds <- thresholds
     }
   }
 }
@@ -239,15 +221,26 @@ predict_class <- function(probabilities, response_info) {
       first_class,
       second_class
     )
+    classification_probabilities <- probabilities
   } else {
-    predicted <- apply(probabilities, 1, which.max)
+    thresholds <- unlist(response_info$thresholds)
+    thresholds <- thresholds[colnames(probabilities)]
+    classification_probabilities <- apply(probabilities, 1, function(x) {
+      b <- thresholds / (1 - thresholds)
+
+      return(x / (x + (b * (1 - x))))
+    })
+    classification_probabilities <- t(classification_probabilities)
+
+    predicted <- apply(classification_probabilities, 1, which.max)
     predicted <- levels[predicted]
   }
 
   return(list(
     predicted = factor(predicted, levels = levels),
     probabilities = probabilities,
-    thresholds = response_info$thresholds
+    thresholds = response_info$thresholds,
+    classification_probabilities = classification_probabilities
   ))
 }
 
