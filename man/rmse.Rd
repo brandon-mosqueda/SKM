@@ -53,6 +53,7 @@ Other numeric_metrics:
 \code{\link{nrmse}()},
 \code{\link{numeric_summary}()},
 \code{\link{pearson}()},
+\code{\link{r2}()},
 \code{\link{spearman}()}
 }
 \concept{numeric_metrics}

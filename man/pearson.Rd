@@ -10,7 +10,7 @@ pearson(x, y = x, remove_na = TRUE)
 \item{x}{(\code{numeric} | \code{matrix}) The values to calculate the correlation.}
 
 \item{y}{(\code{numeric} | \code{matrix}) The values to calculate the correlation with.
-the same values as \code{x} by default.}
+The same values as \code{x} by default.}
 
 \item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by
 default.}
@@ -47,6 +47,7 @@ Other numeric_metrics:
 \code{\link{mse}()},
 \code{\link{nrmse}()},
 \code{\link{numeric_summary}()},
+\code{\link{r2}()},
 \code{\link{rmse}()},
 \code{\link{spearman}()}
 }

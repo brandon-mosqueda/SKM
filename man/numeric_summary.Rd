@@ -23,7 +23,7 @@ A list with all metrics.
 Given the observed and predicted values of numeric data computes the Mean
 Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean
 Squared Error (NRMSE), Mean Arctangent Absolute Percentage Error (MAAPE),
-Mean Absolute Error (MAE) and Person's correlation
+Mean Absolute Error (MAE), Person's correlation and R-Squared.
 }
 \examples{
 \dontrun{
@@ -42,6 +42,7 @@ Other numeric_metrics:
 \code{\link{mse}()},
 \code{\link{nrmse}()},
 \code{\link{pearson}()},
+\code{\link{r2}()},
 \code{\link{rmse}()},
 \code{\link{spearman}()}
 }

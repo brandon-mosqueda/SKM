@@ -1131,7 +1131,7 @@ spearman <- function(x, y = x, remove_na = TRUE) {
 #'
 #' @param x (`numeric` | `matrix`) The values to calculate the correlation.
 #' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
-#'   the same values as `x` by default.
+#'   The same values as `x` by default.
 #' @inheritParams mse
 #'
 #' @details
@@ -1175,6 +1175,45 @@ pearson <- function(x, y = x, remove_na = TRUE) {
   }
 
   return(cor(x, y, method = "pearson", use = "everything"))
+}
+
+#' @title R-Squared
+#'
+#' @description
+#' Computes the R-Squared.
+#'
+#' @param x (`numeric` | `matrix`) The values to calculate the correlation.
+#' @param y (`numeric` | `matrix`) The values to calculate the correlation with.
+#'   The same values as `x` by default.
+#' @inheritParams mse
+#'
+#' @details
+#' Pearson's correlation coefficient is computed as:
+#'
+#' ![](r2.png "Cor(x, y)^2")
+#'
+#' where Cor is the Pearson's correlation coefficient of the two variables.
+#'
+#' @return
+#' A single numeric value with the R-Squared value.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' r2(x, x)
+#' r2(x, x + rnorm(100, 2))
+#' r2(x, x - 1)
+#' r2(x, x + 10)
+#' }
+#'
+#' @family numeric_metrics
+#'
+#' @export
+r2 <- function(x, y = x, remove_na = TRUE) {
+  correlation <- pearson(x, y, remove_na = remove_na)
+
+  return(correlation^2)
 }
 
 # Helpers --------------------------------------------------
@@ -1501,7 +1540,7 @@ print.CategoricalSummary <- function(summary, digits = 4) {
 #' Given the observed and predicted values of numeric data computes the Mean
 #' Squared Error (MSE), Root Mean Squared Error (RMSE), Normalized Root Mean
 #' Squared Error (NRMSE), Mean Arctangent Absolute Percentage Error (MAAPE),
-#' Mean Absolute Error (MAE) and Person's correlation
+#' Mean Absolute Error (MAE), Person's correlation and R-Squared.
 #'
 #' @inheritParams mse
 #'
@@ -1527,7 +1566,8 @@ numeric_summary <- function(observed, predicted, remove_na = TRUE) {
     nrmse = nrmse(observed, predicted, remove_na = remove_na),
     maape = maape(observed, predicted, remove_na = remove_na),
     mae = mae(observed, predicted, remove_na = remove_na),
-    pearson = pearson(observed, predicted, remove_na = remove_na)
+    pearson = pearson(observed, predicted, remove_na = remove_na),
+    r2 = r2(observed, predicted, remove_na = remove_na)
   )
 
   class(summary) <- "NumericSummary"
@@ -1543,4 +1583,5 @@ print.NumericSummary <- function(summary, digits = 4) {
   cat(sprintf("* MAAPE: %s\n", round(summary$maape, digits)))
   cat(sprintf("* MAE: %s\n", round(summary$mae, digits)))
   cat(sprintf("* Pearson correlation: %s\n", round(summary$pearson, digits)))
+  cat(sprintf("* R-Squared: %s\n", round(summary$r2, digits)))
 }
