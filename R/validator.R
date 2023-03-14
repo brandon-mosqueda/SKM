@@ -680,7 +680,7 @@ assert_cv_random_line <- function(lines, folds_number, testing_proportion) {
 
 assert_cv_one_env_out <- function(envs, envs_proportion, folds_per_env) {
   assert_vector(envs, any.missing = FALSE, min.len = 1)
-  assert_number(envs_proportion, lower = 1e-3, upper = 1 - 1e-3)
+  assert_number(envs_proportion, lower = 1e-3, upper = 1)
   assert_number(folds_per_env, lower = 1, finite = TRUE)
 }
 
@@ -693,7 +693,7 @@ assert_cv_leve_one_group_out <- function(x) {
 
 assert_cv_na <- function(x) {
   assert_vector(x, min.len = 2, all.missing = FALSE)
-  if (any(!is.na(x))) {
+  if (all(!is.na(x))) {
     stop("For NA cross validation you have to include some NA observations")
   }
 }

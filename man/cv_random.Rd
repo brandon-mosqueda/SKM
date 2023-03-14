@@ -30,7 +30,7 @@ set and all the remaining ones to be the training set.
 }
 \examples{
 \dontrun{
-# Generates 5 folds of 2 elements (10 / 5) in testing set
+# Generates random data
 folds <- cv_random(10, 5, 0.2)
 # Indices of training set in fold 1
 folds[[1]]$training

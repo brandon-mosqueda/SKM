@@ -32,7 +32,7 @@ the groups are the environments.
 }
 \examples{
 \dontrun{
-# Generates 5 folds of 2 elements (10 / 5) in testing set
+# Generates random data
 envs <- rep(paste0("env", 1:4), 10)
 folds <- cv_one_env_out(envs)
 # Indices of training set in fold 1

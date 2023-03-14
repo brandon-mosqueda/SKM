@@ -108,7 +108,7 @@ is_unix_os <- function() {
 #' @title Make directory
 #'
 #' @description
-#' This functions  creates a directory if it does not exists.
+#' This functions  creates a directory (recursively) if it does not exists.
 #'
 #' @param directory (`character(1)`) The directory to create.
 #'
@@ -1009,7 +1009,7 @@ cv_kfold_strata <- function(data, k = 5) {
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' # Generates random data
 #' folds <- cv_random(10, 5, 0.2)
 #' # Indices of training set in fold 1
 #' folds[[1]]$training
@@ -1071,7 +1071,7 @@ cv_random <- function(records_number,
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' # Generates random data
 #' data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 #' folds <- cv_random_strata(data, 5, 0.2)
 #' # Indices of training set in fold 1
@@ -1152,7 +1152,7 @@ cv_random_strata <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' # Generates random data
 #' data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 #' folds <- cv_leve_one_group_out(data)
 #' # Indices of training set in fold 1
@@ -1213,7 +1213,7 @@ cv_leve_one_group_out <- function(data) {
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' # Generates random data
 #' lines <- rep(paste0("line", 1:10), 4)
 #' folds <- cv_random_line(lines, 5, 0.2)
 #' # Indices of training set in fold 1
@@ -1273,7 +1273,7 @@ cv_random_line <- function(lines, folds_number = 5, testing_proportion = 0.2) {
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' # Generates random data
 #' envs <- rep(paste0("env", 1:4), 10)
 #' folds <- cv_one_env_out(envs)
 #' # Indices of training set in fold 1
@@ -1300,14 +1300,14 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
       current_fold$testing <- env_indices
       current_fold$training <- records[-env_indices]
 
-      folds <- list(folds, list(current_fold))
+      folds <- append(folds, list(current_fold))
     } else {
       for (i in seq(folds_per_env)) {
         current_fold <- list()
         current_fold$testing <- sample_prop(env_indices, envs_proportion)
         current_fold$training <- records[-current_fold$testing]
 
-        folds <- list(folds, list(current_fold))
+        folds <- append(folds, list(current_fold))
       }
     }
   }
@@ -1333,7 +1333,7 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
 #'
 #' @examples
 #' \dontrun{
-#' # Generates 1 fold with all the NA values in testing set
+#' # Generates random data with NAs
 #' x <- c(1, 2, 3, NA, 5, 6, 7, NA, 9, 10)
 #' folds <- cv_na(x)
 #' # Indices of training set in fold 1

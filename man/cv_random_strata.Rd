@@ -30,7 +30,7 @@ set, but ensuring each fold contains the same proportion of elements in data.
 }
 \examples{
 \dontrun{
-# Generates 5 folds of 2 elements (10 / 5) in testing set
+# Generates random data
 data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 folds <- cv_random_strata(data, 5, 0.2)
 # Indices of training set in fold 1

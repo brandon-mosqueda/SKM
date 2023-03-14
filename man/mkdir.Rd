@@ -10,7 +10,7 @@ mkdir(directory)
 \item{directory}{(\code{character(1)}) The directory to create.}
 }
 \description{
-This functions  creates a directory if it does not exists.
+This functions  creates a directory (recursively) if it does not exists.
 }
 \examples{
 \dontrun{

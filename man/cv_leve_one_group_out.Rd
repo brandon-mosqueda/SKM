@@ -23,7 +23,7 @@ training set.
 }
 \examples{
 \dontrun{
-# Generates 5 folds of 2 elements (10 / 5) in testing set
+# Generates random data
 data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 folds <- cv_leve_one_group_out(data)
 # Indices of training set in fold 1

@@ -23,7 +23,7 @@ phenotypes of the individuals with missing phenotypes.
 }
 \examples{
 \dontrun{
-# Generates 1 fold with all the NA values in testing set
+# Generates random data with NAs
 x <- c(1, 2, 3, NA, 5, 6, 7, NA, 9, 10)
 folds <- cv_na(x)
 # Indices of training set in fold 1
