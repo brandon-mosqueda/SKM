@@ -2,10 +2,19 @@
 % Please edit documentation in R/utils.R
 \name{mkdir}
 \alias{mkdir}
-\title{Create a directory if does not exist, always recursively}
+\title{Make directory}
 \usage{
 mkdir(directory)
 }
+\arguments{
+\item{directory}{(\code{character(1)}) The directory to create.}
+}
 \description{
-Create a directory if does not exist, always recursively
+This functions  creates a directory if it does not exists.
+}
+\examples{
+\dontrun{
+mkdir("my_new_directory")
+}
+
 }

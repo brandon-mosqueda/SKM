@@ -7,7 +7,7 @@
 cv_kfold_strata(data, k = 5)
 }
 \arguments{
-\item{data}{(\code{factor}) The categorical data considered to stratify the folds.}
+\item{data}{(\code{vector}) The categorical data considered to stratify the folds.}
 
 \item{k}{(\code{numeric(1)}) The number of folds. 5 by default.}
 }
@@ -29,7 +29,7 @@ class, so it is a good option for balanced folds.
 \examples{
 \dontrun{
 # Generates 5 folds of 2 elements (10 / 5) in testing set
-data <- factor(c(rep("A", 10), rep("B", 20), rep("C", 30)))
+data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 folds <- cv_kfold_strata(data, 5)
 # Indices of training set in fold 1
 folds[[1]]$training

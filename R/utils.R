@@ -105,7 +105,18 @@ is_unix_os <- function() {
   return(.Platform$OS.type == "unix")
 }
 
-#' Create a directory if does not exist, always recursively
+#' @title Make directory
+#'
+#' @description
+#' This functions  creates a directory if it does not exists.
+#'
+#' @param directory (`character(1)`) The directory to create.
+#'
+#' @examples
+#' \dontrun{
+#' mkdir("my_new_directory")
+#' }
+#'
 #' @export
 mkdir <- function(directory) {
   if (!dir.exists(directory)) {
@@ -154,6 +165,25 @@ replace_at_list <- function(original, new_values) {
   return(original)
 }
 
+#' @title Write a CSV
+#'
+#' @description
+#' Wrapper for the `data.table::fwrite` function fot saving large `data.frame`s
+#' quickly in a CSV file.
+#'
+#' @param data (`data.frame`) The data to save.
+#' @param file (`character(1)`) The file to save the data.
+#' @param quote (`character(1)`) The quote strategy to use. "auto" by default.
+#'   See `data.table::fwrite` for more information.
+#' @param na (`character(1)`) The string to use for NA values. "NA" by default.
+#' @param ... (`...`) Other arguments to pass to `data.table::fwrite`.
+#'
+#' @examples
+#' \dontrun{
+#' write_csv(iris, "iris.csv")
+#' write_csv(data.frame(a = 1:10, b = 1:10), "my_file.csv")
+#'}
+#'
 #' @export
 write_csv <- function(data,
                       file,
@@ -502,6 +532,26 @@ is_square <- function(x) {
   return(result)
 }
 
+#' @title Is an empty object.
+#'
+#' @description
+#' Check if an object is empty.
+#'
+#' @param x (`any`) The object to be checked.
+#'
+#' @return
+#' A logical value indicating if the object is empty.
+#'
+#' @examples
+#' \dontrun{
+#' is_empty(1:10) # FALSE
+#' is_empty(1:0) # TRUE
+#' is_empty(NULL) # TRUE
+#' is_empty(c()) # TRUE
+#' is_empty(character()) # TRUE
+#' is_empty(data.frame()) # TRUE
+#'}
+#'
 #' @export
 is_empty <- function(x) {
   return(length(x) == 0)
@@ -573,6 +623,26 @@ nonull <- function(...) {
 
 # Text manipulation --------------------------------------------------
 
+#' @title Print a message in the console.
+#'
+#' @description
+#' This function is a wrapper of `cat` function, but it is more flexible
+#' because it allows to use `sprintf` format.
+#'
+#' @param format (`character(1)`) The format of the message. See `sprintf` for
+#'   more details.
+#' @param ... (`any`) The values to be formatted.
+#' @param end (`character(1)`) The end of the message. Default is `\n`.
+#' @param file (`character(1)`) The file where the output will be written.
+#'   Default is `""`, no file.
+#' @param append (`logical(1)`) If `TRUE`, append the message to the file.
+#'
+#' @examples
+#' \dontrun{
+#' echo("Hello %s!", "World")
+#' echo("%d + %d = %d", 1, 1, 2)
+#' }
+#'
 #' @export
 echo <- function(format, ..., end = "\n", file = "", append = TRUE) {
   if (is.null(format)) {
@@ -865,7 +935,7 @@ cv_kfold <- function(records_number, k = 5) {
 #' validation ensures each fold contains the same proportion of elements of each
 #' class, so it is a good option for balanced folds.
 #'
-#' @param data (`factor`) The categorical data considered to stratify the folds.
+#' @param data (`vector`) The categorical data considered to stratify the folds.
 #' @param k (`numeric(1)`) The number of folds. 5 by default.
 #'
 #' @return
@@ -878,7 +948,7 @@ cv_kfold <- function(records_number, k = 5) {
 #' @examples
 #' \dontrun{
 #' # Generates 5 folds of 2 elements (10 / 5) in testing set
-#' data <- factor(c(rep("A", 10), rep("B", 20), rep("C", 30)))
+#' data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
 #' folds <- cv_kfold_strata(data, 5)
 #' # Indices of training set in fold 1
 #' folds[[1]]$training
@@ -978,6 +1048,55 @@ cv_random <- function(records_number,
   return(cross_validator$get_folds())
 }
 
+#' @title Stratified random cross validation folds generation
+#'
+#' @description
+#' Generates folds for the stratified random cross validation where you specify
+#' the number of folds and the proportion of testing. In each fold a sample
+#' without replacement of the specified proportion of testing individuals is
+#' taken to be the testing set and all the remaining ones to be the training
+#' set, but ensuring each fold contains the same proportion of elements in data.
+#'
+#' @param data (`vector`) The categorical data considered to stratify the folds.
+#' @param folds_number (`numeric(1)`) The number of folds. 5 by default.
+#' @param testing_proportion (`numeric(1)`) The proportion of elements to be
+#'   included in the testing set in each fold. 0.2 by default.
+#'
+#' @return
+#' A `list` with `folds_number` elements where each element is a named `list`
+#' with the elements `training` wich includes the indices of those records to be
+#' part of the training set and `testing` wich includes the indices of those
+#' records to be part of the testing set. Training and testing sets of each fold
+#' are exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
+#' folds <- cv_random_strata(data, 5, 0.2)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' # Verify fold 1 is balanced in training
+#' table(data[folds[[1]]$training])
+#' # Verify fold 1 is balanced in testing
+#' table(data[folds[[1]]$testing])
+#' #' # Verify fold 2 is balanced in training
+#' table(data[folds[[2]]$training])
+#' # Verify fold 2 is balanced in testing
+#' table(data[folds[[2]]$testing])
+#'
+#' folds <- cv_random_strata(iris$Species, 10, 0.5)
+#' # List with indices of training and testing of fold 1
+#' folds[[1]]
+#' # List with indices of training and testing of fold 2
+#' folds[[2]]
+#' folds[[3]]
+#' # ...
+#' folds[[30]]
+#' }
+#'
 #' @export
 cv_random_strata <- function(data,
                              folds_number = 5,
@@ -1015,6 +1134,43 @@ cv_random_strata <- function(data,
   return(folds)
 }
 
+#' @title Leave one group out cross validation folds generation
+#'
+#' @description
+#' Generates folds for the leave one group out cross validation. In each fold
+#' on group is taken to be the testing set and all the remaining ones to be the
+#' training set.
+#'
+#' @param data (`vector`) The categorical data considered to stratify the folds.
+#'
+#' @return
+#' A `list` with `length(unique(data))` elements where each element is a named
+#' `list` with the elements `training` wich includes the indices of those
+#' records to be part of the training set and `testing` wich includes the
+#' indices of those records to be part of the testing set. Training and testing
+#' sets of each fold are exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' data <- c(rep("A", 10), rep("B", 20), rep("C", 30))
+#' folds <- cv_leve_one_group_out(data)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#'
+#' # Verify fold 1 only contains elements of group A
+#' table(data[folds[[1]]$training])
+#' table(data[folds[[1]]$testing])
+#' # Verify fold 2 only contains elements of group B
+#' table(data[folds[[2]]$training])
+#' table(data[folds[[2]]$testing])
+#' # Verify fold 3 only contains elements of group C
+#' table(data[folds[[3]]$training])
+#' table(data[folds[[3]]$testing])
+#' }
+#'
 #' @export
 cv_leve_one_group_out <- function(data) {
   assert_cv_leve_one_group_out(data)
@@ -1035,6 +1191,37 @@ cv_leve_one_group_out <- function(data) {
   return(folds)
 }
 
+#' @title Random line cross validation folds generation
+#'
+#' @description
+#' This method is designed in the context of genomic selection where we have a
+#' vector of lines and we want to generate folds for cross validation. In each
+#' fold a proportion of lines is taken to be the testing set and the remaining
+#' ones to be the training set.
+#'
+#' @param lines (`vector`) The vector of all lines.
+#' @param folds_number (`numeric(1)`) The number of folds to generate.
+#' @param testing_proportion (`numeric(1)`) The proportion of lines to be taken
+#'  to be the testing set in each fold.
+#'
+#' @return
+#' A `list` with `folds_number` elements where each element is a named `list`
+#' with the elements `training` wich includes the indices of those records to be
+#' part of the training set and `testing` wich includes the indices of those
+#' records to be part of the testing set. Training and testing sets of each fold
+#' are exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' lines <- rep(paste0("line", 1:10), 4)
+#' folds <- cv_random_line(lines, 5, 0.2)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' }
+#'
 #' @export
 cv_random_line <- function(lines, folds_number = 5, testing_proportion = 0.2) {
   assert_cv_random_line(
@@ -1061,6 +1248,40 @@ cv_random_line <- function(lines, folds_number = 5, testing_proportion = 0.2) {
   return(folds)
 }
 
+#' @title Leave one environment out cross validation folds generation
+#'
+#' @description
+#' Generates folds for the leave one environment out cross validation. In each
+#' fold on environment is taken to be the testing set and all the remaining ones
+#' to be the training set. It is a special case of the `cv_one_group_out` where
+#' the groups are the environments.
+#'
+#' @param envs (`vector`) The vector of all environments.
+#' @param envs_proportion (`numeric(1)`) The proportion of data within each
+#'   environment to be taken randomly to be the testing set in each fold. If 1,
+#'   then all the whole environment is taken to be the testing set. 1 by
+#'   default.
+#' @param folds_per_env (`numeric(1)`) The number of folds to generate for each
+#'   environment when `envs_proportion` is less than 1. 5 by default.
+#'
+#' @return
+#' A `list` with `length(unique(envs)) * folds_per_env` elements where each
+#' element is a named `list` with the elements `training` wich includes the
+#' indices of those records to be part of the training set and `testing` wich
+#' includes the indices of those records to be part of the testing set.
+#' Training and testing sets of each fold are exhaustive and mutually exclusive.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 5 folds of 2 elements (10 / 5) in testing set
+#' envs <- rep(paste0("env", 1:4), 10)
+#' folds <- cv_one_env_out(envs)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' }
+#'
 #' @export
 cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
   assert_cv_one_env_out(envs, envs_proportion, folds_per_env)
@@ -1094,6 +1315,33 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
   return(folds)
 }
 
+#' @title NA cross validation folds generation
+#'
+#' @description
+#' This type of cross validation consists of a single fold where all the NA
+#' values are taken to be the testing set and the remaining ones to be the
+#' training set. Useful in genomic selection when we want to predict the
+#' phenotypes of the individuals with missing phenotypes.
+#'
+#' @param x (`vector`) The vector of values.
+#'
+#' @return
+#' A `list` with a single element which is a named `list` with the elements
+#' `training` wich includes the indices of those records to be part of the
+#' training set and `testing` wich includes the indices of those records to be
+#' part of the testing set.
+#'
+#' @examples
+#' \dontrun{
+#' # Generates 1 fold with all the NA values in testing set
+#' x <- c(1, 2, 3, NA, 5, 6, 7, NA, 9, 10)
+#' folds <- cv_na(x)
+#' # Indices of training set in fold 1
+#' folds[[1]]$training
+#' # Indices of testing set in fold 1
+#' folds[[1]]$testing
+#' }
+#'
 #' @export
 cv_na <- function(x) {
   assert_cv_na(x)
