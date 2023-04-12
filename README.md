@@ -16,7 +16,7 @@ if (!require("devtools")) {
 }
 devtools::install_github("gdlc/BGLR-R")
 devtools::install_github("rstudio/keras")
-devtools::install_github("kogalur/randomForestSRC")
+devtools::install_github("rstudio/tensorflow")
 devtools::install_github("brandon-mosqueda/SKM")
 ```
 

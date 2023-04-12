@@ -24,7 +24,7 @@ if (ok) {
   }
 
   devtools::install_github("gdlc/BGLR-R", upgrade = "default")
+  devtools::install_github("rstudio/tensorflow", upgrade = "default")
   devtools::install_github("rstudio/keras", upgrade = "default")
-  devtools::install_github("kogalur/randomForestSRC", upgrade = "default")
   devtools::install_github("brandon-mosqueda/SKM", upgrade = "default")
 }
