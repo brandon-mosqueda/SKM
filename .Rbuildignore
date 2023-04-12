@@ -12,3 +12,4 @@ vscode.code-workspace
 ^man/figures/SKM.drawio$
 ^paper$
 ^SKM_1.0.tar.gz$
+install.R

@@ -8,13 +8,22 @@ The SKM paper can be consulted in the following link: [https://doi.org/10.3389/f
 
 ## Installation
 
-Currently this package is only available in Github and can be installed with the following commands:
+Currently this package is only available in Github and as it requires the most updated versions of some dependencies, you have to make sure you have these updated versions installed. You can use the following code to install SKM:
 
 ```r
 if (!require("devtools")) {
   install.packages("devtools")
 }
+devtools::install_github("gdlc/BGLR-R")
+devtools::install_github("rstudio/keras")
+devtools::install_github("kogalur/randomForestSRC")
 devtools::install_github("brandon-mosqueda/SKM")
+```
+
+If you find problems installing the library, specially windows users that does not have installed Rtools, you can use the installation script of this repository:
+
+```r
+source("https://raw.githubusercontent.com/brandon-mosqueda/SKM/main/install.R")
 ```
 
 ## Authors
