@@ -19,6 +19,8 @@ GSPredictorPreparator <- R6Class(
                           predictors) {
       self$Pheno <- self$prepare_pheno(Pheno)
       self$geno_preparator <- geno_preparator
+      self$geno_preparator$preprocess(sort(unique(self$Pheno$Line)))
+
       self$predictors <- tolower(predictors)
     },
 

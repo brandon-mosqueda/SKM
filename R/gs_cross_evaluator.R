@@ -17,7 +17,6 @@ GSCrossEvaluator <- R6Class(
     predictor_preparator = NULL,
     folds_manager = NULL,
 
-    unique_lines = NULL,
     execution_time = NULL,
 
     initialize = function(geno_preparator,
@@ -28,16 +27,16 @@ GSCrossEvaluator <- R6Class(
                           folds) {
       self$is_multivariate <- is_multivariate
       self$traits <- traits
-      self$unique_lines <- sort(unique(self$Pheno$Line))
 
       self$geno_preparator <- geno_preparator
       self$geno_preparator$prepare(self$unique_lines)
 
       self$predictor_preparator <- predictor_preparator_class$new(
-        Pheno = self$Pheno,
+        Pheno = Pheno,
         geno_preparator = self$geno_preparator,
         predictors = predictors
       )
+      self$predictor_preparator$prepare()
 
       self$folds_manager <- FoldsManager$new(folds)
     },
@@ -51,8 +50,8 @@ GSCrossEvaluator <- R6Class(
         fold <- self$folds_manager$get_next()
         self$folds_manager$print_current(level = 1)
 
-        fold_model <- private$eval_fold(fold)
-        predicted <- private$predict_multitrait(fold_model)
+        fold_model <- private$eval_multitrait_fold(fold)
+        predicted <- private$predict_multitrait(fold_model, fold)
 
         for (trait in self$traits) {
           Predictions <- Predictions %>%
@@ -69,7 +68,6 @@ GSCrossEvaluator <- R6Class(
 
       return(Predictions)
     },
-
     eval_unitrait = function() {
       Predictions <- list()
 
@@ -82,8 +80,8 @@ GSCrossEvaluator <- R6Class(
           fold <- self$folds_manager$get_next()
           self$folds_manager$print_current(level = 1)
 
-          fold_model <- private$eval_fold(trait, fold)
-          predicted <- private$predict_unitrait(trait, fold_model)
+          fold_model <- private$eval_unitrait_fold(trait, fold)
+          predicted <- private$predict_unitrait(trait, fold_model, fold)
 
           TraitPredictions <- TraitPredictions %>%
             bind_rows(tibble(
@@ -101,7 +99,6 @@ GSCrossEvaluator <- R6Class(
 
       return(Predictions)
     },
-
     eval = function() {
       if (self$is_multivariate) {
         return(self$eval_multitrait())
@@ -109,12 +106,12 @@ GSCrossEvaluator <- R6Class(
 
       return(self$eval_unitrait())
     }
-
   ),
   private = list(
     # Methods ------------------------------------------------------------------
 
-    eval_fold = not_implemented_function,
+    eval_unitrait_fold = not_implemented_function,
+    eval_multitrait_fold = not_implemented_function,
     predict_unitrait = not_implemented_function,
     predict_multitrait = not_implemented_function
   )

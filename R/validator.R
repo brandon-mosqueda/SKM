@@ -741,8 +741,12 @@ assert_pheno <- function(Pheno, traits, is_multivariate) {
   }
 
   required_cols <- c("Line", "Env")
-  assert_data_frame(Pheno, any.missing = FALSE, min.rows = 1)
+  assert_data_frame(Pheno, min.rows = 1)
   assert_names(colnames(Pheno), must.include = required_cols)
+
+  assert_vector(Pheno$Line, any.missing = FALSE, min.len = 1)
+  assert_vector(Pheno$Env, any.missing = FALSE, min.len = 1)
+
   assert_names(traits, subset.of = setdiff(colnames(Pheno), required_cols))
 }
 
