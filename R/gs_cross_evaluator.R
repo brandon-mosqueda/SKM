@@ -4,33 +4,28 @@
 
 #' @include utils.R
 #' @include model_helpers.R
+#' @include folds_manager.R
 
 GSCrossEvaluator <- R6Class(
   classname = "GSCrossEvaluator",
   public = list(
     # Properties ---------------------------------------------------------------
-    Pheno = NULL,
 
     is_multivariate = NULL,
     traits = NULL,
-    unique_lines = NULL,
     geno_preparator = NULL,
     predictor_preparator = NULL,
     folds_manager = NULL,
 
+    unique_lines = NULL,
     execution_time = NULL,
 
-    initialize = function(Pheno,
-                          Geno,
-                          Markers,
-
-                          geno_preparator,
+    initialize = function(geno_preparator,
                           predictor_preparator_class,
                           traits,
                           is_multivariate,
 
                           folds) {
-      self$Pheno <- prepare_pheno(Pheno)
       self$is_multivariate <- is_multivariate
       self$traits <- traits
       self$unique_lines <- sort(unique(self$Pheno$Line))
