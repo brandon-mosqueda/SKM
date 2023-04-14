@@ -333,6 +333,28 @@ to_matrix <- function(x, with_intercept = FALSE, remove_na = FALSE) {
   return(x)
 }
 
+dummy_matrix <- function(values, remove_level = NULL) {
+  data <- data.frame(Value = values)
+  Matrix <- model.matrix(~ 0 + Value, data)
+  colnames(Matrix) <- gsub("Value", "", colnames(Matrix))
+
+  if (!is.null(remove_level)) {
+    if (is.numeric(remove_level)) {
+      remove_col <- remove_level
+    } else {
+      remove_col <- which(colnames(Matrix) == remove_level)
+    }
+
+    if (SKM::is_empty(remove_col)) {
+      warning(remove_level, " does not exist in the provided values")
+    } else {
+      Matrix <- Matrix[, -remove_col, drop = FALSE]
+    }
+  }
+
+  return(Matrix)
+}
+
 #' @title Convert data to data.frame
 #'
 #' @description

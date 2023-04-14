@@ -1,7 +1,6 @@
 #' @import dplyr
 
 #' @importFrom R6 R6Class
-#' @importFrom tibble tibble
 
 #' @include model.R
 #' @include bayesian_model.R

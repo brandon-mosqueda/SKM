@@ -155,6 +155,33 @@ assert_bounds <- function(x,
 
 # Helpers --------------------------------------------------
 
+assert_folds <- function(folds, rows_number) {
+  assert_list(folds, any.missing = FALSE, min.len = 1)
+
+  for (i in seq_along(folds)) {
+    fold <- folds[[i]]
+    assert_list(fold, any.missing = FALSE, min.len = 1)
+
+    assert_numeric(
+      fold$training,
+      upper = rows_number,
+      lower = 1,
+      any.missing = FALSE,
+      min.len = 1,
+      .var.name = sprintf("fold[[%s]]$training", i)
+    )
+
+    assert_numeric(
+      fold$testing,
+      upper = rows_number,
+      lower = 1,
+      any.missing = FALSE,
+      min.len = 1,
+      .var.name = sprintf("fold[[%s]]$testing", i)
+    )
+  }
+}
+
 assert_tune_cv <- function(tune_type,
                            tune_cv_type,
                            tune_folds_number,
@@ -192,30 +219,7 @@ assert_tune_cv <- function(tune_type,
   }
 
   if (!is.null(tune_folds)) {
-    assert_list(tune_folds, any.missing = FALSE, min.len = 1)
-
-    for (i in seq_along(tune_folds)) {
-      fold <- tune_folds[[i]]
-      assert_list(fold, any.missing = FALSE, min.len = 1)
-
-      assert_numeric(
-        fold$training,
-        upper = x_nrows,
-        lower = 1,
-        any.missing = FALSE,
-        min.len = 1,
-        .var.name = sprintf("fold[[%s]]$training", i)
-      )
-
-      assert_numeric(
-        fold$testing,
-        upper = x_nrows,
-        lower = 1,
-        any.missing = FALSE,
-        min.len = 1,
-        .var.name = sprintf("fold[[%s]]$testing", i)
-      )
-    }
+    assert_folds(tune_folds, x_nrows)
   }
 }
 
@@ -264,6 +268,10 @@ assert_seed <- function(seed) {
 
 assert_verbose <- function(verbose) {
   assert_logical(verbose, any.missing = FALSE, len = 1)
+}
+
+assert_is_multivariate <- function(is_multivariate) {
+  assert_logical(is_multivariate, any.missing = FALSE, len = 1)
 }
 
 assert_x <- function(x, expected_matrix = TRUE) {
@@ -723,6 +731,35 @@ assert_envs <- function(envs) {
   envs <- as.character(envs)
 
   assert_character(envs, any.missing = FALSE, min.len = 1)
+}
+
+assert_pheno <- function(Pheno, traits, is_multivariate) {
+  assert_character(traits, any.missing = FALSE, min.len = 1)
+
+  if (is_multivariate && length(traits) < 2) {
+    stop("Multivariate analysis requires at least two traits")
+  }
+
+  required_cols <- c("Line", "Env")
+  assert_data_frame(Pheno, any.missing = FALSE, min.rows = 1)
+  assert_names(colnames(Pheno), must.include = required_cols)
+  assert_names(traits, subset.of = setdiff(colnames(Pheno), required_cols))
+}
+
+assert_geno <- function(Geno, lines) {
+  assert_matrix(
+    Geno,
+    any.missing = FALSE,
+    min.rows = length(lines),
+    min.cols = length(lines)
+  )
+
+  if (!is_square(Geno)) {
+    stop("Geno must be a square matrix")
+  }
+
+  assert_names(rownames(Geno), permutation.of = lines)
+  assert_names(colnames(Geno), permutation.of = lines)
 }
 
 assert_geno_markers <- function(Geno, Markers, lines) {
@@ -1360,6 +1397,26 @@ validate_gs_radial <- function(is_multivariate,
     finite = TRUE,
     any.missing = FALSE
   )
+
+  assert_seed(seed)
+  assert_verbose(verbose)
+}
+
+validate_gs_fast_bayesian <- function(Pheno,
+                                      Geno,
+                                      traits,
+
+                                      is_multivariate,
+                                      predictors,
+                                      folds,
+
+                                      seed,
+                                      verbose) {
+  assert_is_multivariate(is_multivariate)
+  assert_pheno(Pheno, traits, is_multivariate)
+  assert_geno(Geno, unique(Pheno$Line))
+  assert_predictors(predictors)
+  assert_folds(folds, nrow(Pheno))
 
   assert_seed(seed)
   assert_verbose(verbose)

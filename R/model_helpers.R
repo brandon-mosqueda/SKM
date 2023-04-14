@@ -1,4 +1,6 @@
 #' @import keras
+#' @import dplyr
+
 #' @importFrom glmnet cv.glmnet
 
 #' @include utils.R
