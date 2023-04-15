@@ -8,29 +8,24 @@ GSPredictorPreparator <- R6Class(
     # Properties ---------------------------------------------------------------
 
     Pheno = NULL,
-    geno_preparator = NULL,
+    Geno = NULL,
     predictors = NULL,
     X = NULL,
 
     # Methods ------------------------------------------------------------------
 
     initialize = function(Pheno,
-                          geno_preparator,
+                          Geno,
                           predictors) {
-      self$Pheno <- self$prepare_pheno(Pheno)
-      self$geno_preparator <- geno_preparator
-      self$geno_preparator$preprocess(sort(unique(self$Pheno$Line)))
-
-      self$predictors <- tolower(predictors)
-    },
-
-    prepare_pheno = function(Pheno) {
-      Pheno <- Pheno %>%
+      self$Pheno <- Pheno %>%
         as_tibble() %>%
         mutate(Line = factor(Line), Env = factor(Env)) %>%
         arrange(Env, Line)
 
-      return(Pheno)
+      lines <- sort(unique(self$Pheno$Line))
+      self$Geno <- Geno[lines, lines]
+
+      self$predictors <- tolower(predictors)
     },
 
     prepare = not_implemented_function

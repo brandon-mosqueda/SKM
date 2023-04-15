@@ -17,13 +17,17 @@ GSBayesianPredictorPreparator <- R6Class(
       super$initialize(...)
 
       self$model <- tolower(model)
+
+      if (self$model != "gblup") {
+        self$Geno <- cholesky(self$Geno)
+      }
     },
 
     prepare = function() {
       if (self$model == "gblup") {
-        self$prepare_gblup()
+        private$prepare_gblup()
       } else {
-        self$prepare_bayes()
+        private$prepare_bayes()
       }
     }
   ),
@@ -37,15 +41,15 @@ GSBayesianPredictorPreparator <- R6Class(
       Env <- dummy_matrix(self$Pheno$Env)
       Env <- Env %*% t(Env) / ncol(Env)
 
-      if ("line" %in% self$predictors || "linexenv" %in% self$predictors) {
-        GenoLine <- Line %*% self$geno_preparator$Geno %*% t(Line)
+      if ("line" %in% self$predictors || "envxline" %in% self$predictors) {
+        GenoLine <- Line %*% self$Geno %*% t(Line)
 
         if ("line" %in% self$predictors) {
           self$X$Line <- list(x = GenoLine, model = self$model)
         }
 
-        if ("linexenv" %in% self$predictors) {
-          self$X$LinexEnv <- list(x = Env * GenoLine, model = self$model)
+        if ("envxline" %in% self$predictors) {
+          self$X$EnvxLine <- list(x = Env * GenoLine, model = self$model)
         }
       }
 
@@ -62,17 +66,15 @@ GSBayesianPredictorPreparator <- R6Class(
       Line <- dummy_matrix(self$Pheno$Line)
       Env <- dummy_matrix(self$Pheno$Env)
 
-      if ("line" %in% self$predictors || "linexenv" %in% self$predictors) {
-        # Cholesky is needed for bayesian models
-        Geno <- cholesky(self$geno_preparator$Geno)
-        GenoLine <- Line %*% Geno
+      if ("line" %in% self$predictors || "envxline" %in% self$predictors) {
+        GenoLine <- Line %*% self$Geno
 
         if ("line" %in% self$predictors) {
           self$X$Line <- list(x = GenoLine, model = self$model)
         }
 
-        if ("linexenv" %in% self$predictors) {
-          self$X$LinexEnv <- list(
+        if ("envxline" %in% self$predictors) {
+          self$X$EnvxLine <- list(
             x = model.matrix(~ 0 + GenoLine:Env),
             model = self$model
           )
