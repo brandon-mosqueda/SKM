@@ -733,10 +733,10 @@ assert_envs <- function(envs) {
   assert_character(envs, any.missing = FALSE, min.len = 1)
 }
 
-assert_pheno <- function(Pheno, traits, is_multivariate) {
+assert_pheno <- function(Pheno, traits, is_multitrait) {
   assert_character(traits, any.missing = FALSE, min.len = 1)
 
-  if (is_multivariate && length(traits) < 2) {
+  if (is_multitrait && length(traits) < 2) {
     stop("Multivariate analysis requires at least two traits")
   }
 
@@ -751,6 +751,8 @@ assert_pheno <- function(Pheno, traits, is_multivariate) {
 }
 
 assert_geno <- function(Geno, lines) {
+  lines <- as.character(lines)
+
   assert_matrix(
     Geno,
     any.missing = FALSE,
@@ -1409,17 +1411,28 @@ validate_gs_radial <- function(is_multivariate,
 validate_gs_fast_bayesian <- function(Pheno,
                                       Geno,
                                       traits,
-
-                                      is_multivariate,
-                                      predictors,
                                       folds,
+
+                                      model,
+                                      predictors,
+                                      is_multitrait,
 
                                       seed,
                                       verbose) {
-  assert_is_multivariate(is_multivariate)
-  assert_pheno(Pheno, traits, is_multivariate)
+  assert_is_multivariate(is_multitrait)
+  assert_pheno(Pheno, traits, is_multitrait)
   assert_geno(Geno, unique(Pheno$Line))
-  assert_predictors(predictors)
+
+  assert_subset_string(
+    predictors,
+    GS_PREDICTORS,
+    ignore.case = TRUE,
+    empty.ok = FALSE,
+    unique = TRUE
+  )
+
+  assert_bayesian_model(model, is_multitrait)
+
   assert_folds(folds, nrow(Pheno))
 
   assert_seed(seed)

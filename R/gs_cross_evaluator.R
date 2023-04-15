@@ -11,33 +11,22 @@ GSCrossEvaluator <- R6Class(
   public = list(
     # Properties ---------------------------------------------------------------
 
-    is_multivariate = NULL,
-    traits = NULL,
-    geno_preparator = NULL,
     predictor_preparator = NULL,
+
+    is_multitrait = NULL,
+    traits = NULL,
     folds_manager = NULL,
 
+    Predictions = NULL,
     execution_time = NULL,
 
-    initialize = function(geno_preparator,
-                          predictor_preparator_class,
+    initialize = function(predictor_preparator,
                           traits,
-                          is_multivariate,
-
+                          is_multitrait,
                           folds) {
-      self$is_multivariate <- is_multivariate
+      self$is_multitrait <- is_multitrait
       self$traits <- traits
-
-      self$geno_preparator <- geno_preparator
-      self$geno_preparator$prepare(self$unique_lines)
-
-      self$predictor_preparator <- predictor_preparator_class$new(
-        Pheno = Pheno,
-        geno_preparator = self$geno_preparator,
-        predictors = predictors
-      )
-      self$predictor_preparator$prepare()
-
+      self$predictor_preparator <- predictor_preparator
       self$folds_manager <- FoldsManager$new(folds)
     },
 
@@ -45,22 +34,23 @@ GSCrossEvaluator <- R6Class(
 
     eval_multitrait = function() {
       Predictions <- list()
+      Pheno <- self$predictor_preparator$Pheno
 
       while(self$folds_manager$has_next()) {
         fold <- self$folds_manager$get_next()
-        self$folds_manager$print_current(level = 1)
+        self$folds_manager$print_current(level = 0)
 
-        fold_model <- private$eval_multitrait_fold(fold)
-        predicted <- private$predict_multitrait(fold_model, fold)
+        fold_model <- self$eval_multitrait_fold(fold)
+        predicted <- self$predict_multitrait(fold_model, fold)
 
         for (trait in self$traits) {
           Predictions <- Predictions %>%
             bind_rows(tibble(
               Trait = trait,
               Fold = self$folds_manager$current_number,
-              Line = self$Pheno$Line[fold$testing],
-              Env = self$Pheno$Env[fold$testing],
-              Observed = self$Pheno[[trait]][fold$testing],
+              Line = Pheno$Line[fold$testing],
+              Env = Pheno$Env[fold$testing],
+              Observed = Pheno[[trait]][fold$testing],
               Predicted = predicted[[trait]]
             ))
         }
@@ -70,46 +60,45 @@ GSCrossEvaluator <- R6Class(
     },
     eval_unitrait = function() {
       Predictions <- list()
+      Pheno <- self$predictor_preparator$Pheno
 
+      i <- 1
       for (trait in self$traits) {
-        echo("* Trait: %s", trait)
-
-        TraitPredictions <- tibble()
+        echo("* Trait '%s' (%s/%s)", trait, i, length(self$traits))
+        i <- i + 1
 
         while(self$folds_manager$has_next()) {
           fold <- self$folds_manager$get_next()
           self$folds_manager$print_current(level = 1)
 
-          fold_model <- private$eval_unitrait_fold(trait, fold)
-          predicted <- private$predict_unitrait(trait, fold_model, fold)
+          fold_model <- self$eval_unitrait_fold(trait, fold)
+          predicted <- self$predict_unitrait(trait, fold_model, fold)
 
-          TraitPredictions <- TraitPredictions %>%
+          Predictions <- Predictions %>%
             bind_rows(tibble(
               Trait = trait,
               Fold = self$folds_manager$current_number,
-              Line = self$Pheno$Line[fold$testing],
-              Env = self$Pheno$Env[fold$testing],
-              Observed = self$Pheno[[trait]][fold$testing],
+              Line = Pheno$Line[fold$testing],
+              Env = Pheno$Env[fold$testing],
+              Observed = Pheno[[trait]][fold$testing],
               Predicted = predicted
             ))
         }
 
-        Predictions[[trait]] <- TraitPredictions
+        self$folds_manager$reset()
       }
 
       return(Predictions)
     },
     eval = function() {
-      if (self$is_multivariate) {
-        return(self$eval_multitrait())
+      self$predictor_preparator$prepare()
+
+      if (self$is_multitrait) {
+        self$Predictions <- self$eval_multitrait()
+      } else {
+        self$Predictions <- self$eval_unitrait()
       }
-
-      return(self$eval_unitrait())
-    }
-  ),
-  private = list(
-    # Methods ------------------------------------------------------------------
-
+    },
     eval_unitrait_fold = not_implemented_function,
     eval_multitrait_fold = not_implemented_function,
     predict_unitrait = not_implemented_function,

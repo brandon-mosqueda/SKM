@@ -33,6 +33,9 @@ FoldsManager <- R6Class(
         self$current_number,
         length(self$folds)
       )
+    },
+    reset = function() {
+      self$current_number <- 0
     }
   )
 )

@@ -3,8 +3,9 @@
 #' @importFrom R6 R6Class
 
 #' @include utils.R
-#' @include gs_cross_evaluator.R
 #' @include bayesian_model.R
+#' @include gs_cross_evaluator.R
+#' @include gs_bayesian_predictor_preparator.R
 
 GSFastBayesianCrossEvaluator <- R6Class(
   classname = "GSFastBayesianCrossEvaluator",
@@ -13,17 +14,47 @@ GSFastBayesianCrossEvaluator <- R6Class(
     # Properties ---------------------------------------------------------------
 
     model = NULL,
+    model_name = NULL,
     Variance = NULL,
+    prev_trait = NULL,
 
     iterations_number = NULL,
     burn_in = NULL,
-    thinning = NULL
-  ),
-  private = list(
-    # Methods ------------------------------------------------------------------
+    thinning = NULL,
+
+    initialize = function(Pheno,
+                          Geno,
+                          traits,
+                          model,
+                          is_multitrait,
+                          predictors,
+                          folds,
+                          iterations_number,
+                          burn_in,
+                          thinning) {
+      predictor_preparator <- GSBayesianPredictorPreparator$new(
+        model = model,
+        Pheno = Pheno,
+        Geno = Geno,
+        predictors = predictors
+      )
+
+      super$initialize(
+        predictor_preparator = predictor_preparator,
+        traits = traits,
+        is_multitrait = is_multitrait,
+        folds = folds
+      )
+
+      self$model_name <- model
+      self$iterations_number <- iterations_number
+      self$burn_in <- burn_in
+      self$thinning <- thinning
+    },
 
     eval_unitrait_fold = function(trait, fold) {
-      if (is.null(self$model)) {
+      if (is.null(self$model) || self$prev_trait != trait) {
+        self$prev_trait <- trait
         ETA <- self$predictor_preparator$X
 
         self$model <- bayesian_model(
@@ -37,7 +68,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
           verbose = FALSE
         )
 
-        self$Variance <- self$get_unitrait_variance(self$model$fitted_model)
+        self$Variance <- self$get_unitrait_variance(self$model)
       }
 
       return(self$model)
@@ -59,7 +90,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
           verbose = FALSE
         )
 
-        self$Variance <- self$get_multitrait_variance(self$model$fitted_model)
+        self$Variance <- self$get_multitrait_variance(self$model)
       }
 
       return(self$model)
@@ -71,9 +102,9 @@ GSFastBayesianCrossEvaluator <- R6Class(
       # Variance components
       rows_num <- nrow(Pheno)
 
-      EnvVar <- model$ETA$Env$varU
-      LineVar <- model$ETA$Line$varU
-      ErrorVar <- model$varE
+      EnvVar <- model$fitted_model$ETA$Env$varU
+      LineVar <- model$fitted_model$ETA$Line$varU
+      ErrorVar <- model$fitted_model$varE
 
       ## V: Covariance matrix of the trait y
       EnvMatrix <- ETA$Env$x
@@ -82,9 +113,9 @@ GSFastBayesianCrossEvaluator <- R6Class(
       V <- (envs_num * EnvMatrix * EnvVar) +
         (LineMatrix * LineVar + diag(ErrorVar, rows_num))
 
-      if ("linexenv" %in% self$predictor_preparator$predictors) {
-        LineEnvMatrix <- ETA$LinexEnv$x
-        LineEnvVar <- model$ETA$GE$varU
+      if ("envxline" %in% self$predictor_preparator$predictors) {
+        LineEnvMatrix <- ETA$EnvxLine$x
+        LineEnvVar <- model$fitted_model$ETA$EnvxLine$varU
         V <- V + envs_num * LineEnvMatrix * LineEnvVar
       }
 
@@ -92,8 +123,10 @@ GSFastBayesianCrossEvaluator <- R6Class(
     },
     predict_unitrait = function(trait, model, fold) {
       y <- self$predictor_preparator$Pheno[[trait]]
-      EnvMatrix <- self$predictor_preparator$X$Env$x
-      LineMatrix <- self$predictor_preparator$X$Line$x
+      ETA <- self$predictor_preparator$X
+
+      EnvMatrix <- ETA$Env$x
+      LineMatrix <- ETA$Line$x
 
       V11 <- self$Variance[fold$testing, fold$testing, drop = FALSE]
       V21 <- self$Variance[-fold$testing, fold$testing, drop = FALSE]
@@ -107,8 +140,8 @@ GSFastBayesianCrossEvaluator <- R6Class(
       G <- LineMatrix[fold$testing, -fold$testing, drop = FALSE] +
         EnvMatrix[fold$testing, -fold$testing, drop = FALSE]
 
-      if ("linexenv" %in% self$predictor_preparator$predictors) {
-        LineEnvMatrix <- ETA$LinexEnv$x
+      if ("envxline" %in% self$predictor_preparator$predictors) {
+        LineEnvMatrix <- ETA$EnvxLine$x
         G <- G + LineEnvMatrix[fold$testing, -fold$testing, drop = FALSE]
       }
 
@@ -118,16 +151,16 @@ GSFastBayesianCrossEvaluator <- R6Class(
       u_testing <- G %*% V22inv %*%
         as.matrix(y[-fold$testing] - mean(y[-fold$testing]))
 
-      return(mean(y[-fold$testing]) + u_testing)
+      return(mean(y[-fold$testing]) + as.numeric(u_testing))
     },
     get_multitrait_variance = function(model) {
       Pheno <- self$predictor_preparator$Pheno
       ETA <- self$predictor_preparator$X
 
       rows_num <- nrow(Pheno)
-      EnvVar <- model$ETA$Env$Cov$Omega
-      LineVar <- model$ETA$Line$Cov$Omega
-      ErrorVar <- model$resCov$R
+      EnvVar <- model$fitted_model$ETA$Env$Cov$Omega
+      LineVar <- model$fitted_model$ETA$Line$Cov$Omega
+      ErrorVar <- model$fitted_model$resCov$R
 
       ## V: Covariance matrix of the trait y
       EnvMatrix <- ETA$Env$x
@@ -138,9 +171,9 @@ GSFastBayesianCrossEvaluator <- R6Class(
         LineMatrix %*% LineVar +
         diag(1, rows_num) %x% ErrorVar
 
-      if ("linexenv" %in% self$predictor_preparator$predictors) {
-        LineEnvMatrix <- ETA$LinexEnv$x
-        LineEnvVar <- model$ETA$GE$Cov$Omega
+      if ("envxline" %in% self$predictor_preparator$predictors) {
+        LineEnvMatrix <- ETA$EnvxLine$x
+        LineEnvVar <- model$fitted_model$ETA$EnvxLine$Cov$Omega
         V <- V + LineEnvMatrix %x% LineEnvVar
       }
 
@@ -181,9 +214,9 @@ GSFastBayesianCrossEvaluator <- R6Class(
       g <- (LineMatrix %x% LineVar)[testing_indices, -testing_indices] +
         (EnvMatrix %x% EnvVar)[testing_indices, -testing_indices]
 
-      if ("linexenv" %in% self$predictor_preparator$predictors) {
-        LineEnvMatrix <- ETA$LinexEnv$x
-        LineEnvVar <- model$fitted_model$ETA$GE$Cov$Omega
+      if ("envxline" %in% self$predictor_preparator$predictors) {
+        LineEnvMatrix <- ETA$EnvxLine$x
+        LineEnvVar <- model$fitted_model$ETA$EnvxLine$Cov$Omega
         LineEnvTerm <- (LineEnvMatrix %x% LineEnvVar)[
           testing_indices,
           -testing_indices

@@ -1,10 +1,14 @@
+#' @include utils.R
+#' @include validator.R
+#' @include gs_fast_bayesian_cross_evaluator.R
+
+#' @export
 gs_fast_bayesian <- function(Pheno,
                              Geno,
                              traits,
                              folds,
 
-                             is_multivariate = FALSE,
-                             predictors = list(Line = "BGBLUP"),
+                             is_multitrait = FALSE,
 
                              iterations_number = 1500,
                              burn_in = 500,
@@ -12,14 +16,18 @@ gs_fast_bayesian <- function(Pheno,
 
                              seed = NULL,
                              verbose = TRUE) {
+  predictors <- c("Env", "Line", "EnvxLine")
+  model <- "BGBLUP"
+
   validate_gs_fast_bayesian(
     Pheno = Pheno,
     Geno = Geno,
     traits = traits,
-
-    is_multivariate = is_multivariate,
-    predictors = predictors,
     folds = folds,
+
+    model = model,
+    predictors = predictors,
+    is_multitrait = is_multitrait,
 
     seed = seed,
     verbose = verbose
@@ -35,20 +43,21 @@ gs_fast_bayesian <- function(Pheno,
 
   start_time <- Sys.time()
 
-  model <- GSFastBayesian$new(
+  model <- GSFastBayesianCrossEvaluator$new(
     Pheno = Pheno,
     Geno = Geno,
     traits = traits,
-    is_multivariate = is_multivariate,
+    model = model,
+    is_multitrait = is_multitrait,
     predictors = predictors,
+    folds = folds,
     iterations_number = iterations_number,
     burn_in = burn_in,
-    thinning = thinning,
-    verbose = verbose
+    thinning = thinning
   )
 
   wrapper_function <- get_verbose_function(verbose)
-  wrapper_function(model$fit())
+  wrapper_function(model$eval())
 
   end_time <- Sys.time()
   model$execution_time <- difftime(end_time, start_time)

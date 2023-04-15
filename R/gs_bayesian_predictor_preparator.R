@@ -18,14 +18,14 @@ GSBayesianPredictorPreparator <- R6Class(
 
       self$model <- tolower(model)
 
-      if (self$model != "gblup") {
+      if (self$model != "bgblup") {
         self$Geno <- cholesky(self$Geno)
       }
     },
 
     prepare = function() {
-      if (self$model == "gblup") {
-        private$prepare_gblup()
+      if (self$model == "bgblup") {
+        private$prepare_bgblup()
       } else {
         private$prepare_bayes()
       }
@@ -34,7 +34,7 @@ GSBayesianPredictorPreparator <- R6Class(
   private = list(
     # Methods ------------------------------------------------------------------
 
-    prepare_gblup = function() {
+    prepare_bgblup = function() {
       self$X <- list()
 
       Line <- dummy_matrix(self$Pheno$Line)
