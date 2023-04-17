@@ -105,9 +105,47 @@ GSCrossEvaluator <- R6Class(
           Trait = factor(Trait)
         )
     },
+    export = function(path) {
+      results <- list(
+        Pheno = self$predictor_preparator$Pheno,
+        Geno = self$predictor_preparator$Geno,
+        traits = self$traits,
+        is_multitrait = self$is_multitrait,
+        Predictions = self$Predictions,
+        execution_time = self$execution_time,
+        folds = self$folds_manager$folds
+      )
+
+      class(results) <- "GSCrossEvaluator"
+
+      return(results)
+    },
     eval_unitrait_fold = not_implemented_function,
     eval_multitrait_fold = not_implemented_function,
     predict_unitrait = not_implemented_function,
     predict_multitrait = not_implemented_function
   )
 )
+
+print.GSCrossEvaluator <- function(model) {
+  echo("$Predictions")
+  print(model$Predictions, n = 5)
+  echo("\n$traits: %s", paste0(model$traits, collapse = ", "))
+  echo("\n$is_multitrait: %s", model$is_multitrait)
+  echo("\n$folds: %s", length(model$folds))
+  echo(
+    "\n$execution_time: %f mins",
+    as.numeric(model$execution_time, units = "mins")
+  )
+  echo(
+    "\n$Pheno\n\tenvs_num: %i\n\tlines_num: %i\n\trows_num: %i",
+    lunique(model$Pheno$Env),
+    lunique(model$Pheno$Line),
+    nrow(model$Pheno)
+  )
+  echo(
+    "\n$Geno\n\trows_num: %i\n\tcols_num: %i",
+    nrow(model$Geno),
+    ncol(model$Geno)
+  )
+}

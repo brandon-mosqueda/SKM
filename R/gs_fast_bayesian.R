@@ -64,5 +64,5 @@ gs_fast_bayesian <- function(Pheno,
 
   wrapper_function(print_model_time_execution(model$execution_time))
 
-  return(model)
+  return(model$export())
 }

@@ -244,6 +244,27 @@ GSFastBayesianCrossEvaluator <- R6Class(
       colnames(Predicted) <- self$traits
 
       return(as_tibble(Predicted))
+    },
+    export = function() {
+      results <- super$export()
+      results$model <- self$model
+      results$model_name <- self$model_name
+      results$iterations_number <- self$iterations_number
+      results$burn_in <- self$burn_in
+      results$thinning <- self$thinning
+
+      class(results) <- "GSFastBayesian"
+
+      return(results)
     }
   )
 )
+
+#' @export
+print.GSFastBayesian <- function(model) {
+  print.GSCrossEvaluator(model)
+  echo("\n$model_name: %s", model$model_name)
+  echo("\n$iterations_number: %i", model$iterations_number)
+  echo("\n$burn_in: %i", model$burn_in)
+  echo("\n$thinning: %i", model$thinning)
+}
