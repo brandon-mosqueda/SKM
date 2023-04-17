@@ -16,9 +16,9 @@ with the predicted probabilities, the column must have the class as name.
 If \code{predictions} contains a column nameed \code{Trait}, the summaries will be
 computed and saved per trait.}
 
-\item{save_at}{(\code{character(1)}) The directory's name where the summaries are
-going to be saved as CSV. If \code{NULL} is provided, the results are only
-returned but not saved. \code{NULL} by default.}
+\item{save_at}{(\code{character(1)}) The directory's name where the summaries and
+predictions are going to be saved as CSV. If \code{NULL} is provided, the
+results are only returned but not saved. \code{NULL} by default.}
 
 \item{digits}{(\code{numeric(1)}) Digits of precision to use in the summaries. 4
 by default.}

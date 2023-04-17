@@ -189,9 +189,9 @@ categorical_summarise_line <- function(predictions, digits) {
 #'   with the predicted probabilities, the column must have the class as name.
 #'   If `predictions` contains a column nameed `Trait`, the summaries will be
 #'   computed and saved per trait.
-#' @param save_at (`character(1)`) The directory's name where the summaries are
-#'   going to be saved as CSV. If `NULL` is provided, the results are only
-#'   returned but not saved. `NULL` by default.
+#' @param save_at (`character(1)`) The directory's name where the summaries and
+#'   predictions are going to be saved as CSV. If `NULL` is provided, the
+#'   results are only returned but not saved. `NULL` by default.
 #' @param digits (`numeric(1)`) Digits of precision to use in the summaries. 4
 #'   by default.
 #'
@@ -244,7 +244,7 @@ categorical_summarise_line <- function(predictions, digits) {
 gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
   assert_gs_summary(predictions, save_at, digits)
 
-  if (is.null(predictions$Trait)) {
+  if ("Trait" %in% names(predictions)) {
     summaries <- gs_summaries_single(
       predictions = predictions,
       save_at = save_at,
@@ -328,6 +328,7 @@ gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
   if (!is.null(save_at)) {
     mkdir(save_at)
 
+    write_csv(predictions, file.path(save_at, "predictions.csv"))
     write_csv(Line, file.path(save_at, "line_summary.csv"))
     write_csv(Env, file.path(save_at, "env_summary.csv"))
     write_csv(Fold, file.path(save_at, "fold_summary.csv"))
