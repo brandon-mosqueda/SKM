@@ -72,7 +72,7 @@ cholesky_no_definite <- function(G, tolerance = 1e-10) {
 #' # Import the genomic data
 #' data(Maize)
 #'
-#' Cholesky <- cholesky(to_matrix(Maize$Geno[, -1]))
+#' Cholesky <- cholesky(Maize$Geno)
 #' dim(Cholesky)
 #' head(Cholesky[, 5])
 #' }

@@ -478,8 +478,8 @@ data(Maize)
 
 # Data preparation of G
 Line <- model.matrix(~ 0 + Line, data = Maize$Pheno)
-# Compute cholesky without the first column (Line)
-Geno <- cholesky(Maize$Geno[, -1])
+# Compute cholesky
+Geno <- cholesky(Maize$Geno)
 # G matrix
 X <- Line \%*\% Geno
 y <- Maize$Pheno$Y

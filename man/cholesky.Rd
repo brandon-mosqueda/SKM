@@ -22,7 +22,7 @@ symmetric positive-definite square matrix.
 # Import the genomic data
 data(Maize)
 
-Cholesky <- cholesky(to_matrix(Maize$Geno[, -1]))
+Cholesky <- cholesky(Maize$Geno)
 dim(Cholesky)
 head(Cholesky[, 5])
 }

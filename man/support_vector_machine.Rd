@@ -319,8 +319,8 @@ data(Wheat)
 
 # Data preparation of G
 Line <- model.matrix(~ 0 + Line, data = Wheat$Pheno)
-# Compute cholesky without the first column (Line)
-Geno <- cholesky(Wheat$Geno[, -1])
+# Compute cholesky
+Geno <- cholesky(Wheat$Geno)
 # G matrix
 X <- Line \%*\% Geno
 y <- Wheat$Pheno$Y
