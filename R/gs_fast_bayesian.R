@@ -2,7 +2,7 @@
 #' @include validator.R
 #' @include gs_fast_bayesian_cross_evaluator.R
 
-#' @title Fast Bayesian Cross Validation
+#' @title Fast Bayesian Cross Validation for Genomic Selection
 #'
 #' @description
 #' This function performs a cross validation using the Fast Bayesian method
@@ -18,6 +18,11 @@
 #'   entries: `training`, with a vector of indices for training set, and
 #'   `testing`, with a vector of indices for testing set. Note that this is
 #'   default format for `cv_*` functions of SKM libraries.
+#' @param predictors (`character`) (case not sensitive) The predictors to be
+#'   used in the model. "Env" stans for the environment effect, "Line" stands
+#'   for the line effect and "EnvxLine" stands for the interaction between
+#'   environment and line. "Env" and "Line" are required.
+#'   `c("Env", "Line", "EnvxLine")` by default.
 #' @param is_multitrait (`logical(1)`) Is multitrait analysis? `FALSE` by
 #'   default.
 #' @param iterations_number (`numeric(1)`) Number of iterations to fit the
@@ -56,6 +61,7 @@ gs_fast_bayesian <- function(Pheno,
                              traits,
                              folds,
 
+                             predictors = c("Env", "Line", "EnvxLine"),
                              is_multitrait = FALSE,
 
                              iterations_number = 1500,
@@ -64,7 +70,6 @@ gs_fast_bayesian <- function(Pheno,
 
                              seed = NULL,
                              verbose = TRUE) {
-  predictors <- c("Env", "Line", "EnvxLine")
   model <- "BGBLUP"
 
   validate_gs_fast_bayesian(

@@ -1430,6 +1430,9 @@ validate_gs_fast_bayesian <- function(Pheno,
     empty.ok = FALSE,
     unique = TRUE
   )
+  if (!all(c("env", "line") %in% tolower(predictors))) {
+    stop("The predictors must include both \"Env\" and \"Line\"")
+  }
 
   assert_bayesian_model(model, is_multitrait)
 

@@ -2,13 +2,14 @@
 % Please edit documentation in R/gs_fast_bayesian.R
 \name{gs_fast_bayesian}
 \alias{gs_fast_bayesian}
-\title{Fast Bayesian Cross Validation}
+\title{Fast Bayesian Cross Validation for Genomic Selection}
 \usage{
 gs_fast_bayesian(
   Pheno,
   Geno,
   traits,
   folds,
+  predictors = c("Env", "Line", "EnvxLine"),
   is_multitrait = FALSE,
   iterations_number = 1500,
   burn_in = 500,
@@ -31,6 +32,12 @@ traits.}
 entries: \code{training}, with a vector of indices for training set, and
 \code{testing}, with a vector of indices for testing set. Note that this is
 default format for \verb{cv_*} functions of SKM libraries.}
+
+\item{predictors}{(\code{character}) (case not sensitive) The predictors to be
+used in the model. "Env" stans for the environment effect, "Line" stands
+for the line effect and "EnvxLine" stands for the interaction between
+environment and line. "Env" and "Line" are required.
+\code{c("Env", "Line", "EnvxLine")} by default.}
 
 \item{is_multitrait}{(\code{logical(1)}) Is multitrait analysis? \code{FALSE} by
 default.}
@@ -83,7 +90,7 @@ data(Maize)
 
 folds <- cv_kfold(nrow(Maize$Pheno), k = 5)
 
-model <- gs_fast_bayesian(
+results <- gs_fast_bayesian(
   Maize$Pheno,
   Maize$Geno,
 
@@ -100,8 +107,42 @@ model <- gs_fast_bayesian(
   verbose = TRUE
 )
 
-model
-
-model$Predictions
+print(results)
+#> $Predictions
+#> # A tibble: 2,888 × 6
+#>   Trait Fold  Line      Env   Observed Predicted
+#>   <fct> <fct> <fct>     <fct>    <dbl>     <dbl>
+#> 1 Y     1     L001_L003 1      -0.0274      7.11
+#> 2 Y     1     L001_L012 1       0.574       3.89
+#> 3 Y     1     L001_L023 1      -0.0636      3.95
+#> 4 Y     1     L001_L033 1       0.215       2.05
+#> 5 Y     1     L001_L034 1       0.299       2.70
+#> # … with 2,883 more rows
+#> # ℹ Use `print(n = ...)` to see more rows
+#>
+#> $traits: Y
+#>
+#> $is_multitrait: FALSE
+#>
+#> $folds: 5
+#>
+#> $execution_time: 0.841673 mins
+#>
+#> $Pheno
+#>         envs_num: 4
+#>         lines_num: 722
+#>         rows_num: 2888
+#>
+#> $Geno
+#>         rows_num: 722
+#>         cols_num: 722
+#>
+#> $model_name: BGBLUP
+#>
+#> $iterations_number: 10
+#>
+#> $burn_in: 5
+#>
+#> $thinning: 5
 }
 \concept{gs_models}
