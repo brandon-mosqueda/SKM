@@ -27,7 +27,12 @@ GSCrossEvaluator <- R6Class(
       self$is_multitrait <- is_multitrait
       self$traits <- traits
       self$predictor_preparator <- predictor_preparator
+      self$predictor_preparator$prepare()
+
       self$folds_manager <- FoldsManager$new(folds)
+      self$folds_manager$remap_indices(
+        self$predictor_preparator$get_new_mapping_indices()
+      )
     },
 
     # Methods ------------------------------------------------------------------
@@ -91,8 +96,6 @@ GSCrossEvaluator <- R6Class(
       return(Predictions)
     },
     eval = function() {
-      self$predictor_preparator$prepare()
-
       if (self$is_multitrait) {
         self$Predictions <- self$eval_multitrait()
       } else {

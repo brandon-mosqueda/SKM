@@ -36,6 +36,17 @@ FoldsManager <- R6Class(
     },
     reset = function() {
       self$current_number <- 0
+    },
+    remap_indices = function(new_indices) {
+      self$folds <- lapply(
+        self$folds,
+        function(fold) {
+          fold$training <- new_indices[fold$training]
+          fold$testing <- new_indices[fold$testing]
+
+          return(fold)
+        }
+      )
     }
   )
 )

@@ -1418,7 +1418,8 @@ validate_gs_fast_bayesian <- function(Pheno,
                                       is_multitrait,
 
                                       seed,
-                                      verbose) {
+                                      verbose,
+                                      required_predictors = NULL) {
   assert_is_multivariate(is_multitrait)
   assert_pheno(Pheno, traits, is_multitrait)
   assert_geno(Geno, unique(Pheno$Line))
@@ -1430,8 +1431,13 @@ validate_gs_fast_bayesian <- function(Pheno,
     empty.ok = FALSE,
     unique = TRUE
   )
-  if (!all(c("env", "line") %in% tolower(predictors))) {
-    stop("The predictors must include both \"Env\" and \"Line\"")
+
+  if (!is.null(required_predictors) &&
+      !all(tolower(required_predictors) %in% tolower(predictors))) {
+    stop(
+      "The following predictors are required for this model: ",
+      set_collapse(required_predictors)
+    )
   }
 
   assert_bayesian_model(model, is_multitrait)

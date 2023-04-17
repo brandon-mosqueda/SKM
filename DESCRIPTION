@@ -95,6 +95,8 @@ Collate:
     'gs_predictor_preparator.R'
     'gs_bayesian_predictor_preparator.R'
     'gs_cross_evaluator.R'
+    'gs_bayesian_cross_evaluator.R'
+    'gs_bayesian.R'
     'gs_fast_bayesian_cross_evaluator.R'
     'gs_fast_bayesian.R'
     'markers_preparator.R'

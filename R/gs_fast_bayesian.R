@@ -19,10 +19,10 @@
 #'   `testing`, with a vector of indices for testing set. Note that this is
 #'   default format for `cv_*` functions of SKM libraries.
 #' @param predictors (`character`) (case not sensitive) The predictors to be
-#'   used in the model. "Env" stans for the environment effect, "Line" stands
-#'   for the line effect and "EnvxLine" stands for the interaction between
-#'   environment and line. "Env" and "Line" are required.
-#'   `c("Env", "Line", "EnvxLine")` by default.
+#'   used in the model. `"Env"` stans for the environment effect, `"Line"`
+#'   stands for the line effect and "EnvxLine" stands for the interaction
+#'   between environment and line. `"Env"` and `"Line"` are required.
+#'   `c(`"Env"`, `"Line"`, "EnvxLine")` by default.
 #' @param is_multitrait (`logical(1)`) Is multitrait analysis? `FALSE` by
 #'   default.
 #' @param iterations_number (`numeric(1)`) Number of iterations to fit the
@@ -80,6 +80,7 @@ gs_fast_bayesian <- function(Pheno,
 
     model = model,
     predictors = predictors,
+    required_predictors = c("Env", "Line"),
     is_multitrait = is_multitrait,
 
     seed = seed,
