@@ -73,28 +73,6 @@ GSFastBayesianCrossEvaluator <- R6Class(
 
       return(self$model)
     },
-    eval_multitrait_fold = function(fold) {
-      if (is.null(self$model)) {
-        ETA <- self$predictor_preparator$X
-        y <- self$predictor_preparator$Pheno %>%
-          select(all_of(self$traits))
-
-        self$model <- bayesian_model(
-          x = ETA,
-          y = y,
-
-          iterations_number = self$iterations_number,
-          burn_in = self$burn_in,
-          thinning = self$thinning,
-
-          verbose = FALSE
-        )
-
-        self$Variance <- self$get_multitrait_variance(self$model)
-      }
-
-      return(self$model)
-    },
     get_unitrait_variance = function(model) {
       Pheno <- self$predictor_preparator$Pheno
       ETA <- self$predictor_preparator$X
@@ -153,6 +131,29 @@ GSFastBayesianCrossEvaluator <- R6Class(
 
       return(mean(y[-fold$testing]) + as.numeric(u_testing))
     },
+
+    eval_multitrait_fold = function(fold) {
+      if (is.null(self$model)) {
+        ETA <- self$predictor_preparator$X
+        y <- self$predictor_preparator$Pheno %>%
+          select(all_of(self$traits))
+
+        self$model <- bayesian_model(
+          x = ETA,
+          y = y,
+
+          iterations_number = self$iterations_number,
+          burn_in = self$burn_in,
+          thinning = self$thinning,
+
+          verbose = FALSE
+        )
+
+        self$Variance <- self$get_multitrait_variance(self$model)
+      }
+
+      return(self$model)
+    },
     get_multitrait_variance = function(model) {
       Pheno <- self$predictor_preparator$Pheno
       ETA <- self$predictor_preparator$X
@@ -168,7 +169,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
 
       # Kornecker product
       V <- EnvMatrix %x% EnvVar +
-        LineMatrix %*% LineVar +
+        LineMatrix %x% LineVar +
         diag(1, rows_num) %x% ErrorVar
 
       if ("envxline" %in% self$predictor_preparator$predictors) {
@@ -181,6 +182,9 @@ GSFastBayesianCrossEvaluator <- R6Class(
     },
     predict_multitrait = function(model, fold) {
       Pheno <- self$predictor_preparator$Pheno
+      y <- Pheno %>%
+        select(all_of(self$traits)) %>%
+        as.matrix()
       rows_num <- nrow(Pheno)
       ETA <- self$predictor_preparator$X
       EnvMatrix <- self$predictor_preparator$X$Env$x
@@ -236,7 +240,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
       # Predictions rearranged in a matricial form
       Predicted <- as.matrix(rep(1, length(fold$testing))) %*%
         apply(y[-fold$testing, ], 2, mean) +
-        matrix(u_tst_i, ncol = nt, byrow = T)
+        matrix(u_tst_i, ncol = length(self$traits), byrow = TRUE)
       colnames(Predicted) <- self$traits
 
       return(as_tibble(Predicted))

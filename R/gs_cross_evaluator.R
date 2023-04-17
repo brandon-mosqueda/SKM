@@ -98,6 +98,12 @@ GSCrossEvaluator <- R6Class(
       } else {
         self$Predictions <- self$eval_unitrait()
       }
+
+      self$Predictions <- self$Predictions %>%
+        mutate(
+          Fold = factor(Fold),
+          Trait = factor(Trait)
+        )
     },
     eval_unitrait_fold = not_implemented_function,
     eval_multitrait_fold = not_implemented_function,
