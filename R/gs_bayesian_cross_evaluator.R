@@ -97,8 +97,9 @@ GSBayesianCrossEvaluator <- R6Class(
     predict_multitrait = function(model, fold) {
       return(predict(
         model,
-        fold$testing
-      )$predicted)
+        fold$testing,
+        format = "data.frame"
+      ))
     },
     export = function() {
       results <- super$export()

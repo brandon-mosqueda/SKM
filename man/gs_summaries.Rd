@@ -12,7 +12,9 @@ The \code{data.frame} must contain the columns \code{Fold}, \code{Line}, \code{E
 and \code{Predicted}. If the response variable is categorical make sure to set
 Observed and Predicted as factor. For categorical response variables it is
 also necessary to include a column for each class in the response variable
-with the predicted probabilities, the column must have the class as name.}
+with the predicted probabilities, the column must have the class as name.
+If \code{predictions} contains a column nameed \code{Trait}, the summaries will be
+computed and saved per trait.}
 
 \item{save_at}{(\code{character(1)}) The directory's name where the summaries are
 going to be saved as CSV. If \code{NULL} is provided, the results are only

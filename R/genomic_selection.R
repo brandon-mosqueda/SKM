@@ -187,6 +187,8 @@ categorical_summarise_line <- function(predictions, digits) {
 #'   Observed and Predicted as factor. For categorical response variables it is
 #'   also necessary to include a column for each class in the response variable
 #'   with the predicted probabilities, the column must have the class as name.
+#'   If `predictions` contains a column nameed `Trait`, the summaries will be
+#'   computed and saved per trait.
 #' @param save_at (`character(1)`) The directory's name where the summaries are
 #'   going to be saved as CSV. If `NULL` is provided, the results are only
 #'   returned but not saved. `NULL` by default.
@@ -241,6 +243,35 @@ categorical_summarise_line <- function(predictions, digits) {
 #' @export
 gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
   assert_gs_summary(predictions, save_at, digits)
+
+  if (is.null(predictions$Trait)) {
+    summaries <- gs_summaries_single(
+      predictions = predictions,
+      save_at = save_at,
+      digits = digits
+    )
+  } else {
+    traits <- unique(predictions$Trait)
+
+    summaries <- lapply(traits, function(trait) {
+      trait_predictions <- predictions %>%
+        filter(Trait == trait)
+
+      gs_summaries_single(
+        predictions = trait_predictions,
+        save_at = if(is.null(save_at)) NULL else file.path(save_at, trait),
+        digits = digits
+      )
+    })
+    names(summaries) <- traits
+  }
+
+  class(summaries) <- "GSSummaries"
+
+  return(summaries)
+}
+
+gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
   is_categorical <- is.factor(predictions$Observed)
 
   if (is_categorical) {
@@ -307,4 +338,9 @@ gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
     env = Env,
     fold = Fold
   ))
+}
+
+#' @export
+print.GSSummaries <- function(summaries) {
+  invisible(cat(str(summaries, 2)))
 }
