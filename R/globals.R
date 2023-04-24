@@ -126,7 +126,7 @@ PREDICT_FORMAT <- c("list", "data.frame")
 
 # Tuning --------------------------------------------------
 
-TUNE_CV_TYPES <- c("K_fold", "Random")
+TUNE_CV_TYPES <- c("K_fold", "Random", "K_fold_strata")
 
 GLM_CV_TYPES <- c("K_fold")
 

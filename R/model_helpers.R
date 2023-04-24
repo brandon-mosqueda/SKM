@@ -81,6 +81,7 @@ get_cross_validator <- function(type,
                                 records_number,
                                 folds_number,
                                 testing_proportion,
+                                y,
                                 folds) {
   type <- tolower(type)
 
@@ -90,6 +91,11 @@ get_cross_validator <- function(type,
     return(KFoldCV$new(
       folds_number = folds_number,
       records_number = records_number
+    ))
+  } else if (type == "k_fold_strata") {
+    return(KFoldStrataCV$new(
+      folds_number = folds_number,
+      data = y
     ))
   } else if (type == "random") {
     return(RandomCV$new(

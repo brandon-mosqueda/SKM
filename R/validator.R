@@ -191,7 +191,9 @@ assert_tune_cv <- function(tune_type,
                            tune_loss_function,
                            tune_grid_proportion,
                            tune_bayes_samples_number,
-                           tune_bayes_iterations_number) {
+                           tune_bayes_iterations_number,
+                           is_multivariate,
+                           is_y_numeric) {
   assert_subset_string(tune_type, TUNE_TYPES, ignore.case = TRUE, len = 1)
   assert_subset_string(
     tune_loss_function,
@@ -206,8 +208,18 @@ assert_tune_cv <- function(tune_type,
 
   assert_subset_string(tune_cv_type, TUNE_CV_TYPES, ignore.case = TRUE, len = 1)
   tune_cv_type <- tolower(tune_cv_type)
+  if (tune_cv_type == "k_fold_strata" && (is_multivariate || is_y_numeric)) {
+    stop(
+      "K_fold_strata tune type of cross validation can be only used with ",
+      "univariate categorical response variables."
+    )
+  }
 
-  min_folds_number <- if (tune_cv_type == "k_fold") 2 else 1
+  if (tune_cv_type %in% c("k_fold", "k_fold_strata")) {
+    min_folds_number <-  2
+  } else {
+    min_folds_number <-  1
+  }
   assert_int(tune_folds_number, lower = min_folds_number)
   assert_number(tune_testing_proportion, lower = 1e-3, upper = 1 - 1e-3)
 
@@ -255,7 +267,9 @@ assert_base_params <- function(x,
     tune_loss_function = tune_loss_function,
     tune_grid_proportion = tune_grid_proportion,
     tune_bayes_samples_number = tune_bayes_samples_number,
-    tune_bayes_iterations_number = tune_bayes_iterations_number
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
+    is_multivariate = is_multivariate,
+    is_y_numeric = is.numeric(y)
   )
 
   assert_seed(seed)
@@ -1368,7 +1382,9 @@ validate_gs_radial <- function(is_multivariate,
     tune_loss_function = tune_loss_function,
     tune_grid_proportion = tune_grid_proportion,
     tune_bayes_samples_number = tune_bayes_samples_number,
-    tune_bayes_iterations_number = tune_bayes_iterations_number
+    tune_bayes_iterations_number = tune_bayes_iterations_number,
+    is_multivariate = is_multivariate,
+    is_y_numeric = is.numeric(y)
   )
 
   if (is_bayesian_tuner(tune_type)) {

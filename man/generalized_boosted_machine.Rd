@@ -69,8 +69,9 @@ perform. The options are \code{"Grid_search"} and "\code{Bayesian_optimization}"
 \code{"Grid_search"} by default.}
 
 \item{tune_cv_type}{(\code{character(1)}) (case not sensitive) The type of cross
-validation to tune the model. The options are \code{"K_fold"} and
-\code{"Random"}. \code{"K_fold"} by defaul.}
+validation to tune the model. The options are \code{"K_fold"}, \code{"K_fold_strata"}
+(only for univariate categorical response variables) and \code{"Random"}.
+\code{"K_fold"} by defaul.}
 
 \item{tune_folds_number}{(\code{numeric(1)}) The number of folds to tune each
 hyperparameter combination (k in k-fold cross validation). 5 by default.}

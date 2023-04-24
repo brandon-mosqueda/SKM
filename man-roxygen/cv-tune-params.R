@@ -2,8 +2,9 @@
 #'   perform. The options are `"Grid_search"` and "`Bayesian_optimization`".
 #'   `"Grid_search"` by default.
 #' @param tune_cv_type (`character(1)`) (case not sensitive) The type of cross
-#'   validation to tune the model. The options are `"K_fold"` and
-#'   `"Random"`. `"K_fold"` by defaul.
+#'   validation to tune the model. The options are `"K_fold"`, `"K_fold_strata"`
+#'   (only for univariate categorical response variables) and `"Random"`.
+#'   `"K_fold"` by defaul.
 #' @param tune_folds_number (`numeric(1)`) The number of folds to tune each
 #'   hyperparameter combination (k in k-fold cross validation). 5 by default.
 #' @param tune_testing_proportion (`numeric(1)`) A number between (0, 1) to

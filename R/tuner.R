@@ -83,6 +83,7 @@ Tuner <- R6Class(
         records_number = nrow(self$x),
         folds_number = self$folds_number,
         testing_proportion = self$testing_proportion,
+        y = self$y,
         folds = folds
       )
     },

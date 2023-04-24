@@ -111,8 +111,9 @@ reproducible results. \code{NULL} by default.}
 \code{TRUE} by default.}
 
 \item{tune_cv_type}{(\code{character(1)}) (case not sensitive) The type of cross
-validation to tune the model. The options are \code{"K_fold"} and
-\code{"Random"}. \code{"K_fold"} by defaul.}
+validation to tune the model. The options are \code{"K_fold"}, \code{"K_fold_strata"}
+(only for univariate categorical response variables) and \code{"Random"}.
+\code{"K_fold"} by defaul.}
 
 \item{tune_testing_proportion}{(\code{numeric(1)}) A number between (0, 1) to
 specify the proportion of records to use as validation set when
