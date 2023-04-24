@@ -1,5 +1,6 @@
 #' @importFrom reticulate py_suppress_warnings py_capture_output
 #' @importFrom data.table fwrite fread
+#' @importFrom dplyr as_tibble
 
 #' @include globals.R
 #' @include validator.R
@@ -198,24 +199,24 @@ write_csv <- function(data,
     ...
   )
 
-  return(data)
+  return(invisible(data))
 }
 
 #' @export
 read_csv <- function(file,
                      skip = "__auto__",
                      na_strings = "NA",
-                     strings_as_factors = FALSE,
+                     strings_as_factors = TRUE,
                      check_names = FALSE,
                      ...) {
-  return(fread(
+  return(as_tibble(fread(
     file = file,
     skip = skip,
     na.strings = na_strings,
     stringsAsFactors = strings_as_factors,
     check.names = check_names,
     ...
-  ))
+  )))
 }
 
 get_cols_names <- function(x) {

@@ -34,7 +34,7 @@ compute_standard_errors <- function(summary, digits) {
       .groups = "keep"
     ) %>%
     mutate_if(is.numeric, list(~ round(., digits))) %>%
-    as.data.frame()
+    as_tibble()
 
   colnames(summary) <- gsub("_MEAN", "", colnames(summary))
 
@@ -61,7 +61,7 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
       RMSE = rmse(Observed, Predicted),
       NRMSE = nrmse(Observed, Predicted),
       MAE = mae(Observed, Predicted),
-      Cor = pearson(Predicted, Observed),
+      APC = pearson(Predicted, Observed),
       Intercept = lm_intercept(Predicted, Observed),
       Slope = lm_slope(Predicted, Observed),
       R2 = pearson(Predicted, Observed)^2,
@@ -81,12 +81,13 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
       "RMSE", "RMSE_SE",
       "NRMSE", "NRMSE_SE",
       "MAE", "MAE_SE",
-      "Cor", "Cor_SE",
+      "APC", "APC_SE",
       "Intercept", "Intercept_SE",
       "Slope", "Slope_SE",
       "R2", "R2_SE",
       "MAAPE", "MAAPE_SE"
-    )))
+    ))) %>%
+    as_tibble()
 
   return(summary)
 }
@@ -136,7 +137,8 @@ categorical_summarise_by_fields_line_mean <- function(predictions,
       "PCCC", "PCCC_SE",
       "Kappa", "Kappa_SE",
       "BrierScore", "BrierScore_SE"
-    )))
+    ))) %>%
+    as_tibble()
 
   return(summary)
 }
@@ -152,7 +154,7 @@ numeric_summarise_line <- function(predictions, digits) {
     ) %>%
     arrange(Difference) %>%
     mutate_if(is.numeric, list(~round(., digits))) %>%
-    as.data.frame()
+    as_tibble()
 
   return(Line)
 }
@@ -170,7 +172,7 @@ categorical_summarise_line <- function(predictions, digits) {
       as.data.frame(lapply(select_at(across(), classes), rmean)),
       .groups = "drop"
     ) %>%
-    as.data.frame()
+    as_tibble()
 
   return(Line)
 }
@@ -244,13 +246,7 @@ categorical_summarise_line <- function(predictions, digits) {
 gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
   assert_gs_summary(predictions, save_at, digits)
 
-  if ("Trait" %in% names(predictions)) {
-    summaries <- gs_summaries_single(
-      predictions = predictions,
-      save_at = save_at,
-      digits = digits
-    )
-  } else {
+  if ("Trait" %in% colnames(predictions)) {
     traits <- unique(predictions$Trait)
 
     summaries <- lapply(traits, function(trait) {
@@ -264,6 +260,12 @@ gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
       )
     })
     names(summaries) <- traits
+  } else {
+    summaries <- gs_summaries_single(
+      predictions = predictions,
+      save_at = save_at,
+      digits = digits
+    )
   }
 
   class(summaries) <- "GSSummaries"
