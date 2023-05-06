@@ -270,7 +270,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
 #' @export
 print.GSFastBayesian <- function(model) {
   print.GSCrossEvaluator(model)
-  echo("\n$model_name: %s", model$model_name)
+  echo("\n$model_name: %s", set_collapse(model$model_name))
   echo("\n$iterations_number: %i", model$iterations_number)
   echo("\n$burn_in: %i", model$burn_in)
   echo("\n$thinning: %i", model$thinning)

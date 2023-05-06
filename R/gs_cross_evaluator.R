@@ -133,7 +133,7 @@ GSCrossEvaluator <- R6Class(
 print.GSCrossEvaluator <- function(model) {
   echo("$Predictions")
   print(model$Predictions, n = 5)
-  echo("\n$traits: %s", paste0(model$traits, collapse = ", "))
+  echo("\n$traits: %s", set_collapse(model$traits))
   echo("\n$is_multitrait: %s", model$is_multitrait)
   echo("\n$folds: %s", length(model$folds))
   echo(
