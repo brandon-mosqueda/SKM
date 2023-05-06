@@ -54,12 +54,19 @@ GSFastBayesianCrossEvaluator <- R6Class(
 
     eval_unitrait_fold = function(trait, fold) {
       if (is.null(self$model) || self$prev_trait != trait) {
+        # This is evaluated always for the first fold
         self$prev_trait <- trait
         ETA <- self$predictor_preparator$X
 
+        y_na <- replace(
+          self$predictor_preparator$Pheno[[trait]],
+          fold$testing,
+          NA
+        )
+
         self$model <- bayesian_model(
           x = ETA,
-          y = self$predictor_preparator$Pheno[[trait]],
+          y = y_na,
 
           iterations_number = self$iterations_number,
           burn_in = self$burn_in,
