@@ -23,8 +23,8 @@ if (ok) {
     install.packages("devtools")
   }
 
-  devtools::install_github("gdlc/BGLR-R", upgrade = "default")
-  devtools::install_github("rstudio/tensorflow", upgrade = "default")
-  devtools::install_github("rstudio/keras", upgrade = "default")
-  devtools::install_github("brandon-mosqueda/SKM", upgrade = "default")
+  devtools::install_github("gdlc/BGLR-R")
+  devtools::install_github("rstudio/tensorflow")
+  devtools::install_github("rstudio/keras")
+  devtools::install_github("brandon-mosqueda/SKM")
 }
