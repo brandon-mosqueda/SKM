@@ -95,13 +95,13 @@ GSFastBayesianCrossEvaluator <- R6Class(
       EnvMatrix <- ETA$Env$x
       LineMatrix <- ETA$Line$x
       envs_num <- length(unique(Pheno$Env))
-      V <- (envs_num * EnvMatrix * EnvVar) +
+      V <- (1 * EnvMatrix * EnvVar) +
         (LineMatrix * LineVar + diag(ErrorVar, rows_num))
 
       if ("envxline" %in% self$predictor_preparator$predictors) {
         LineEnvMatrix <- ETA$EnvxLine$x
         LineEnvVar <- model$fitted_model$ETA$EnvxLine$varU
-        V <- V + envs_num * LineEnvMatrix * LineEnvVar
+        V <- V + 1 * LineEnvMatrix * LineEnvVar
       }
 
       return(solve(V))
