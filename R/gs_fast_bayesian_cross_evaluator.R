@@ -66,7 +66,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
 
         self$model <- bayesian_model(
           x = ETA,
-          y = y_na,
+          y = y,
 
           iterations_number = self$iterations_number,
           burn_in = self$burn_in,
@@ -136,7 +136,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
       u_testing <- G %*% V22inv %*%
         as.matrix(y[-fold$testing] - mean(y[-fold$testing]))
 
-      return(mean(y[-fold$testing]) + as.numeric(u_testing))
+      return(mean(y) + as.numeric(u_testing))
     },
 
     eval_multitrait_fold = function(fold) {
