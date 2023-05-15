@@ -58,11 +58,7 @@ GSFastBayesianCrossEvaluator <- R6Class(
         self$prev_trait <- trait
         ETA <- self$predictor_preparator$X
 
-        y_na <- replace(
-          self$predictor_preparator$Pheno[[trait]],
-          fold$testing,
-          NA
-        )
+        y_na <- self$predictor_preparator$Pheno[[trait]]
 
         self$model <- bayesian_model(
           x = ETA,
