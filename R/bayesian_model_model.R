@@ -33,11 +33,6 @@ BayesianModel <- R6Class(
       self$fit_params$records_weights <- records_weights
       self$fit_params$response_groups <- response_groups
       self$fit_params$testing_indices <- testing_indices
-      self$fit_params$trash_dir <- sprintf(
-        "%s_%s",
-        BAYESIAN_TRASH_DIR,
-        as.numeric(Sys.time())
-      )
     },
 
     # Methods --------------------------------------------------
@@ -180,8 +175,6 @@ BayesianModel <- R6Class(
     has_to_tune = function() return(FALSE),
 
     train_univariate = function(x, y, fit_params) {
-      mkdir(fit_params$trash_dir)
-
       model <- BGLR(
         y = y,
         response_type = fit_params$bglr_response_type,
@@ -194,10 +187,8 @@ BayesianModel <- R6Class(
         groups = fit_params$response_groups,
 
         verbose = FALSE,
-        saveAt = file.path(fit_params$trash_dir, "bayesian_")
+        saveAt = file.path(tempdir(check = TRUE), as.numeric(Sys.time()))
       )
-
-      rmdir(fit_params$trash_dir)
 
       return(model)
     },
@@ -253,8 +244,6 @@ BayesianModel <- R6Class(
     },
 
     train_multivariate = function(x, y, fit_params) {
-      mkdir(fit_params$trash_dir)
-
       model <- hush(Multitrait(
         y = y,
         ETA = x,
@@ -265,10 +254,8 @@ BayesianModel <- R6Class(
         thin = fit_params$thinning,
 
         verbose = FALSE,
-        saveAt = file.path(fit_params$trash_dir, "bayesian_")
+        saveAt = file.path(tempdir(check = TRUE), as.numeric(Sys.time()))
       ))
-
-      rmdir(fit_params$trash_dir)
 
       return(model)
     },
