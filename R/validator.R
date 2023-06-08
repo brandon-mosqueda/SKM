@@ -1338,6 +1338,22 @@ assert_gs_summary <- function(predictions, save_at, digits) {
   assert_number(digits, lower = 0, finite = TRUE)
 }
 
+assert_best_lines_match <- function(predictions, percentage) {
+  assert_data_frame(
+    predictions,
+    all.missing = FALSE,
+    min.rows = 1
+  )
+
+  assert_names(
+    colnames(predictions),
+    must.include = c("Line", "Observed", "Predicted"),
+    what = "predictions columns' names"
+  )
+
+  assert_number(percentage, lower = 1, upper = 100, finite = TRUE)
+}
+
 validate_gs_radial <- function(is_multivariate,
                                lines,
                                envs,

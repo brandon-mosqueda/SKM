@@ -66,6 +66,14 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
       Slope = lm_slope(Predicted, Observed),
       R2 = pearson(Predicted, Observed)^2,
       MAAPE = maape(Observed, Predicted),
+      Best10 = best_lines_match(
+        tibble(Line, Observed, Predicted),
+        percentage = 10
+      ),
+      Best20 = best_lines_match(
+        tibble(Line, Observed, Predicted),
+        percentage = 20
+      ),
       .groups = "drop"
     )
 
@@ -85,7 +93,9 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
       "Intercept", "Intercept_SE",
       "Slope", "Slope_SE",
       "R2", "R2_SE",
-      "MAAPE", "MAAPE_SE"
+      "MAAPE", "MAAPE_SE",
+      "Best10", "Best10_SE",
+      "Best20", "Best20_SE"
     ))) %>%
     as_tibble()
 

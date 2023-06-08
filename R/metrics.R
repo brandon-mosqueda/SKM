@@ -1216,6 +1216,62 @@ r2 <- function(x, y = x, remove_na = TRUE) {
   return(correlation^2)
 }
 
+#' @title Percentage of best lines present in the predictions
+#'
+#' @description
+#' Computes the percentage of best lines present in the predictions. The lines
+#' with the highest observed values are considered as the best lines, and then,
+#' the lines with the highest predicted values are compared to compute the
+#' percentage of matching.
+#'
+#' @param predictions (`data.frame`) The predictions to evaluate. It must have
+#'   the columns `Line`, `Observed` and `Predicted`.
+#' @param percentage (`numeric`) The percentage of best lines to consider. 10 by
+#'   default.
+#'
+#' @return
+#' A single numeric value with the percentage of best lines present in the
+#' predictions.
+#'
+#' @examples
+#' \dontrun{
+# set.seed(1)
+#'
+# predictions <- data.frame(
+#   Line = paste0("L", seq(100)),
+#   Observed = rnorm(100, 10, 1),
+#   Predicted = rnorm(100, 10, 1)
+# )
+#'
+# best_lines_match(predictions, percentage = 20)
+#' }
+#'
+#' @export
+best_lines_match <- function(predictions, percentage = 10) {
+  assert_best_lines_match(predictions, percentage)
+
+  proportion <- percentage / 100
+  best_lines_number <- ceiling(nrow(predictions) * proportion)
+
+  best_lines <- predictions %>%
+    arrange(desc(Observed)) %>%
+    slice(seq(best_lines_number)) %>%
+    pull(Line) %>%
+    as.character()
+
+  predicted_lines <- predictions %>%
+    arrange(desc(Predicted)) %>%
+    slice(seq(best_lines_number)) %>%
+    pull(Line) %>%
+    as.character()
+
+  percentage_matching <- sum(predicted_lines %in% best_lines) /
+    best_lines_number *
+    100
+
+  return(percentage_matching)
+}
+
 # Helpers --------------------------------------------------
 
 multivariate_loss <- function(observed, predicted, responses) {
