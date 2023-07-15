@@ -18,7 +18,7 @@
 #'   and `tune_testing_proportion` are ignored. `NULL` by default.
 #' @param tune_loss_function (`character(1)`) (case not sensitive) The loss
 #'   function to use in tuning. The options are `"mse"`, `"maape"`, `"mae"`,
-#'   `"nrmse"` or `"rmse"` when `y` is a numeric response variable,
+#'   `"nrmse"`, `"rmse"` or `"pearson"` when `y` is a numeric response variable,
 #'   `"accuracy"` or `"kappa_coeff"` when `y` is a categorical response
 #'   variable (including binary) and `"f1_score"`, `"roc_auc"` or `"pr_auc"`
 #'   when `y` is a binary response variable. `NULL` by default which uses

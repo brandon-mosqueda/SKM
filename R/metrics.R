@@ -1378,8 +1378,8 @@ wrapper_loss <- function(observed,
       )
     } else {
       loss <- tuner$loss_function(
-        observed = observed,
-        predicted = predictions$predicted
+        observed,
+        predictions$predicted
       )
     }
   }

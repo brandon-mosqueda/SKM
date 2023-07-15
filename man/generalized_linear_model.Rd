@@ -64,7 +64,7 @@ and \code{tune_testing_proportion} are ignored. \code{NULL} by default.}
 
 \item{tune_loss_function}{(\code{character(1)}) (case not sensitive) The loss
 function to use in tuning. The options are \code{"mse"}, \code{"maape"}, \code{"mae"},
-\code{"nrmse"} or \code{"rmse"} when \code{y} is a numeric response variable,
+\code{"nrmse"}, \code{"rmse"} or \code{"pearson"} when \code{y} is a numeric response variable,
 \code{"accuracy"} or \code{"kappa_coeff"} when \code{y} is a categorical response
 variable (including binary) and \code{"f1_score"}, \code{"roc_auc"} or \code{"pr_auc"}
 when \code{y} is a binary response variable. \code{NULL} by default which uses

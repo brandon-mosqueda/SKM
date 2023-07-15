@@ -135,7 +135,8 @@ TUNE_NUMERIC_LOSS_FUNCTIONS <- c(
   "maape",
   "mae",
   "nrmse",
-  "rmse"
+  "rmse",
+  "pearson"
 )
 
 TUNE_BINARY_LOSS_FUNCTIONS <- c("f1_score", "roc_auc", "pr_auc")
@@ -147,7 +148,8 @@ NEED_INVERT_LOSS <- c(
   "roc_auc",
   "pr_auc",
   "accuracy",
-  "kappa_coeff"
+  "kappa_coeff",
+  "pearson"
 )
 
 # Others --------------------------------------------------
