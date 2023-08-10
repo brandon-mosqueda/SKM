@@ -18,6 +18,10 @@ CustomCV <- R6Class(
     # Methods --------------------------------------------------
 
     get_folds = function() {
+      for (i in seq_along(private$folds)) {
+        private$folds[[i]]$num <- i
+      }
+
       return(private$folds)
     }
   ),

@@ -1137,7 +1137,7 @@ cv_random_strata <- function(data,
   }
 
   for (fold_number in seq(folds_number)) {
-    current_fold <- list(testing = c())
+    current_fold <- list(num = fold_number, testing = c())
 
     for (group in groups) {
       current_fold$testing <- c(
@@ -1203,8 +1203,9 @@ cv_leve_one_group_out <- function(data) {
 
   folds <- list()
 
-  for (group in groups) {
-    current_fold <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    current_fold <- list(num = group, group = group)
     current_fold$testing <- which(data == group)
     current_fold$training <- records[-current_fold$testing]
 
@@ -1261,7 +1262,7 @@ cv_random_line <- function(lines, folds_number = 5, testing_proportion = 0.2) {
 
   for (fold_num in seq(folds_number)) {
     testing_lines <- sample(unique_lines, testing_lines_num)
-    current_fold <- list()
+    current_fold <- list(num = fold_num)
     current_fold$testing <- which(lines %in% testing_lines)
     current_fold$training <- records[-current_fold$testing]
 
@@ -1314,11 +1315,13 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
 
   folds <- list()
 
+  counter <- 1
   for (env in envs) {
     env_indices <- which(envs == env)
 
     if (envs_proportion == 1) {
-      current_fold <- list()
+      current_fold <- list(env = env, num = counter)
+      counter <- counter + 1
 
       current_fold$testing <- env_indices
       current_fold$training <- records[-env_indices]
@@ -1326,7 +1329,9 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
       folds <- append(folds, list(current_fold))
     } else {
       for (i in seq(folds_per_env)) {
-        current_fold <- list()
+        current_fold <- list(num = counter, env = env)
+        counter <- counter + 1
+
         current_fold$testing <- sample_prop(env_indices, envs_proportion)
         current_fold$training <- records[-current_fold$testing]
 
@@ -1369,8 +1374,8 @@ cv_one_env_out <- function(envs, envs_proportion = 1, folds_per_env = 5) {
 cv_na <- function(x) {
   assert_cv_na(x)
 
-  folds <- list(list(testing = which(is.na(x))))
-  folds$training <- seq_along(x)[-folds[[1]]$testing]
+  folds <- list(list(num = 1, testing = which(is.na(x))))
+  folds[[1]]$training <- seq_along(x)[-folds[[1]]$testing]
 
   return(folds)
 }

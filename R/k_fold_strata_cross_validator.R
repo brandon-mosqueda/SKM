@@ -45,7 +45,7 @@ KFoldStrataCV <- R6Class(
       }
 
       for (i in seq(folds)) {
-        fold <- list()
+        fold <- list(num = i)
 
         for (class_fold in classes_folds) {
           fold$training <- c(

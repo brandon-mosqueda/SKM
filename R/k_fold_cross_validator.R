@@ -29,7 +29,7 @@ KFoldCV <- R6Class(
       records <- seq(self$records_number)
 
       for (fold_num in 1:self$folds_number) {
-        current_fold <- list()
+        current_fold <- list(num = fold_num)
         current_fold$testing <- which(folds_vector == fold_num)
         current_fold$training <- records[-current_fold$testing]
 
