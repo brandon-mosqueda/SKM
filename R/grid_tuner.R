@@ -3,6 +3,7 @@
 #' @include utils.R
 #' @include tuner.R
 
+#' @export
 GridTuner <- R6Class(
   classname = "GridTuner",
   inherit = Tuner,

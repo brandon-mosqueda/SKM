@@ -4,6 +4,7 @@
 #' @include tuner.R
 #' @include RBO_BayesianOptimization.R
 
+#' @export
 BayesianTuner <- R6Class(
   classname = "BayesianTuner",
   inherit = Tuner,
