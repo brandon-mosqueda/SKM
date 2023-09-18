@@ -30,3 +30,8 @@ percentage of matching.
 }
 
 }
+\seealso{
+Other rank_metrics: 
+\code{\link{ndcg}()}
+}
+\concept{rank_metrics}

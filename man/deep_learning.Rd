@@ -176,7 +176,7 @@ the model and adjust the predictions? Only available for univariate models
 with a numeric or binary response variable. For more information, see
 Details section below. \code{FALSE} by default.}
 
-\item{platt_proportion}{(\code{ǹumeric(1)}) The proportion of individuals used to
+\item{platt_proportion}{(\code{numeric(1)}) The proportion of individuals used to
 fit the linear model required for Platt scaling. Note that this parameter
 is used only when \code{with_platt_scaling} is \code{TRUE}. 0.3 by default.}
 

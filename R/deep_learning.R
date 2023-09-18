@@ -122,7 +122,7 @@
 #'   the model and adjust the predictions? Only available for univariate models
 #'   with a numeric or binary response variable. For more information, see
 #'   Details section below. `FALSE` by default.
-#' @param platt_proportion (`ǹumeric(1)`) The proportion of individuals used to
+#' @param platt_proportion (`numeric(1)`) The proportion of individuals used to
 #'   fit the linear model required for Platt scaling. Note that this parameter
 #'   is used only when `with_platt_scaling` is `TRUE`. 0.3 by default.
 #' @param shuffle (`logical(1)`) Should the training data be shuffled before

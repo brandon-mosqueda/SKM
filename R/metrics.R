@@ -1246,6 +1246,8 @@ r2 <- function(x, y = x, remove_na = TRUE) {
 # best_lines_match(predictions, percentage = 20)
 #' }
 #'
+#' @family rank_metrics
+#'
 #' @export
 best_lines_match <- function(predictions, percentage = 10) {
   assert_best_lines_match(predictions, percentage)
@@ -1270,6 +1272,53 @@ best_lines_match <- function(predictions, percentage = 10) {
     100
 
   return(percentage_matching)
+}
+
+#' Normalized Discounted Cumulative Gain (NDCG)
+#'
+#' Computes the Normalized Discounted Cumulative Gain on a proportion of top
+#' observations.
+#'
+#' @inheritParams mse
+#' @param proportion (`numeric(1)`) The proportion of top observations used to
+#' compute the metric. 1 by default.
+#'
+#' @details
+#' Normalized Discounted Cumulative Gain is computed as:
+#'
+#' ![](ndcg.png "dcg / idcg")
+#'
+#' where y_i is the observed value of element i, hat{y_i} is the predicted
+#' value of element i and k is the number of top observations specified in the
+#' proportion parameter.
+#'
+#' @return
+#' A single numeric value with the Normalized Discounted Cumulative Gain.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(1)
+#' x <- rnorm(100)
+#' y <- rnorm(100)
+#' ndcg(x, x)
+#' ndcg(x, x - 1)
+#' ndcg(x, x + 10)
+#' ndcg(x, y)
+#' }
+#'
+#' @family rank_metrics
+#'
+#' @export
+ndcg <- function(observed, predicted, proportion = 1) {
+  indices <- seq(floor(proportion * length(observed)))
+
+  observed_sorted <- observed[order(observed, decreasing = TRUE)]
+  predicted_sorted <- observed[order(predicted, decreasing = TRUE)]
+
+  dcg <- sum(predicted_sorted[indices] / log2(indices + 1))
+  idcg <- sum(observed_sorted[indices] / log2(indices + 1))
+
+  return(dcg / idcg)
 }
 
 # Helpers --------------------------------------------------
