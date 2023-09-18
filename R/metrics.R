@@ -1425,6 +1425,13 @@ wrapper_loss <- function(observed,
         probabilities = predictions$probabilities,
         positive_class = positive_class
       )
+    } else if (tuner$loss_function_name == "ndcg") {
+      proportion <- nonull(options()$skm_ndcg_tune_proportion, 1)
+      loss <- tuner$loss_function(
+        observed,
+        predictions$predicted,
+        proportion = proportion
+      )
     } else {
       loss <- tuner$loss_function(
         observed,

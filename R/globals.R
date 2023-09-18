@@ -136,7 +136,8 @@ TUNE_NUMERIC_LOSS_FUNCTIONS <- c(
   "mae",
   "nrmse",
   "rmse",
-  "pearson"
+  "pearson",
+  "ndcg"
 )
 
 TUNE_BINARY_LOSS_FUNCTIONS <- c("f1_score", "roc_auc", "pr_auc")
