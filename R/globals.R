@@ -150,7 +150,8 @@ NEED_INVERT_LOSS <- c(
   "pr_auc",
   "accuracy",
   "kappa_coeff",
-  "pearson"
+  "pearson",
+  "ndcg"
 )
 
 # Others --------------------------------------------------
