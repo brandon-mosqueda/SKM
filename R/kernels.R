@@ -346,6 +346,7 @@ kernelize <- function(x,
   } else if (is_conventional_kernel(kernel)) {
     x <- conventional_kernel(
       x = x,
+      kernel = kernel,
       arc_cosine_deep = arc_cosine_deep,
       gamma = gamma,
       coef0 = coef0,
