@@ -850,8 +850,8 @@ train_radial_bayes <- function(x, y, fit_params) {
   return(model)
 }
 
-# UVCOV --------------------------------------------------
-build_uvcov_formula <- function(predictors) {
+# Mixed ------------------------------------------------------------------------
+build_mixed_formula <- function(predictors) {
   x <- sapply(predictors, function(x) sprintf("(1 | %s)", x))
   x <- paste0(x, collapse = " + ")
 

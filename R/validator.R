@@ -420,7 +420,7 @@ assert_bayesian_x <- function(x, y, is_multivariate) {
   }
 }
 
-assert_uvcov_x <- function(x, y) {
+assert_mixed_x <- function(x, y) {
   assert_list(x, min.len = 1, any.missing = FALSE)
 
   for (x_list in x) {
@@ -1290,14 +1290,14 @@ validate_bayesian_model <- function(x,
   )
 }
 
-validate_uvcov_model <- function(x,
+validate_mixed_model <- function(x,
                                  y,
                                  testing_indices,
                                  seed,
                                  verbose) {
   assert_y(y, is_multivariate = FALSE)
 
-  assert_uvcov_x(x, y)
+  assert_mixed_x(x, y)
 
   assert_seed(seed)
   assert_verbose(verbose)

@@ -5,8 +5,8 @@
 #' @include model.R
 #' @include model_helpers.R
 
-UVCovModel <- R6Class(
-  classname = "UVCovModel",
+MixedModel <- R6Class(
+  classname = "MixedModel",
   inherit = Model,
   public = list(
     # Constructor --------------------------------------------------
@@ -14,7 +14,7 @@ UVCovModel <- R6Class(
     initialize = function(..., testing_indices) {
       super$initialize(
         ...,
-        name = "UvCov Model",
+        name = "Mixed Model",
         allow_coefficients = FALSE,
         is_x_matrix = FALSE
       )
@@ -134,7 +134,7 @@ UVCovModel <- R6Class(
       self$fit_params$names_data <- as.data.frame(self$fit_params$names_data)
 
       self$fit_params$names_data$y <- self$y
-      self$fit_params$formula <- build_uvcov_formula(names(self$x))
+      self$fit_params$formula <- build_mixed_formula(names(self$x))
       self$fit_params$training_indices <- setdiff(
         seq_along(self$y),
         self$fit_params$testing_indices
@@ -168,8 +168,8 @@ UVCovModel <- R6Class(
       if (is.null(self$fit_params$testing_indices)) {
         if (is_empty(indices)) {
           stop(
-            "Error in predicting. With uvcov models you need to provide ",
-            "the testing_indices parameter when calling uvcov_model ",
+            "Error in predicting. With mixed models you need to provide ",
+            "the testing_indices parameter when calling mixed_model ",
             "function in order to make predictions, set some values in the ",
             "response variable as NA or send the indices parameter in predict ",
             "function"
@@ -212,10 +212,10 @@ UVCovModel <- R6Class(
   )
 )
 
-#' @title Predict UvCov model
+#' @title Predict Mixed model
 #'
 #' @description
-#' Obtains the predictions using a fitted model object of class `UVCovModel`.
+#' Obtains the predictions using a fitted model object of class `MixedModel`.
 #'
 #' @inheritParams predict.Model
 #' @param indices (`numeric`) A numeric vector with the indices of the elements
@@ -225,10 +225,10 @@ UVCovModel <- R6Class(
 #'
 #' @template return-predict
 #'
-#' @example inst/examples/uvcov_model.R
+#' @example inst/examples/mixed_model.R
 #'
 #' @export
-predict.UVCovModel <- function(model, indices = NULL, format = "list") {
+predict.MixedModel <- function(model, indices = NULL, format = "list") {
   predictions <- model$predict(indices)
 
   return(format_predictions(

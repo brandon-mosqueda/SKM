@@ -412,8 +412,8 @@ Other models:
 \code{\link{deep_learning}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{mixed_model}()},
 \code{\link{partial_least_squares}()},
-\code{\link{random_forest}()},
-\code{\link{uvcov_model}()}
+\code{\link{random_forest}()}
 }
 \concept{models}

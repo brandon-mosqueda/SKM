@@ -365,9 +365,9 @@ Other models:
 \code{\link{bayesian_model}()},
 \code{\link{deep_learning}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{mixed_model}()},
 \code{\link{partial_least_squares}()},
 \code{\link{random_forest}()},
-\code{\link{support_vector_machine}()},
-\code{\link{uvcov_model}()}
+\code{\link{support_vector_machine}()}
 }
 \concept{models}

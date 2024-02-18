@@ -1,3 +1,7 @@
+setwd("~/data_science/SKM")
+
+roxygen2::roxygenise()
+
 data(Maize)
 
 # Data preparation of G
@@ -25,7 +29,7 @@ for (i in seq_along(folds)) {
   fold <- folds[[i]]
 
   # Model training
-  model <- uvcov_model(
+  model <- mixed_model(
     x = X,
     y = y,
     testing_indices = fold$testing

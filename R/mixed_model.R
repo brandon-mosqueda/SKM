@@ -1,16 +1,16 @@
 #' @include utils.R
 #' @include validator.R
-#' @include uvcov_model_model.R
+#' @include mixed_model_model.R
 
-#' @title Fit a UVCov Model (lme4GS)
+#' @title Fit a Mixed Model (lme4GS)
 #'
-#' @templateVar ClassName UVCovModel
+#' @templateVar ClassName MixedModel
 #' @templateVar XType list
 #' @templateVar YType `vector`
 #' @templateVar refFunction lme4GS::lmerUvcov()
 #'
 #' @description
-#' `uvcov_model()` is a wrapper of the `lme4GS::lmerUvcov()` and function to fit
+#' `mixed_model()` is a wrapper of the `lme4GS::lmerUvcov()` and function to fit
 #' models for Genomic Selection. It only supports univariate models with a
 #' numeric response variable.
 #'
@@ -29,7 +29,7 @@
 #'
 #' @details
 #' This functions has a similar work as the `bayesian_model` function. Unlike
-#' other models, if you want to fit a UvCov model and make some
+#' other models, if you want to fit a Mixed model and make some
 #' predictions you have to provide the whole data (for training and testing) and
 #' the records' indices to be used as testing (`testing_indices`). All records
 #' with `NA` values in `y` are considered as part of testing set too.
@@ -38,7 +38,7 @@
 #' section below for more information.
 #'
 #' @return
-#' An object of class `"UVCovModel"` that inherits from classes
+#' An object of class `"MixedModel"` that inherits from classes
 #' `"Model"` and `"R6"` with the fields:
 #'
 #' * `fitted_model`: An object of class `lme4GS::lmerUvcov()` with the model.
@@ -54,13 +54,13 @@
 #'   nor training.
 #' * `...`: Some other parameters for internal use.
 #'
-#' @seealso [predict.UVCovModel()]
+#' @seealso [predict.MixedModel()]
 #' @family models
 #'
-#' @example inst/examples/uvcov_model.R
+#' @example inst/examples/mixed_model.R
 #'
 #' @export
-uvcov_model <- function(x, y,
+mixed_model <- function(x, y,
                         testing_indices = NULL,
 
                         validate_params = TRUE,
@@ -69,7 +69,7 @@ uvcov_model <- function(x, y,
   assert_logical(validate_params, len = 1, any.missing = FALSE)
 
   if (validate_params) {
-    validate_uvcov_model(
+    validate_mixed_model(
       x = x,
       y = y,
 
@@ -90,7 +90,7 @@ uvcov_model <- function(x, y,
 
   start_time <- Sys.time()
 
-  model <- UVCovModel$new(
+  model <- MixedModel$new(
     x = x,
     y = y,
     is_multivariate = FALSE,

@@ -211,8 +211,8 @@ Other models:
 \code{\link{deep_learning}()},
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
+\code{\link{mixed_model}()},
 \code{\link{random_forest}()},
-\code{\link{support_vector_machine}()},
-\code{\link{uvcov_model}()}
+\code{\link{support_vector_machine}()}
 }
 \concept{models}
