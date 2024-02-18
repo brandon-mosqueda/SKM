@@ -708,7 +708,7 @@ format_predictors <- function(predictors) {
   names(predictors) <- tolower(names(predictors))
 
   for (predictor in names(predictors)) {
-    predictors[[predictor]] <- tolower(predictors[[predictor]])
+    predictors[[predictor]] <- prepare_bayesian_model(predictors[[predictor]])
   }
 
   return(predictors)
@@ -753,7 +753,7 @@ prepare_eta <- function(Pheno, geno_preparator, rho, predictors, raise_to_rho) {
 }
 
 radial_tuner_initialize <- function(...,
-                                    model_iterations_number,
+                                    iterations_number,
                                     burn_in,
                                     thinning,
                                     Pheno,
@@ -768,10 +768,9 @@ radial_tuner_initialize <- function(...,
     predict_function = NULL
   )
 
-  self$predictors <- predictors
-  self$model_iterations_number <- model_iterations_number
+  self$iterations_number <- iterations_number
   self$burn_in <- burn_in
-  self$thinning <- thinning
+  self$hthinning <- thinning
 
   self$Pheno <- Pheno
   self$y <- y
@@ -787,10 +786,9 @@ radial_tuner_initialize <- function(...,
 
 radial_eval_one_fold <- function(fold, combination) {
   ETA <- prepare_eta(
-    self$Pheno,
-    self$geno_preparator,
+    Pheno,
+    geno_preparator,
     combination$rho,
-    self$predictors,
     raise_to_rho = TRUE
   )
   y_na <- self$y
@@ -804,12 +802,12 @@ radial_eval_one_fold <- function(fold, combination) {
   model <- bayesian_model(
     x = ETA,
     y = y_na,
-    iterations_number = self$model_iterations_number,
-    burn_in = self$burn_in,
-    thinning = self$thinning,
+    iterations_number = combination$iterations_number,
+    burn_in = combination$burn_in,
+    thinning = combination$thinning,
     verbose = FALSE
   )
-  predictions <- predict(model, fold$testing)
+  predictions <- predict(model, fold$testing)$predicted
 
   loss <- wrapper_loss(
     observed = y_testing,
@@ -821,26 +819,23 @@ radial_eval_one_fold <- function(fold, combination) {
 }
 
 # This function access self parameters because it is not used in tuner
-train_radial_bayes <- function(x, y, fit_params, predictors) {
+train_radial_bayes <- function(x, y, fit_params) {
   new_order <- order(self$Pheno$Env, self$Pheno$Line)
   self$Pheno <- self$Pheno[new_order, ]
   self$y <- get_records(self$y, new_order)
 
   # Fit params contains optimal rho
   ETA <- prepare_eta(
-    Pheno = self$Pheno,
-    geno_preparator = self$geno_preparator,
-    rho = fit_params$rho,
-    predictors = predictors,
+    self$Pheno,
+    self$geno_preparator,
+    fit_params$rho,
     raise_to_rho = FALSE
   )
   y_na <- self$y
-  if (!is_empty(self$testing_indices)) {
-    if (self$is_multivariate) {
-      y_na[self$testing_indices, ] <- NA
-    } else {
-      y_na[self$testing_indices] <- NA
-    }
+  if (self$is_multivariate) {
+    y_na[fold$testing, ] <- NA
+  } else {
+    y_na[fold$testing] <- NA
   }
 
   model <- bayesian_model(
@@ -853,4 +848,14 @@ train_radial_bayes <- function(x, y, fit_params, predictors) {
   )
 
   return(model)
+}
+
+# UVCOV --------------------------------------------------
+build_uvcov_formula <- function(predictors) {
+  x <- sapply(predictors, function(x) sprintf("(1 | %s)", x))
+  x <- paste0(x, collapse = " + ")
+
+  y <- sprintf("y ~ %s", x)
+
+  return(as.formula(y))
 }

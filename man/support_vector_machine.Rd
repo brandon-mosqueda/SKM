@@ -413,6 +413,7 @@ Other models:
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
 \code{\link{partial_least_squares}()},
-\code{\link{random_forest}()}
+\code{\link{random_forest}()},
+\code{\link{uvcov_model}()}
 }
 \concept{models}

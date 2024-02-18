@@ -420,6 +420,21 @@ assert_bayesian_x <- function(x, y, is_multivariate) {
   }
 }
 
+assert_uvcov_x <- function(x, y) {
+  assert_list(x, min.len = 1, any.missing = FALSE)
+
+  for (x_list in x) {
+    assert_list(x_list, any.missing = FALSE, min.len = 1)
+
+    assert_x(x_list$x, expected_matrix = TRUE)
+    assert_same_length(x_list$x, y)
+
+    if (!is_square(x_list$x)) {
+      stop("Every matrix in x must be a square matrix")
+    }
+  }
+}
+
 assert_bayesian_xy <- function(x, y, is_multivariate) {
   assert_y(y, is_multivariate)
   assert_bayesian_x(x = x, y = y, is_multivariate = is_multivariate)
@@ -1265,6 +1280,27 @@ validate_bayesian_model <- function(x,
     )
   }
 
+  assert_numeric(
+    testing_indices,
+    lower = 1,
+    upper = get_length(y),
+    null.ok = TRUE,
+    any.missing = FALSE,
+    unique = TRUE
+  )
+}
+
+validate_uvcov_model <- function(x,
+                                 y,
+                                 testing_indices,
+                                 seed,
+                                 verbose) {
+  assert_y(y, is_multivariate = FALSE)
+
+  assert_uvcov_x(x, y)
+
+  assert_seed(seed)
+  assert_verbose(verbose)
   assert_numeric(
     testing_indices,
     lower = 1,

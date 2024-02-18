@@ -7,3 +7,5 @@ install.sh
 paper/
 SKM_1.0.tar.gz
 original_files/
+temp/
+SKM.code-workspace

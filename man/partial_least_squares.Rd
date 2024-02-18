@@ -212,6 +212,7 @@ Other models:
 \code{\link{generalized_boosted_machine}()},
 \code{\link{generalized_linear_model}()},
 \code{\link{random_forest}()},
-\code{\link{support_vector_machine}()}
+\code{\link{support_vector_machine}()},
+\code{\link{uvcov_model}()}
 }
 \concept{models}

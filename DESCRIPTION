@@ -104,6 +104,7 @@ Collate:
     'gs_radial.R'
     'k_fold_cross_validator.R'
     'k_fold_strata_cross_validator.R'
+    'lme4GS.R'
     'partial_least_squares_model.R'
     'partial_least_squares.R'
     'radial_bayesian_tuner.R'
@@ -112,3 +113,5 @@ Collate:
     'random_forest.R'
     'support_vector_machine_model.R'
     'support_vector_machine.R'
+    'uvcov_model_model.R'
+    'uvcov_model.R'
