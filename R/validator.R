@@ -440,6 +440,19 @@ assert_bayesian_xy <- function(x, y, is_multivariate) {
   assert_bayesian_x(x = x, y = y, is_multivariate = is_multivariate)
 }
 
+assert_testing_indices <- function(testing_indices,
+                                   max_length,
+                                   required = FALSE) {
+  assert_numeric(
+    testing_indices,
+    lower = 1,
+    upper = max_length,
+    null.ok = !required,
+    any.missing = FALSE,
+    unique = TRUE
+  )
+}
+
 assert_covariance_structure <- function(covariance_structure,
                                         responses_number) {
   assert_list(covariance_structure, len = 3)
@@ -1280,14 +1293,7 @@ validate_bayesian_model <- function(x,
     )
   }
 
-  assert_numeric(
-    testing_indices,
-    lower = 1,
-    upper = get_length(y),
-    null.ok = TRUE,
-    any.missing = FALSE,
-    unique = TRUE
-  )
+  assert_testing_indices(testing_indices, get_length(y))
 }
 
 validate_mixed_model <- function(x,

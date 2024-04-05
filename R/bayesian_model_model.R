@@ -4,6 +4,7 @@
 #' @include utils.R
 #' @include model.R
 #' @include model_helpers.R
+#' @include validator.R
 
 BayesianModel <- R6Class(
   classname = "BayesianModel",
@@ -40,7 +41,7 @@ BayesianModel <- R6Class(
     # Since this model does not perform hyperparameter tuning and holds the
     # predictions in the same model data, other predict function definition
     # is needed.
-    predict = function(indices = NULL) {
+    predict = function(indices) {
       if (self$is_multivariate) {
         private$predict_multivariate(indices)
       } else {
@@ -193,27 +194,7 @@ BayesianModel <- R6Class(
       return(model)
     },
 
-    prepare_predict_indices = function(indices) {
-      if (is.null(self$fit_params$testing_indices)) {
-        if (is_empty(indices)) {
-          stop(
-            "Error in predicting. With bayesian models you need to provide ",
-            "the testing_indices parameter when calling bayesian_model ",
-            "function in order to make predictions, set some values in the ",
-            "response variable as NA or send the indices parameter in predict ",
-            "function"
-          )
-        }
-      } else if (is_empty(indices)) {
-        indices <- self$fit_params$testing_indices
-      }
-
-      return(indices)
-    },
-
     predict_univariate = function(indices) {
-      indices <- private$prepare_predict_indices(indices)
-
       if (is_class_response(self$responses$y$type)) {
         probabilities <- as.data.frame(self$fitted_model$probs[indices, ])
 
@@ -260,8 +241,6 @@ BayesianModel <- R6Class(
       return(model)
     },
     predict_multivariate = function(indices) {
-      indices <- private$prepare_predict_indices(indices)
-
       predictions <- list()
       all_predictions <- self$fitted_model$yHat
       if (is.null(all_predictions)) {
@@ -310,9 +289,7 @@ BayesianModel <- R6Class(
 #'
 #' @inheritParams predict.Model
 #' @param indices (`numeric`) A numeric vector with the indices of the elements
-#'   used to fit the model you want the predictions. `NULL` by default which
-#'   uses the indices specified in `testing_indices` when the model was fitted
-#'   or those elements with `NA` values.
+#'   used to fit the model you want the predictions.
 #'
 #' @template return-predict
 #'
@@ -324,7 +301,7 @@ BayesianModel <- R6Class(
 #' model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
 #'
 #' # Predict using the fitted model (of the specified testing indices)
-#' predictions <- predict(model)
+#' predictions <- predict(model, indices = c(1:5, 51:55, 101:105))
 #' # Obtain the predicted values
 #' predictions$predicted
 #' # Obtain the predicted probabilities
@@ -341,13 +318,6 @@ BayesianModel <- R6Class(
 #' y[c(6, 66, 106), 2] <- NA
 #' model <- bayesian_model(x, y, iterations_number = 1000)
 #'
-#' # Predict using the fitted model (of the records with NA)
-#' predictions <- predict(model)
-#' # Obtain the predicted values of the first response variable
-#' predictions$Sepal.Length$predicted
-#' # Obtain the predicted values of the second response variable
-#' predictions$Sepal.Width$predicted
-#'
 #' # Predict using the fitted model, with different indices and data.frame
 #' # format
 #' predictions <- predict(model, indices = c(10, 20, 30), format = "data.frame")
@@ -355,7 +325,16 @@ BayesianModel <- R6Class(
 #' }
 #'
 #' @export
-predict.BayesianModel <- function(model, indices = NULL, format = "list") {
+predict.BayesianModel <- function(model, indices, format = "list") {
+  if (missing(indices)) {
+    stop("The indices parameter is required")
+  }
+
+  assert_testing_indices(
+    indices,
+    max_length = get_length(model$y),
+    required = TRUE
+  )
   predictions <- model$predict(indices)
 
   return(format_predictions(predictions, model$is_multivariate, format))

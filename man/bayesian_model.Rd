@@ -124,8 +124,8 @@ model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
 # Obtain the model's coefficients
 coef(model)
 
-# Predict using the fitted model (of the specified testing indices)
-predictions <- predict(model)
+# Predict using the fitted model
+predictions <- predict(model, indices = c(1:5, 51:55, 101:105))
 # Obtain the predicted values
 predictions$predicted
 # Obtain the predicted probabilities
@@ -146,12 +146,12 @@ model <- bayesian_model(
 )
 
 # Predict using the fitted model
-predictions <- predict(model)
+predictions <- predict(model, indices = c(5, 10, 15, 60, 80, 120, 130))
 # Obtain the predicted values
 predictions$predicted
 
-# Obtain the Predicted values of custom individuals using the fitted model
-predictions <- predict(model, indices = 1:100)
+# Obtain the Predicted values of all individuals using the fitted model
+predictions <- predict(model, indices = seq_along(y))
 # Obtain the predicted values
 predictions$predicted
 
@@ -210,7 +210,7 @@ for (i in seq_along(folds)) {
   )
 
   # Prediction of testing set
-  predictions <- predict(model)
+  predictions <- predict(model, indices = fold$testing)
 
   # Predictions for the i-th fold
   FoldPredictions <- data.frame(

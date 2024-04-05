@@ -4,15 +4,13 @@
 \alias{predict.BayesianModel}
 \title{Predict Bayesian model}
 \usage{
-\method{predict}{BayesianModel}(model, indices = NULL, format = "list")
+\method{predict}{BayesianModel}(model, indices, format = "list")
 }
 \arguments{
 \item{model}{(\code{Model}) An object of a fitted model.}
 
 \item{indices}{(\code{numeric}) A numeric vector with the indices of the elements
-used to fit the model you want the predictions. \code{NULL} by default which
-uses the indices specified in \code{testing_indices} when the model was fitted
-or those elements with \code{NA} values.}
+used to fit the model you want the predictions.}
 
 \item{format}{(\code{character(1)}) The expected format of the predictions. The
 available options are \code{"list"} and \code{"data.frame"}. \code{"data.frame"} is more
@@ -56,7 +54,7 @@ y <- iris$Species
 model <- bayesian_model(x, y, testing_indices = c(1:5, 51:55, 101:105))
 
 # Predict using the fitted model (of the specified testing indices)
-predictions <- predict(model)
+predictions <- predict(model, indices = c(1:5, 51:55, 101:105))
 # Obtain the predicted values
 predictions$predicted
 # Obtain the predicted probabilities
@@ -72,13 +70,6 @@ y <- iris[, c(1, 2)]
 y[c(5, 55, 105), 1] <- NA
 y[c(6, 66, 106), 2] <- NA
 model <- bayesian_model(x, y, iterations_number = 1000)
-
-# Predict using the fitted model (of the records with NA)
-predictions <- predict(model)
-# Obtain the predicted values of the first response variable
-predictions$Sepal.Length$predicted
-# Obtain the predicted values of the second response variable
-predictions$Sepal.Width$predicted
 
 # Predict using the fitted model, with different indices and data.frame
 # format
