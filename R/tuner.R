@@ -53,12 +53,6 @@ Tuner <- R6Class(
       self$x <- x
       self$y <- y
 
-      remove_indices <- union(which_is_na(self$x), which_is_na(self$y))
-      if (!is_empty(remove_indices)) {
-        self$x <- get_records(self$x, -remove_indices)
-        self$y <- get_records(self$y, -remove_indices)
-      }
-
       self$training_function <- training_function
       self$predict_function <- predict_function
       self$hyperparams <- hyperparams
