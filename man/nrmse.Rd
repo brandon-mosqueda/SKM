@@ -4,7 +4,7 @@
 \alias{nrmse}
 \title{Normalized Root Mean Squared Error}
 \usage{
-nrmse(observed, predicted, type = "sd", remove_na = TRUE)
+nrmse(observed, predicted, type = "mean", remove_na = TRUE)
 }
 \arguments{
 \item{observed}{(\code{numeric}) The observed values. It has to have the same
@@ -15,7 +15,7 @@ length as \code{observed}.}
 
 \item{type}{(\code{character(1)}) (case not sensitive) The normalization type to
 use. The options are \code{"sd"}, \code{"mean"}, \code{"maxmin"} (or \code{"range"}) and
-\code{"iqr"} (for more information, see Details section below). \code{"sd"} by
+\code{"iqr"} (for more information, see Details section below). \code{"mean"} by
 default.}
 
 \item{remove_na}{(\code{logical(1)}) Should \code{NA} values be removed?. \code{TRUE} by

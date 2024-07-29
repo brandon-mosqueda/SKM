@@ -908,7 +908,7 @@ rmse <- function(observed, predicted, remove_na = TRUE) {
 #' @inheritParams mse
 #' @param type (`character(1)`) (case not sensitive) The normalization type to
 #'   use. The options are `"sd"`, `"mean"`, `"maxmin"` (or `"range"`) and
-#'   `"iqr"` (for more information, see Details section below). `"sd"` by
+#'   `"iqr"` (for more information, see Details section below). `"mean"` by
 #'   default.
 #'
 #' @details
@@ -943,7 +943,7 @@ rmse <- function(observed, predicted, remove_na = TRUE) {
 #' @family numeric_metrics
 #'
 #' @export
-nrmse <-  function(observed, predicted, type = "sd", remove_na = TRUE) {
+nrmse <-  function(observed, predicted, type = "mean", remove_na = TRUE) {
   rmse_value <- rmse(observed, predicted)
   if (is.nan(rmse_value) || is.na(rmse_value)) {
     return(rmse_value)
