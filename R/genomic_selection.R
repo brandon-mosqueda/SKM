@@ -44,16 +44,23 @@ compute_standard_errors <- function(summary, digits) {
 numeric_summarise_by_fields_line_mean <- function(predictions,
                                                   grouping_cols,
                                                   final_group_col,
-                                                  digits) {
-  summary <- predictions %>%
-    # Observed and Predicted mean by Line
-    group_by(across(all_of(c(grouping_cols, "Line")))) %>%
-    summarise(
-      Observed = mean(Observed, na.rm = TRUE),
-      Predicted = mean(Predicted, na.rm = TRUE),
-      .groups = "keep"
-    ) %>%
+                                                  digits,
+                                                  average_by_line = TRUE,
+                                                  compute_se = TRUE) {
+  summary <- predictions
 
+  if (average_by_line) {
+    summary <- summary %>%
+      # Observed and Predicted mean by Line
+      group_by(across(all_of(c(grouping_cols, "Line")))) %>%
+      summarise(
+        Observed = mean(Observed, na.rm = TRUE),
+        Predicted = mean(Predicted, na.rm = TRUE),
+        .groups = "keep"
+      )
+  }
+
+  summary <- summary %>%
     # Metrics computation by grouping cols, Line column is lost here
     group_by(across(all_of(grouping_cols))) %>%
     summarise(
@@ -81,23 +88,25 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
     summary <- summary %>% group_by(across(all_of(final_group_col)))
   }
 
-  summary <- summary %>%
-    compute_standard_errors(digits) %>%
-    select(all_of(c(
-      final_group_col,
-      "MSE", "MSE_SE",
-      "RMSE", "RMSE_SE",
-      "NRMSE", "NRMSE_SE",
-      "MAE", "MAE_SE",
-      "APC", "APC_SE",
-      "Intercept", "Intercept_SE",
-      "Slope", "Slope_SE",
-      "R2", "R2_SE",
-      "MAAPE", "MAAPE_SE",
-      "Best10", "Best10_SE",
-      "Best20", "Best20_SE"
-    ))) %>%
-    as_tibble()
+  if (compute_se) {
+    summary <- summary %>%
+      compute_standard_errors(digits) %>%
+      select(all_of(c(
+        final_group_col,
+        "MSE", "MSE_SE",
+        "RMSE", "RMSE_SE",
+        "NRMSE", "NRMSE_SE",
+        "MAE", "MAE_SE",
+        "APC", "APC_SE",
+        "Intercept", "Intercept_SE",
+        "Slope", "Slope_SE",
+        "R2", "R2_SE",
+        "MAAPE", "MAAPE_SE",
+        "Best10", "Best10_SE",
+        "Best20", "Best20_SE"
+      ))) %>%
+      as_tibble()
+  }
 
   return(summary)
 }
@@ -105,29 +114,35 @@ numeric_summarise_by_fields_line_mean <- function(predictions,
 categorical_summarise_by_fields_line_mean <- function(predictions,
                                                       grouping_cols,
                                                       final_group_col,
-                                                      digits) {
+                                                      digits,
+                                                      average_by_line = TRUE,
+                                                      compute_se = TRUE) {
   classes <- levels(predictions$Predicted)
+  summary <- predictions
 
-  summary <- predictions %>%
-    group_by(across(all_of(c(grouping_cols, "Line")))) %>%
-    summarise(
-      Observed = factor(
-        math_mode(Observed, allow_multimodal = FALSE),
-        levels = classes
-      ),
-      Predicted = factor(
-        math_mode(Predicted, allow_multimodal = FALSE),
-        levels = classes
-      ),
-      # Probabilities mean
-      across(all_of(classes), mean),
-      .groups = "keep"
-    ) %>%
+  if (average_by_line) {
+    summary <- summary %>%
+      group_by(across(all_of(c(grouping_cols, "Line")))) %>%
+      summarise(
+        Observed = factor(
+          math_mode(Observed, allow_multimodal = FALSE),
+          levels = classes
+        ),
+        Predicted = factor(
+          math_mode(Predicted, allow_multimodal = FALSE),
+          levels = classes
+        ),
+        # Probabilities mean
+        across(all_of(classes), mean),
+        .groups = "keep"
+      )
+  }
 
+  summary <- summary %>%
     # Metrics computation by grouping cols, Line column is lost here
     group_by(across(all_of(grouping_cols))) %>%
     summarise(
-      PCCC = pccc(Observed, Predicted),
+      Accuracy = accuracy(Observed, Predicted),
       Kappa = kappa_coeff(Observed, Predicted),
       BrierScore = brier_score(Observed, select_at(across(), classes)),
       .groups = "drop"
@@ -137,15 +152,17 @@ categorical_summarise_by_fields_line_mean <- function(predictions,
     summary <- summary %>% group_by(across(all_of(final_group_col)))
   }
 
-  summary <- summary %>%
-    compute_standard_errors(digits) %>%
-    select(all_of(c(
-      final_group_col,
-      "PCCC", "PCCC_SE",
-      "Kappa", "Kappa_SE",
-      "BrierScore", "BrierScore_SE"
-    ))) %>%
-    as_tibble()
+  if (compute_se) {
+    summary <- summary %>%
+      compute_standard_errors(digits) %>%
+      select(all_of(c(
+        final_group_col,
+        "Accuracy", "Accuracy_SE",
+        "Kappa", "Kappa_SE",
+        "BrierScore", "BrierScore_SE"
+      ))) %>%
+      as_tibble()
+  }
 
   return(summary)
 }
@@ -323,6 +340,21 @@ gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
   Temp$Env <- "Global"
   Env <- rbind(Env, Temp)
 
+  Env2 <- summary_function(
+    predictions,
+    grouping_cols = "Env",
+    final_group_col = NULL,
+    digits = digits,
+    average_by_line = FALSE,
+    compute_se = FALSE
+  )
+  Env2 <- Env2 %>%
+    bind_rows(
+      compute_standard_errors(Env2, digits) %>%
+      mutate(Env = "Global")
+    ) %>%
+    as_tibble()
+
   Fold <- summary_function(
     predictions,
     c("Env", "Fold"),
@@ -340,12 +372,14 @@ gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
     write_csv(predictions, file.path(save_at, "predictions.csv"))
     write_csv(Line, file.path(save_at, "line_summary.csv"))
     write_csv(Env, file.path(save_at, "env_summary.csv"))
+    write_csv(Env2, file.path(save_at, "env2_summary.csv"))
     write_csv(Fold, file.path(save_at, "fold_summary.csv"))
   }
 
   return(list(
     line = Line,
     env = Env,
+    env2 = Env2,
     fold = Fold
   ))
 }
