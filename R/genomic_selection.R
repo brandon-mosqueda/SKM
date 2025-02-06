@@ -234,6 +234,9 @@ gs_summaries <- function(predictions, save_at = NULL, digits = 4) {
 }
 
 gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
+  predictions <- predictions %>%
+    mutate(Env = as.character(Env), Fold = as.character(Fold))
+
   is_categorical <- is.factor(predictions$Observed)
 
   if (is_categorical) {
