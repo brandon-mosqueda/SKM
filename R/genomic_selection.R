@@ -41,135 +41,56 @@ compute_standard_errors <- function(summary, digits) {
   return(summary)
 }
 
-numeric_summarise_by_fields_line_mean <- function(predictions,
-                                                  grouping_cols,
-                                                  final_group_col,
-                                                  digits,
-                                                  average_by_line = TRUE,
-                                                  compute_se = TRUE) {
-  summary <- predictions
+numeric_metrics <- function(predictions) {
+  summary <- summarise(
+    predictions,
 
-  if (average_by_line) {
-    summary <- summary %>%
-      # Observed and Predicted mean by Line
-      group_by(across(all_of(c(grouping_cols, "Line")))) %>%
-      summarise(
-        Observed = mean(Observed, na.rm = TRUE),
-        Predicted = mean(Predicted, na.rm = TRUE),
-        .groups = "keep"
-      )
-  }
+    MSE = mse(Observed, Predicted),
+    RMSE = rmse(Observed, Predicted),
+    NRMSE = nrmse(Observed, Predicted),
+    MAE = mae(Observed, Predicted),
+    APC = pearson(Predicted, Observed),
+    Intercept = lm_intercept(Predicted, Observed),
+    Slope = lm_slope(Predicted, Observed),
+    R2 = pearson(Predicted, Observed)^2,
+    MAAPE = maape(Observed, Predicted),
+    Best10 = best_lines_match(
+      tibble(Line, Observed, Predicted),
+      percentage = 10
+    ),
+    Best20 = best_lines_match(
+      tibble(Line, Observed, Predicted),
+      percentage = 20
+    ),
 
-  summary <- summary %>%
-    # Metrics computation by grouping cols, Line column is lost here
-    group_by(across(all_of(grouping_cols))) %>%
-    summarise(
-      MSE = mse(Observed, Predicted),
-      RMSE = rmse(Observed, Predicted),
-      NRMSE = nrmse(Observed, Predicted),
-      MAE = mae(Observed, Predicted),
-      APC = pearson(Predicted, Observed),
-      Intercept = lm_intercept(Predicted, Observed),
-      Slope = lm_slope(Predicted, Observed),
-      R2 = pearson(Predicted, Observed)^2,
-      MAAPE = maape(Observed, Predicted),
-      Best10 = best_lines_match(
-        tibble(Line, Observed, Predicted),
-        percentage = 10
-      ),
-      Best20 = best_lines_match(
-        tibble(Line, Observed, Predicted),
-        percentage = 20
-      ),
-      .groups = "drop"
-    )
-
-  if (!is.null(final_group_col)) {
-    summary <- summary %>% group_by(across(all_of(final_group_col)))
-  }
-
-  if (compute_se) {
-    summary <- summary %>%
-      compute_standard_errors(digits) %>%
-      select(all_of(c(
-        final_group_col,
-        "MSE", "MSE_SE",
-        "RMSE", "RMSE_SE",
-        "NRMSE", "NRMSE_SE",
-        "MAE", "MAE_SE",
-        "APC", "APC_SE",
-        "Intercept", "Intercept_SE",
-        "Slope", "Slope_SE",
-        "R2", "R2_SE",
-        "MAAPE", "MAAPE_SE",
-        "Best10", "Best10_SE",
-        "Best20", "Best20_SE"
-      ))) %>%
-      as_tibble()
-  }
+    .groups = "drop"
+  )
 
   return(summary)
 }
 
-categorical_summarise_by_fields_line_mean <- function(predictions,
-                                                      grouping_cols,
-                                                      final_group_col,
-                                                      digits,
-                                                      average_by_line = TRUE,
-                                                      compute_se = TRUE) {
+categorical_metrics <- function(predictions) {
   classes <- levels(predictions$Predicted)
-  summary <- predictions
 
-  if (average_by_line) {
-    summary <- summary %>%
-      group_by(across(all_of(c(grouping_cols, "Line")))) %>%
-      summarise(
-        Observed = factor(
-          math_mode(Observed, allow_multimodal = FALSE),
-          levels = classes
-        ),
-        Predicted = factor(
-          math_mode(Predicted, allow_multimodal = FALSE),
-          levels = classes
-        ),
-        # Probabilities mean
-        across(all_of(classes), mean),
-        .groups = "keep"
-      )
-  }
+  summary <- summarise(
+    predictions,
 
-  summary <- summary %>%
-    # Metrics computation by grouping cols, Line column is lost here
-    group_by(across(all_of(grouping_cols))) %>%
-    summarise(
-      Accuracy = accuracy(Observed, Predicted),
-      Kappa = kappa_coeff(Observed, Predicted),
-      BrierScore = brier_score(Observed, select_at(across(), classes)),
-      .groups = "drop"
-    )
+    Accuracy = accuracy(Observed, Predicted),
+    Kappa = kappa_coeff(Observed, Predicted),
+    BrierScore = brier_score(
+      Observed,
+      select_at(across(everything()), classes)
+    ),
 
-  if (!is.null(final_group_col)) {
-    summary <- summary %>% group_by(across(all_of(final_group_col)))
-  }
-
-  if (compute_se) {
-    summary <- summary %>%
-      compute_standard_errors(digits) %>%
-      select(all_of(c(
-        final_group_col,
-        "Accuracy", "Accuracy_SE",
-        "Kappa", "Kappa_SE",
-        "BrierScore", "BrierScore_SE"
-      ))) %>%
-      as_tibble()
-  }
+    .groups = "drop"
+  )
 
   return(summary)
 }
 
-numeric_summarise_line <- function(predictions, digits) {
+numeric_summarise_line <- function(predictions, digits, group_cols = "Line") {
   Line <- predictions %>%
-    group_by(Line) %>%
+    group_by(across(all_of(group_cols))) %>%
     summarise(
       Observed = mean(Observed, na.rm = TRUE),
       Predicted = mean(Predicted, na.rm = TRUE),
@@ -183,22 +104,37 @@ numeric_summarise_line <- function(predictions, digits) {
   return(Line)
 }
 
-categorical_summarise_line <- function(predictions, digits) {
+categorical_summarise_line <- function(predictions,
+                                       digits,
+                                       group_cols = "Line") {
   rmean <- function(x) round(mean(x), digits)
 
   classes <- levels(predictions$Predicted)
 
   Line <- predictions %>%
-    group_by(Line) %>%
+    group_by(across(all_of(group_cols))) %>%
     summarise(
-      Observed = math_mode(Observed, allow_multimodal = FALSE),
-      Predicted = math_mode(Predicted, allow_multimodal = FALSE),
+      Observed = math_mode(Observed, allow_multimodal = FALSE) %>%
+        factor(classes),
+      Predicted = math_mode(Predicted, allow_multimodal = FALSE) %>%
+        factor(classes),
       across(all_of(classes), rmean),
       .groups = "drop"
     ) %>%
     as_tibble()
 
   return(Line)
+}
+
+reorder_se_cols <- function(Data, first_cols) {
+  se_cols <- select(Data, contains("_SE")) %>% colnames()
+
+  reordered_cols <- sort(c(
+    gsub("_SE", "", se_cols),
+    se_cols
+  ))
+
+  return(select(Data, all_of(c(first_cols, reordered_cols))))
 }
 
 #' @title Summaries for Genomic Selection
@@ -311,8 +247,8 @@ gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
 
   summary_function <- ifelse(
     is_categorical,
-    categorical_summarise_by_fields_line_mean,
-    numeric_summarise_by_fields_line_mean
+    categorical_metrics,
+    numeric_metrics
   )
   line_summary_function <- ifelse(
     is_categorical,
@@ -320,67 +256,59 @@ gs_summaries_single <- function(predictions, save_at = NULL, digits = 4) {
     numeric_summarise_line
   )
 
-  Global <- summary_function(
-    predictions,
-    grouping_cols = "Fold",
-    final_group_col = NULL,
-    digits = digits
-  )
+  LineSummary <- line_summary_function(predictions, digits)
 
-  Line <- line_summary_function(predictions, digits)
+  AcrossNewSummary <- predictions %>%
+    line_summary_function(digits = digits, group_cols = c("Fold", "Line")) %>%
+    group_by(Fold) %>%
+    summary_function() %>%
+    select(-Fold) %>%
+    compute_standard_errors(digits)
 
-  Env <- summary_function(
-    predictions,
-    c("Fold", "Env"),
-    "Env",
-    digits = digits
-  )
+  EnvSummary <- predictions %>%
+    group_by(Env, Fold) %>%
+    summary_function() %>%
+    group_by(Env) %>%
+    compute_standard_errors(digits) %>%
+    ungroup()
 
-  Temp <- Global
-  Temp$Env <- "Global"
-  Env <- rbind(Env, Temp)
-
-  Env2 <- summary_function(
-    predictions,
-    grouping_cols = "Env",
-    final_group_col = NULL,
-    digits = digits,
-    average_by_line = FALSE,
-    compute_se = FALSE
-  )
-  Env2 <- Env2 %>%
+  EnvSummary <- EnvSummary %>%
     bind_rows(
-      compute_standard_errors(Env2, digits) %>%
-      mutate(Env = "Global")
+      summarise_if(EnvSummary, is.numeric, ~ mean(., na.rm = TRUE)) %>%
+        mutate(Env = "Across-env"),
+      AcrossNewSummary %>%
+        mutate(Env = "Across-env-new"),
     ) %>%
-    as_tibble()
+    reorder_se_cols(first_cols = c("Env"))
 
-  Fold <- summary_function(
-    predictions,
-    c("Env", "Fold"),
-    "Fold",
-    digits = digits
-  )
 
-  Temp <- Global
-  Temp$Fold <- "Global"
-  Fold <- rbind(Fold, Temp)
+  FoldSummary <- predictions %>%
+    group_by(Fold) %>%
+    summary_function() %>%
+    ungroup()
+
+  FoldSummary <- FoldSummary %>%
+    bind_rows(
+      compute_standard_errors(FoldSummary, digits) %>%
+        mutate(Fold = "Across-fold"),
+      AcrossNewSummary %>%
+        mutate(Fold = "Across-fold-new"),
+    ) %>%
+    reorder_se_cols(first_cols = c("Fold"))
 
   if (!is.null(save_at)) {
     mkdir(save_at)
 
     write_csv(predictions, file.path(save_at, "predictions.csv"))
-    write_csv(Line, file.path(save_at, "line_summary.csv"))
-    write_csv(Env, file.path(save_at, "env_summary.csv"))
-    write_csv(Env2, file.path(save_at, "env2_summary.csv"))
-    write_csv(Fold, file.path(save_at, "fold_summary.csv"))
+    write_csv(LineSummary, file.path(save_at, "line_summary.csv"))
+    write_csv(EnvSummary, file.path(save_at, "env_summary.csv"))
+    write_csv(FoldSummary, file.path(save_at, "fold_summary.csv"))
   }
 
   return(list(
-    line = Line,
-    env = Env,
-    env2 = Env2,
-    fold = Fold
+    line = LineSummary,
+    env = EnvSummary,
+    fold = FoldSummary
   ))
 }
 
