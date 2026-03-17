@@ -248,6 +248,13 @@ as_tf_rates <- function(confusion_matrix) {
   ))
 }
 
+#' @export
+full_rm <- function(...) {
+  vars <- as.character(substitute(list(...)))[-1]
+  rm(list = vars, envir = parent.frame())
+  invisible(gc(full = TRUE, verbose = FALSE))
+}
+
 #' @title Convert data to matrix
 #'
 #' @description

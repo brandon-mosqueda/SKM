@@ -105,7 +105,7 @@ fit univariate models for numeric and categorical response variables and
 multivariate models for numeric responses only.
 }
 \details{
-Since \link{BGLR} functions works a little different than other most common R
+Since \link[BGLR:BGLR]{BGLR::BGLR} functions works a little different than other most common R
 packages for machine learning \code{bayesian_model} functions adapts to it. Unlike
 other functions, if you want to fit a bayesian model and make some
 predictions you have to provide the whole data (for training and testing) and
